@@ -1,0 +1,28 @@
+section#viewer .view[data-active-view="map"] {
+    padding: 0;
+    position: relative;
+
+    #map {
+        height: 100%;
+    }
+
+    #map .leaflet-bar a {
+        line-height: 24px;
+    }
+
+    footer {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 999;
+        background-color: rgb(255 255 255 / 85%);
+    }
+
+    footer > p {
+        display: inline-block;
+    }
+    footer > p:not(:last-child) {
+        margin-right: .4rem;
+    }
+}
