@@ -7,9 +7,11 @@
     --bg-color: #fff;
     --bg-second-color: #F7F8FA;
     --bg-selected-color: #E9EDF0;
+    --bg-overlay-color: #00000093;
     --border-color: #d1d9e0;
     --border-radius: 5px;
     --accent-color: #2776ff;
+    --accent-second-color: #5f99ff;
     --bad-color: #ff4d4d;
 }
 

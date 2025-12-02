@@ -1,6 +1,6 @@
 from flask import Flask  
 
-# from .custom import 
+from .custom import Data
 
 
 
@@ -12,8 +12,8 @@ def create_app():
     app = Flask(__name__)
 
     # Load configuration
-    # with app.app_context():
-    #     app.data = Data()
+    with app.app_context():
+        app.data = Data()
 
     # Init pages routes
     from .routes import main as main_blueprint
