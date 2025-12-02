@@ -1,2 +1,2 @@
-# Natural Job
-NLP and LLM powered job search application
+# Scraping job offers
+We scraping to create a job offer database for NLP and Natural Job app
