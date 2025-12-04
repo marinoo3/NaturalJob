@@ -1,11 +1,11 @@
 ### 1. Representing Job Offers
 - **Chunking**: Break long descriptions into coherent units (e.g., sentences or paragraphs) to avoid losing context. Embeddings like sentence-transformers or other Transformer-based models work well here.
-- **Aggregation**: Averaging embeddings (centroid) is standard, but you might also try weighted averages, giving more weight to sections like required skills.
+- **Aggregation**: Averaging embeddings (centroid) is standard, but we might also try weighted averages, giving more weight to sections like required skills.
 
 ### 2. Topic Extraction
-If you want interpretable “topics” around which offers gravitate:
+If we want interpretable “topics” around which offers gravitate:
 - **Topic Modeling**: Use **BERTopic**, **Top2Vec**, or similar approaches that combine embeddings with clustering and topic extraction. These can yield semantic topics along with representative terms.
-- **Clustering**: You can also cluster the job embeddings (e.g., KMeans, HDBSCAN) and derive topics from top keywords in each cluster (TF-IDF over cluster texts).
+- **Clustering**: We can also cluster the job embeddings (e.g., KMeans, HDBSCAN) and derive topics from top keywords in each cluster (TF-IDF over cluster texts).
 
 ### 3. Similarity and Graph Visualization
 To show offers “gravitating” around topics:
@@ -15,7 +15,7 @@ To show offers “gravitating” around topics:
 ### 4. 2D Visualization
 Embedding vectors are high-dimensional, so for visualization:
 - **Dimensionality Reduction**: Use t-SNE, UMAP, or PCA to project embeddings into 2D. UMAP often preserves global structure better than t-SNE and is faster for large datasets.
-- **Force-directed layout**: If you prefer network-like visuals, graph layout algorithms (e.g., ForceAtlas2 in Gephi, D3 force layouts) can be applied to your similarity graph.
+- **Force-directed layout**: If we prefer network-like visuals, graph layout algorithms (e.g., ForceAtlas2 in Gephi, D3 force layouts) can be applied to our similarity graph.
 
 ### Workflow Summary
 1. Preprocess and chunk job descriptions.
