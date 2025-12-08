@@ -48,13 +48,32 @@ def create_template():
             uuid, path = current_app.data.create_resume_template(file)
             template = current_app.db.files.create_template(uuid, name, description, category, path)
         case 'coverletter':
-            uuid, path, content = current_app.data.create_coverletter_template()
+            uuid, path = current_app.data.create_coverletter_template()
             template = current_app.db.files.create_template(uuid, name, description, category, path)
         case 'email':
-            uuid, path, content = current_app.data.create_email_template()
+            uuid, path = current_app.data.create_email_template()
             template = current_app.db.files.create_template(uuid, name, description, category, path)
 
     if not template:
         raise Exception(f'Unknowned category "{template}"')
 
-    return jsonify({"category": template.category, "html": template.render_html()})
+    return jsonify({"category": template.category, "uuid": template.uuid, "html": template.render_html()})
+
+@ajax.route('/read_template/<template_uuid>')
+def read_template(template_uuid):
+    template = current_app.db.files.get_template(template_uuid)
+    content = current_app.data.read(template.path)
+    return jsonify({'content': content})
+
+@ajax.route('/update_template/<template_uuid>', methods=['PUT'])
+def update_template(template_uuid):
+    content = request.json.get('content')
+    template = current_app.db.files.get_template(template_uuid)
+    current_app.data.update(template.path, content)
+    return jsonify({'success': True})
+
+@ajax.route('/delete_template/<template_uuid>', methods=['DELETE'])
+def delete_template(template_uuid):
+    template = current_app.db.files.remove_template(template_uuid)
+    current_app.data.delete(template.path)
+    return jsonify({'success': True})

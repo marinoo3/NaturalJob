@@ -29,7 +29,7 @@ section#documents .view[data-active-view="templates"] {
         transition: height ease 1s;
     }
 
-    .docs li {
+    .docs .wrapper {
         position: relative;
         display: flex;
         gap: .6rem;
@@ -44,33 +44,33 @@ section#documents .view[data-active-view="templates"] {
         margin-top: .6rem;
     }
 
-    .docs li .more {
+    .docs .wrapper .more {
         position: absolute;
         right: 1rem;
     }
 
-    .docs li .more .actions {
+    .docs .wrapper .more .actions {
         display: none;
     }
 
-    .docs li:hover .more .actions {
+    .docs .wrapper:hover .more .actions {
         display: block;
     }
-    .docs li:hover .more .date {
+    .docs .wrapper:hover .more .date {
         display: none;
     }
 
-    .docs li .more .actions button:not(:first-child) {
+    .docs .wrapper .more .actions button:not(:first-child) {
         margin-left: .4rem;
     }
 
-    .docs li .more .actions #delete {
+    .docs .wrapper .more .actions #delete {
         filter: invert(59%) sepia(70%) saturate(5856%) hue-rotate(336deg) brightness(115%) contrast(93%);
     }
-    .docs li .more .actions button {
+    .docs .wrapper .more .actions button {
         opacity: .5;
     }
-    .docs li .more .actions button:hover {
+    .docs .wrapper .more .actions button:hover {
         opacity: 1;
     }
 

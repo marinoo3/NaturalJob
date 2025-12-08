@@ -33,15 +33,17 @@ button.second-button {
     background-color: var(--bg-selected-color);
     border-radius: var(--border-radius);
     border: solid 1px var(--border-color);
-    padding: .4rem;
+    padding: .4rem .8rem;
+    font-weight: 400;
 }
 
 button.main-button {
     background-color: var(--accent-color);
     border-radius: var(--border-radius);
     border: solid 1px var(--accent-second-color);
-    padding: .4rem;
+    padding: .4rem .8rem;
     color: white;
+    font-weight: 400;
 }
 
 button {

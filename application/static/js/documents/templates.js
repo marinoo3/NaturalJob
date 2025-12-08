@@ -1,4 +1,5 @@
 const section = document.querySelector('#documents');
+const editorTab = document.querySelector('#viewer li[data-tab-id="editor"]');
 const categoryContainers = section.querySelectorAll('.category');
 const uploadResumeButton = document.querySelector('#create-resume-button');
 const createCoverLetterButton = document.querySelector('#create-coverletter-button');
@@ -18,6 +19,23 @@ function renderTemplate(documents) {
         templates[key].forEach(html => {
             const li = document.createElement('li');
             li.innerHTML = html;
+            const uuid = li.querySelector('.wrapper').dataset.uuid;
+
+            const editButton = li.querySelector('.actions #edit');
+            editButton.addEventListener('click', async () => {
+                // Open editor and preview template content
+                const module = await switchTab(editorTab);
+                module.loadTemplate(uuid);
+            });
+
+            const deleteButton = li.querySelector('.actions #delete');
+            deleteButton.addEventListener('click', () => {
+                li.remove();
+                fetch(`ajax/delete_template/${uuid}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(loadTemplates());
+            });
             documents.appendChild(li);
         });
     } else {
@@ -31,15 +49,12 @@ async function loadTemplates() {
     const response = await fetch('ajax/get_templates');
     const content = await response.json();
 
-    console.log(content);
-
     // Empty all templates and set updated ones
     Object.values(templates).forEach(arr => arr.length = 0);
     for (const [key, value] of Object.entries(content)) {
         templates[key] = value;
     }
 
-    
     categoryContainers.forEach(category => {
         const documents = category.querySelector('.docs');
         renderTemplate(documents);
@@ -93,7 +108,14 @@ async function createTemplate(formData) {
     // Add to file manager and preview the template content
     templates[content.category].push(content.html);
     const documents = document.querySelector(`.category .docs[data-category='${content.category}']`);
+    // Unfold category container
+    const categoryContainer = documents.closest('.category');
+    categoryContainer.classList.remove('folded');
+    // Render template and preview content
     renderTemplate(documents);
+    console.log(content.uuid);
+    const module = await switchTab(editorTab);
+    module.loadTemplate(content.uuid);
 }
 
 
@@ -215,9 +237,10 @@ createEmailButton.addEventListener('click', async () => {
         const formData = new FormData();
         formData.append('name', name);
         formData.append('description', description);
-        formData.append('category', 'coverletter');
+        formData.append('category', 'email');
 
         createTemplate(formData);
+        popup.remove();
     });
 
     document.body.appendChild(popup);

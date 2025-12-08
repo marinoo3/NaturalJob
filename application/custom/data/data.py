@@ -12,11 +12,11 @@ class Data():
     coverletter = "usr/coverletter/"
     email = "usr/email/"
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.path = os.environ.get('DATA_PATH', 'data/')
         self.__init_dir()
 
-    def __init_dir(self):
+    def __init_dir(self) -> None:
         for relative_path in [self.resume, self.coverletter, self.email]:
             path = os.path.join(self.path, relative_path)
             os.makedirs(path, exist_ok=True)
@@ -58,7 +58,7 @@ class Data():
         file_path = os.path.join(self.path, relative_path)
         with open(file_path, 'w') as f:
             f.write(default)
-        return template_id, relative_path, default
+        return template_id, relative_path
     
     def create_email_template(self):
         """Create an email template on disk.
@@ -77,4 +77,42 @@ class Data():
         file_path = os.path.join(self.path, relative_path)
         with open(file_path, 'w') as f:
             f.write(default)
-        return template_id, relative_path, default
+        return template_id, relative_path
+    
+    def read(self, relative_path:str) -> str:
+        """Read the content of a template file from disk
+
+        Arguments:
+            relative_path (str): File relative path
+
+        Returns:
+            str: Content of the template file
+        """
+
+        path = os.path.join(self.path, relative_path)
+        with open(path, 'r') as f:
+            content = f.read()
+        return content
+    
+    def update(self, relative_path:str, content:str):
+        """Update the content of a file on disk
+
+        Args:
+            relative_path (str): The relative path of the file to update 
+            content (str): The new text content (will replace the current file content)
+        """
+
+        path = os.path.join(self.path, relative_path)
+        with open(path, 'w') as f:
+            f.write(content)
+
+    
+    def delete(self, relative_path:str) -> None:
+        """Delete file from disk
+
+        Args:
+            relative_path (str): The relative path of the file to delete
+        """
+
+        path = os.path.join(self.path, relative_path)
+        os.remove(path)

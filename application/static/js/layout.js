@@ -74,15 +74,18 @@ async function switchTab(tab) {
    const tabId = tab.dataset.tabId;
    const prevTabId = view.dataset.activeView;
 
-   if (tabId === prevTabId) return; // No change
+   const key = `${sectionId}/${tabId}`;
+   const cache = domCache.get(key);
+
+   if (tabId === prevTabId) {
+      // No change
+      return cache.module
+   }
 
    // Deselect all tabs
    section.querySelectorAll('.tabs li').forEach(t => t.classList.remove('selected'));
    // Select clicked tab
    tab.classList.add('selected');
-
-   const key = `${sectionId}/${tabId}`
-   const cache = domCache.get(key);
 
    if (cache) {
       // Loads tab from cache if exists
@@ -101,6 +104,7 @@ async function switchTab(tab) {
    }
 
    view.dataset.activeView = tabId;
+   return domCache.get(key).module
 }
 
 

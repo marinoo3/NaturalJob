@@ -1,17 +1,18 @@
-<div class="wrapper" data-uuid="{{ uuid }}"></div>
-<img src="{{ url_for('static', filename='images/cv.svg') }}" alt="" height="20px">
-<div>
-    <h3>{{ title }}</h3>
-    <p class="second">{{ description }}</p>
-</div>
-<div class="more">
-    <p class="date second">{{ date }}</p>
-    <div class="actions">
-        <button class="icon-button" id="edit">
-            <img src="{{ url_for('static', filename='images/edit.svg') }}" alt="" height="16px">
-        </button>
-        <button class="icon-button" id="delete">
-            <img src="{{ url_for('static', filename='images/delete.svg') }}" alt="" height="16px">
-        </button>
+<div class="wrapper" data-uuid="{{ uuid }}">
+    <img src="{{ url_for('static', filename='images/cv.svg') }}" alt="" height="20px">
+    <div>
+        <h3>{{ title }}</h3>
+        <p class="second">{{ description }}</p>
+    </div>
+    <div class="more">
+        <p class="date second">{{ date }}</p>
+        <div class="actions">
+            <button class="icon-button" id="edit">
+                <img src="{{ url_for('static', filename='images/edit.svg') }}" alt="" height="16px">
+            </button>
+            <button class="icon-button" id="delete">
+                <img src="{{ url_for('static', filename='images/delete.svg') }}" alt="" height="16px">
+            </button>
+        </div>
     </div>
 </div>
