@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>My Website</title>
+   <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+   <!-- Markdown Editor CSS -->
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css" />
+   <!-- Custom Style -->
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/_components.css') }}">
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/console/statistics.css') }}">
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/documents/templates.css') }}">
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/viewer/editor.css') }}">
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/viewer/map.css') }}">
+   <!-- <link rel="icon" href="./favicon.ico" type="image/x-icon"> -->
+</head>
+
+<body>
+   <main>
+      <div class="main-grid grid-1">
+         <section id="viewer" data-section-id="viewer">
+            <nav class="tabs">
+               <ul>
+                   <li data-tab-id="map" class="selected">Carte</li>
+                   <li data-tab-id="clusters">Clusters</li>
+                   <li data-tab-id="list">Liste</li>
+                   <li data-tab-id="editor">Editeur</li>
+               </ul>
+            </nav>
+            <div class="view"></div>
+         </section>
+         <section id="console" data-section-id="console">
+            <nav class="tabs">
+               <ul>
+                  <li data-tab-id="statistics" class="selected">Statistiques</li>
+               </ul>
+            </nav>
+            <div class="view"></div>
+         </section>
+      </div>
+      <div class="main-grid grid-2">
+         <section id="source" data-section-id="source">
+            <nav class="tabs">
+               <ul>
+                  <li data-tab-id="ntne" class="selected">NTNE</li>
+                  <li data-tab-id="custom">Source externe</li>
+               </ul>
+            </nav>
+            <div class="view"></div>
+         </section>
+         <section id="documents" data-section-id="documents">
+            <nav class="tabs">
+               <ul>
+                  <li data-tab-id="templates" class="selected">Templates</li>
+                  <li data-tab-id="applications">Candidatures</li>
+               </ul>
+            </nav>
+            <div class="view"></div>
+         </section>
+      </div>
+
+      <div class="handle vertical" data-axis="x"></div>
+      <div class="handle horizontal left" data-axis="y" data-column="left"></div>
+      <div class="handle horizontal right" data-axis="y" data-column="right"></div>
+   </main>
+</body>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<!-- Mardown Editor JS -->
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+<!-- Custom Scripts -->
+<script src="{{ url_for('static', filename='js/layout.js') }}" defer></script>
+
+</html>
