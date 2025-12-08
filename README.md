@@ -1,3 +1,14 @@
+---
+title: NaturalJob
+emoji: 🌖
+colorFrom: gray
+colorTo: purple
+sdk: docker
+pinned: false
+license: mit
+short_description: NLP and LLM powered job search application
+---
+
 # Natural Job
 NLP and LLM powered job search application
 
