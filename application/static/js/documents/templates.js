@@ -31,6 +31,8 @@ async function loadTemplates() {
     const response = await fetch('ajax/get_templates');
     const content = await response.json();
 
+    console.log(content);
+
     // Empty all templates and set updated ones
     Object.values(templates).forEach(arr => arr.length = 0);
     for (const [key, value] of Object.entries(content)) {

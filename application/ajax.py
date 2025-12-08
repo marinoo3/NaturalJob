@@ -29,8 +29,10 @@ def get_templates():
     templates = current_app.db.files.get_templates()
     response = {}
     for t in templates:
-        response[t.category] = t.render_html()
-    return jsonify(templates)
+        if not response.get(t.category):
+            response[t.category] = []
+        response[t.category].append(t.render_html())
+    return jsonify(response)
 
 @ajax.route('/create_template', methods=['POST'])
 def create_template():
