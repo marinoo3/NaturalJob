@@ -41,29 +41,32 @@ def create_template():
     category = request.form.get('category')
 
     # TODO: Use Transactions - Wrap database insert and file write in a transaction-like process, so I don’t end up with orphaned files or metadata if something fails.
-    template = None
-    match category:
-        case 'resume':
-            file = request.files.get('file')
-            uuid, path = current_app.data.create_resume_template(file)
-            template = current_app.db.files.create_template(uuid, name, description, category, path)
-        case 'coverletter':
-            uuid, path = current_app.data.create_coverletter_template()
-            template = current_app.db.files.create_template(uuid, name, description, category, path)
-        case 'email':
-            uuid, path = current_app.data.create_email_template()
-            template = current_app.db.files.create_template(uuid, name, description, category, path)
+    with current_app.db.files.connect() as conn:
+        template = None
+        match category:
+            case 'resume':
+                file = request.files.get('file')
+                uuid, path = current_app.data.create_resume_template(file)
+                template = current_app.db.files.create_template(conn, uuid, name, description, category, path)
+            case 'coverletter':
+                uuid, path = current_app.data.create_coverletter_template()
+                template = current_app.db.files.create_template(conn, uuid, name, description, category, path)
+            case 'email':
+                uuid, path = current_app.data.create_email_template()
+                template = current_app.db.files.create_template(conn, uuid, name, description, category, path)
 
-    if not template:
-        raise Exception(f'Unknowned category "{template}"')
+        if not template:
+            raise Exception(f'Unknowned category "{template}"')
 
     return jsonify({"category": template.category, "uuid": template.uuid, "html": template.render_html()})
 
 @ajax.route('/read_template/<template_uuid>')
 def read_template(template_uuid):
     template = current_app.db.files.get_template(template_uuid)
-    content = current_app.data.read(template.path)
-    return jsonify({'content': content})
+    content = template.path
+    if template.category != 'resume':
+        content = current_app.data.read(template.path)
+    return jsonify({'category': template.category, 'content': content})
 
 @ajax.route('/update_template/<template_uuid>', methods=['PUT'])
 def update_template(template_uuid):
@@ -74,6 +77,7 @@ def update_template(template_uuid):
 
 @ajax.route('/delete_template/<template_uuid>', methods=['DELETE'])
 def delete_template(template_uuid):
-    template = current_app.db.files.remove_template(template_uuid)
-    current_app.data.delete(template.path)
+    with current_app.db.files.connect() as conn:
+        template = current_app.db.files.remove_template(conn, template_uuid)
+        current_app.data.delete(template.path)
     return jsonify({'success': True})

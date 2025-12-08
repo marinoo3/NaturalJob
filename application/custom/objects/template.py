@@ -19,7 +19,8 @@ class Template():
             uuid=self.uuid, 
             title=self.title, 
             description=self.description, 
-            date=self.date)
+            date=self.date,
+            category=self.category)
         return html
     
     def date_str(self, format='%d/%m/%Y'):

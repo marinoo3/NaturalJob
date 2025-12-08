@@ -1,5 +1,5 @@
 <div class="wrapper" data-uuid="{{ uuid }}">
-    <img src="{{ url_for('static', filename='images/cv.svg') }}" alt="" height="20px">
+    <img src="{{ url_for('static', filename='images/{}.svg'.format(category)) }}" alt="" height="20px">
     <div>
         <h3>{{ title }}</h3>
         <p class="second">{{ description }}</p>

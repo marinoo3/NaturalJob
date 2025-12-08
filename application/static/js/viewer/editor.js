@@ -1,10 +1,11 @@
+const wrapper = document.querySelector('section#viewer .wrapper');
 let easyMDE = null;
-let templateUUID = null;
+let savedContent = null;
 
 
 function loadEditor() {
     easyMDE = new EasyMDE({
-        element: document.querySelector('#md-content'),
+        element: wrapper.querySelector('#md-content'),
         sideBySideFullscreen: false,
         hideIcons: ["image", "preview", "side-by-side", "fullscreen", "guide", "|"]
     });
@@ -12,7 +13,7 @@ function loadEditor() {
 }
 
 function createActions(uuid) {
-    const toolbar = document.querySelector('.editor-toolbar');
+    const toolbar = wrapper.querySelector('.editor-toolbar');
     let actions = toolbar.querySelector('.actions');
     if(actions) actions.remove();
     actions = document.createElement('div');
@@ -28,12 +29,12 @@ function createActions(uuid) {
     const saveButton = document.createElement('button');
     saveButton.textContent = "Enregistrer";
     saveButton.classList.add('main-button');
-    saveButton.addEventListener('click', async () => {
-        const response = await fetch(`ajax/update_template/${uuid}`, {
+    saveButton.addEventListener('click', () => {
+        fetch(`ajax/update_template/${uuid}`, {
             method: 'PUT',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ 'content': easyMDE.value() })
-        });
+        }).then(savedContent = easyMDE.value());
     });
     actions.appendChild(cancelButton);
     actions.appendChild(saveButton);
@@ -44,10 +45,17 @@ export async function loadTemplate(uuid) {
     // Reads template content
     const response = await fetch(`ajax/read_template/${uuid}`);
     const content = await response.json();
-    // Display content
-    easyMDE.value(content.content);
-    // Update action buttons
-    createActions(uuid);
+    if(content.category == 'resume') {
+        wrapper.dataset.fileType = 'pdf';
+        const embed = wrapper.querySelector('embed');
+        embed.src = content.content;
+    } else {
+        wrapper.dataset.fileType = 'md';
+        // Display content
+        easyMDE.value(content.content);
+        // Update action buttons
+        createActions(uuid);
+    }
 }
 
 
