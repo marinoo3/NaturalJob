@@ -64,11 +64,21 @@ section#viewer .view[data-active-view="editor"] {
         font-size: inherit;
     }
 
+    .EasyMDEContainer blockquote {
+        margin-inline-start: 0px;
+        padding-inline-start: 1rem;
+        border-left: solid 4px lightgray;
+        background-color: whitesmoke;
+    }
+
     .EasyMDEContainer .editor-preview :not(pre) > code, .EasyMDEContainer .editor-preview pre {
         padding: .2em .4em;
         background-color: #818b981f;
         border-radius: var(--border-radius);
         font-size: 85%;
+    }
+    .EasyMDEContainer .editor-preview pre {
+        padding: .6em .4em;
     }
 
     .EasyMDEContainer .editor-preview h1 {
