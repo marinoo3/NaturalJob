@@ -46,6 +46,7 @@ export async function loadTemplate(uuid) {
     const response = await fetch(`ajax/read_template/${uuid}`);
     const content = await response.json();
     if(content.category == 'resume') {
+        console.log(content.content);
         wrapper.dataset.fileType = 'pdf';
         const embed = wrapper.querySelector('embed');
         embed.src = content.content;
