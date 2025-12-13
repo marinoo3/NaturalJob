@@ -3,5 +3,4 @@ nj-env/
 __pycache__/
 test*.py
 usr/
-naturaljob.db
 *.pdf

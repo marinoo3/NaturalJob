@@ -169,7 +169,6 @@ uploadResumeButton.addEventListener('click', async () => {
         fileInput.dispatchEvent(new Event('input', { bubbles: true }));
 
         setFile(files);
-        popup.remove();
     });
 
     // Submit form

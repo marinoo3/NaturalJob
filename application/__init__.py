@@ -1,9 +1,15 @@
 from flask import Flask  
 
-from .custom import Data, DB
+from .custom.data import Data
+from .custom.db import UserDB, OfferDB
+from .custom.api import NTNE
 
 
 
+class AppContext(Flask):
+    data: Data
+    user_db: UserDB
+    offer_db = OfferDB
 
 
 def create_app():
@@ -14,7 +20,9 @@ def create_app():
     # Load configuration
     with app.app_context():
         app.data = Data()
-        app.db = DB()
+        app.user_db = UserDB()
+        app.offer_db = OfferDB()
+        app.ntne_api = NTNE()
 
     # Init pages routes
     from .routes import main as main_blueprint
