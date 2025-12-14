@@ -16,6 +16,7 @@
    <link rel="stylesheet" href="{{ url_for('static', filename='css/documents/templates.css') }}">
    <link rel="stylesheet" href="{{ url_for('static', filename='css/viewer/editor.css') }}">
    <link rel="stylesheet" href="{{ url_for('static', filename='css/viewer/map.css') }}">
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/source/api.css') }}">
    <!-- <link rel="icon" href="./favicon.ico" type="image/x-icon"> -->
 </head>
 
@@ -26,7 +27,7 @@
             <nav class="tabs">
                <ul>
                    <li data-tab-id="map" class="selected">Carte</li>
-                   <li data-tab-id="clusters">Clusters</li>
+                   <li data-tab-id="graph">Graph</li>
                    <li data-tab-id="list">Liste</li>
                    <li data-tab-id="editor">Editeur</li>
                </ul>
@@ -37,6 +38,7 @@
             <nav class="tabs">
                <ul>
                   <li data-tab-id="statistics" class="selected">Statistiques</li>
+                  <li data-tab-id="clusters">Clusters</li>
                </ul>
             </nav>
             <div class="view"></div>
@@ -47,6 +49,7 @@
             <nav class="tabs">
                <ul>
                   <li data-tab-id="ntne" class="selected">NTNE</li>
+                  <li data-tab-id="apec">APEC</li>
                   <li data-tab-id="custom">Source externe</li>
                </ul>
             </nav>

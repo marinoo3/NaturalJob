@@ -15,7 +15,7 @@
     --bad-color: #ff4d4d;
 }
 
-:where(:not(.EasyMDEContainer *)) {
+:where(:not(.EasyMDEContainer *, a)) {
     list-style: none;
     text-decoration: none;
     color: var(--text-color);

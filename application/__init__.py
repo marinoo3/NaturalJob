@@ -5,11 +5,11 @@ from .custom.db import UserDB, OfferDB
 from .custom.api import NTNE
 
 
-
 class AppContext(Flask):
     data: Data
     user_db: UserDB
-    offer_db = OfferDB
+    offer_db: OfferDB
+    ntne_api: NTNE
 
 
 def create_app():

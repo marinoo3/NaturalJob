@@ -67,12 +67,6 @@ section#documents .view[data-active-view="templates"] {
     .docs .wrapper .more .actions #delete {
         filter: invert(59%) sepia(70%) saturate(5856%) hue-rotate(336deg) brightness(115%) contrast(93%);
     }
-    .docs .wrapper .more .actions button {
-        opacity: .5;
-    }
-    .docs .wrapper .more .actions button:hover {
-        opacity: 1;
-    }
 
     .category.folded .docs {
         height: 0px

@@ -1,0 +1,29 @@
+section#source .view:is([data-active-view="ntne"], [data-active-view="apec"]) {
+    .origin {
+        margin-bottom: 1rem;
+    }
+    .origin p {
+        display: inline-block;
+    }
+
+    .database {
+        display: flex;
+        justify-content: space-between;
+        background-color: var(--bg-second-color);
+        border-radius: var(--border-radius);
+        padding: .6rem;
+
+        .status, .actions {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+    }
+
+    .status_icon {
+        height: 16px;
+        width: 16px;
+        background-color: #50e660;
+        border-radius: 50%;
+    }
+}
