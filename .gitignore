@@ -4,3 +4,4 @@ __pycache__/
 test*.py
 usr/
 *.pdf
+data/db/user.db
