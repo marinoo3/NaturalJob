@@ -27,6 +27,13 @@ button.quick-button {
 button.icon-button {
     background-color: inherit;
     border: none;
+    opacity: .5;
+}
+button.icon-button:hover {
+    opacity: 1;
+}
+button.icon-button > img {
+    display: block;
 }
 
 button.second-button {

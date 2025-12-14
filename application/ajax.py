@@ -1,8 +1,9 @@
 from flask import Blueprint, url_for, render_template, send_from_directory, abort, jsonify, request, current_app
 from jinja2.exceptions import TemplateNotFound
+from typing import cast
 
 from . import AppContext
-from typing import cast
+from .custom.db.user.models import Template
 
 
 # Cast app_context typing
@@ -41,8 +42,7 @@ def create_file_popup(title:str):
 
 @ajax.route('/get_templates', methods=['GET'])
 def get_templates():
-    with app.user_db.connect() as conn:
-        templates = app.user_db.files.get_templates(conn)
+    templates = app.user_db.get_templates()
     response = {}
     for t in templates:
         if not response.get(t.category):
@@ -68,8 +68,8 @@ def create_template():
         case _:
             raise Exception(f'Unknowned category "{category}"')
     
-    with app.user_db.connect() as conn:
-        template = app.user_db.files.create_template(conn, uuid, name, description, category, path)
+    template = Template(uuid=uuid, title=name, description=description, category=category, path=path)
+    app.user_db.create_template(template)
 
     return jsonify({"category": template.category, "uuid": template.uuid, "html": template.render_html()})
 
@@ -79,8 +79,7 @@ def serve_template_file(filename):
 
 @ajax.route('/read_template/<template_uuid>')
 def read_template(template_uuid:str):
-    with app.user_db.connect() as conn:
-        template = app.user_db.files.get_template(conn, template_uuid)
+    template = app.user_db.get_template(template_uuid)
     if template.category == 'resume':
         content = url_for('ajax.serve_template_file', filename=template.path, _external=True)
     else:
@@ -90,15 +89,14 @@ def read_template(template_uuid:str):
 @ajax.route('/update_template/<template_uuid>', methods=['PUT'])
 def update_template(template_uuid:str):
     content = request.json.get('content')
-    with app.user_db.connect() as conn:
-        template = app.user_db.files.get_template(conn, template_uuid)
+    template = app.user_db.get_template(template_uuid)
     app.data.update(template.path, content)
     return jsonify({'success': True})
 
 @ajax.route('/delete_template/<template_uuid>', methods=['DELETE'])
 def delete_template(template_uuid:str):
     with app.user_db.connect() as conn:
-        template = app.user_db.files.remove_template(conn, template_uuid)
+        template = app.user_db.remove_template(conn, template_uuid)
         app.data.delete(template.path)
     return jsonify({'success': True})
 
@@ -107,9 +105,12 @@ def delete_template(template_uuid:str):
 # --------------------
 # DATA
 
-# @ajax.route('/update_ntne')
-# def update_ntne():
-#     latest_job = app.offer_db.offers.get_latest(source='NTNE')
-#     latest_date = date.fromisoformat(latest_job['date'])
-#     new_jobs = app.api.ntne.search(stop_date=latest_date)
-#     app.user_db.offers.add(new_jobs)
+@ajax.route('/update_ntne')
+def update_ntne():
+    latest_date = app.offer_db.get_latest_date(source='NTNE')
+    print(latest_date)
+    new_jobs = app.ntne_api.search(stop_date=latest_date)
+    print('collected')
+    app.offer_db.add(new_jobs)
+    print('saved')
+    return jsonify({'success': True})

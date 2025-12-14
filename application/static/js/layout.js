@@ -6,7 +6,8 @@ const tabs = document.querySelectorAll('section .tabs li');
 const tabLoaders = {
    "documents/templates": () => import("./documents/templates.js"),
    "viewer/map": () => import("./viewer/map.js"),
-   "viewer/editor": () => import("./viewer/editor.js")
+   "viewer/editor": () => import("./viewer/editor.js"),
+   "source/ntne": () => import("./source/ntne.js")
 };
 
 
