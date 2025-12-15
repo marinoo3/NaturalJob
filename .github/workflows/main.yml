@@ -13,7 +13,18 @@ jobs:
         with:
           fetch-depth: 0
           lfs: true
+
+      - name: Create orphan snapshot
+        run: |
+          git checkout --orphan hf-sync
+          git reset
+          git add -A
+          git commit -m "Snapshot for HF"
+
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HUGGING_SYNC }}
-        run: git push https://marinooo:$HF_TOKEN@huggingface.co/spaces/marinooo/NaturalJob_app main
+        run: |
+          git push --force \
+            https://marinooo:$HF_TOKEN@huggingface.co/spaces/marinooo/NaturalJob_app \
+            HEAD:main
