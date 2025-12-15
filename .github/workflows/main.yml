@@ -13,7 +13,12 @@ jobs:
         with:
           fetch-depth: 0
           lfs: true
-
+    
+      - name: Configure git identity
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+    
       - name: Create orphan snapshot
         run: |
           git checkout --orphan hf-sync
