@@ -108,7 +108,6 @@ def delete_template(template_uuid:str):
 @ajax.route('/update_ntne')
 def update_ntne():
     latest_date = app.offer_db.get_latest_date(source='NTNE')
-    print(latest_date)
     new_jobs = app.ntne_api.search(stop_date=latest_date)
     print('collected')
     app.offer_db.add(new_jobs)

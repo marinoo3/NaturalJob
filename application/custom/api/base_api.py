@@ -28,7 +28,22 @@ class BaseAPI(ABC):
     def _loop_recent(self):
         ...
 
-    def safe_requests(self, url:str, method='GET', _tic=0, **kwargs):
+    def _get_key(self, result:dict, xpath:list[str|list], fallback:list[str|list]=None) -> str|float|None:
+        value = result
+        try:
+            for key in xpath:
+                if isinstance(key, str):
+                    value = value.get(key)
+                elif isinstance(key, list):
+                    value = value[key[0]]
+            return value
+        except (KeyError, IndexError, AttributeError):
+            if fallback:
+                return self._get_key(result, xpath=fallback)
+            print('WARNING: failed to get', xpath)
+            return None
+
+    def _safe_requests(self, url:str, method='GET', _tic=0, **kwargs):
         """Make a requests with exeption and retries
 
         Args:

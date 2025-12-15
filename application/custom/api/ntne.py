@@ -23,31 +23,31 @@ class NTNE(BaseAPI):
 
     def __create_offer(self, result:dict) -> Offer:
         description = Description(
-            offer_description = result['description'],
-            profile_description = result.get('profileDescription'),
+            offer_description = self._get_key(result, ['description']),
+            profile_description = self._get_key(result, ['profileDescription']),
         )
         company = Company(
-            name = result['company']['name'],
-            description = result.get('companyDescription'),
-            industry = result['company']['industryField']['value']
+            name = self._get_key(result, ['company', 'name']),
+            description = self._get_key(result, ['companyDescription']),
+            industry = self._get_key(result, ['company', 'industryField', 'value'])
         )
         region = Region(
-            code = result['locations'][0].get('admin2Code'),
-            name = result['locations'][0].get('admin2Label')
+            code = self._get_key(result, ['locations', [0], 'admin2Code']),
+            name = self._get_key(result, ['locations', [0], 'admin2Label'])
         )
         city = City(
-            name = result['locations'][0].get('admin3Label'),
+            name = self._get_key(result, ['locations', [0], 'admin3Label']),
             region = region
         )
         return Offer(
-            title = result['title'],
-            job_name = result['mainJob']['label'],
-            job_type = result['jobType'][0] if result['jobType'] else None,
-            contract_type = result['contractTypes'][0] if result['contractTypes'] else None,
-            salary = result['labels']['salary']['value'],
-            min_experience = result['labels']['experienceLevelList'][0]['value'] if result['labels']['experienceLevelList'] else None,
-            latitude = result['locations'][0]['lat'] if result['locations'][0]['lat'] != 0 else None,
-            longitude = result['locations'][0]['lon'] if result['locations'][0]['lon'] != 0 else None,
+            title = self._get_key(result, ['title']),
+            job_name = self._get_key(result, ['mainJob', 'label'], fallback=['unknownJob']),
+            job_type = self._get_key(result, ['jobType', [0]]),
+            contract_type = self._get_key(result, ['contractTypes', [0]]),
+            salary = self._get_key(result, ['labels', 'salary', 'value']),
+            min_experience = self._get_key(result, ['labels', 'experienceLevelList', [0], 'value']),
+            latitude = self._get_key(result, ['locations', [0], 'lat']),
+            longitude = self._get_key(result, ['locations', [0], 'lon']),
             date = date.fromisoformat(result['publicationDate'][:10]).isoformat(),
             source = 'NTNE',
             description = description,
@@ -59,17 +59,14 @@ class NTNE(BaseAPI):
         jobs = []
         while True:
             # Request content and skip if empty (reached end)
-            content = self.safe_requests(url, method='GET')
+            content = self._safe_requests(url, method='GET', params=params)
             if len(content['content']) == 0:
                 break
-            print(params['page'], flush=True)
-            if params['page'] >= 3:
-                break
-            # Check if stop date reached and break if so
+            # Check if stop date reached
             for result in content['content']:
                 publish_date = date.fromisoformat(result['publicationDate'][:10])
                 if stop_date and publish_date <= stop_date:
-                    break
+                    return jobs
                 offer = self.__create_offer(result)
                 jobs.append(offer)
             # Next page

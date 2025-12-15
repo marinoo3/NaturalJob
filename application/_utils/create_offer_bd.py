@@ -16,14 +16,14 @@ schema_statements = [
     """
     CREATE TABLE IF NOT EXISTS REGION (
         region_id INTEGER PRIMARY KEY,
-        code      TEXT NOT NULL,
+        code      TEXT,
         name      TEXT
     );
     """,
     """
     CREATE TABLE IF NOT EXISTS CITY (
         city_id   INTEGER PRIMARY KEY,
-        name      TEXT NOT NULL,
+        name      TEXT,
         region_id INTEGER NOT NULL,
         FOREIGN KEY (region_id) REFERENCES REGION(region_id)
     );
