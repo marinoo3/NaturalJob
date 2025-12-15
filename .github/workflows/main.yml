@@ -13,12 +13,6 @@ jobs:
         with:
           fetch-depth: 0
           lfs: true
-
-      - name: Install git-xet
-        run: |
-          curl -L https://huggingface.co/assets/xet/install.sh | bash
-          echo "$HOME/.xet/bin" >> $GITHUB_PATH
-          git xet install
     
       - name: Configure git identity
         run: |
