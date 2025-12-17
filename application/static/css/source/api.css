@@ -83,6 +83,19 @@ section#source .view:is([data-active-view="ntne"], [data-active-view="apec"]) {
         td.name {
             font-weight: 700;
         }
+
+        td.false {
+            color: #bb7742;
+        }
+        td.true {
+            color: #4271bb;
+        }
+        td.na, td.id {
+            color: var(--good-color);
+        }
+        td.type {
+            color: var(--text-second-color);
+        }
     }
 
 }

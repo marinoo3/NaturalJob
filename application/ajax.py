@@ -106,24 +106,6 @@ def delete_template(template_uuid:str):
 # --------------------
 # DATA
 
-@ajax.route('/update_bdd/<source>', methods=['POST'])
-def update_bdd(source:str):
-    print(source)
-    if source not in ['NTNE', 'APEC']:
-        abort(404, description='Unvalid `source` value, expected `NTNE` or `APEC`')
-
-    latest_date = app.offer_db.get_latest_date(source=source)
-    match source:
-        case 'NTNE':
-            new_jobs = app.ntne_api.search(stop_date=latest_date)
-        case 'APEC':
-            new_jobs = app.apec_api.search(stop_date=latest_date)
-            
-    print('collected')
-    app.offer_db.add(new_jobs)
-    print('saved')
-    return jsonify({'success': True})
-
 @ajax.route('/update_bdd_stream/<source>')
 def update_bdd_stream(source: str):
     if source not in {'NTNE', 'APEC'}:

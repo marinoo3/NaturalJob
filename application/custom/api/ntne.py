@@ -1,7 +1,8 @@
 from datetime import date
+from typing import Generator, Any
 
 from .base_api import BaseAPI
-from ..utils.parser import XPathSearch, ParseNumeric
+from ..utils.parser import ParseHTML, XPathSearch, ParseNumeric
 from ..db.offer.models import Offer, Description, Company, City, Region
 
 
@@ -70,12 +71,12 @@ class NTNE(BaseAPI):
 
     def __create_offer(self, result:dict) -> Offer:
         description = Description(
-            offer_description = XPathSearch(result, 'description'),
-            profile_description = XPathSearch(result, 'profileDescription'),
+            offer_description = ParseHTML(XPathSearch(result, 'description')),
+            profile_description = ParseHTML(XPathSearch(result, 'profileDescription')),
         )
         company = Company(
             name = XPathSearch(result, 'company', 'name'),
-            description = XPathSearch(result, 'companyDescription'),
+            description = ParseHTML(XPathSearch(result, 'companyDescription')),
             industry = XPathSearch(result, 'company', 'industryField', 'value')
         )
         region = Region(
@@ -86,6 +87,23 @@ class NTNE(BaseAPI):
             name = XPathSearch(result, 'locations', [0], 'admin3Label'),
             region = region
         )
+
+        degrees = []
+        degrees_list = XPathSearch(result, 'labels', 'degreeList')
+        if degrees_list is not None:
+            for degree_element in degrees_list:
+                degree = XPathSearch(degree_element, 'value')
+                if degree:
+                    degrees.append(degree)
+
+        skills = []
+        skills_list = XPathSearch(result, 'labels', 'specializationList')
+        if skills_list is not None:
+            for skill_element in skills_list:
+                skill = XPathSearch(skill_element, 'value')
+                if skill:
+                    skills.append(skill)
+
         return Offer(
             title = XPathSearch(result, 'title'),
             job_name = XPathSearch(result, 'mainJob', 'label', warning=False) or XPathSearch(result, 'unknownJob'),
@@ -101,10 +119,12 @@ class NTNE(BaseAPI):
             source = 'NTNE',
             description = description,
             company = company,
-            city = city
+            city = city,
+            skills=skills,
+            degrees=degrees
         )
 
-    def _iter_recent(self, url: str, params: dict, stop_date: date | None):
+    def _iter_recent(self, url: str, params: dict, stop_date: date | None) -> Generator[Offer, Any, None]:
         while True:
             content = self._safe_requests(url, method='GET', params=params)
             if not content['content']:
@@ -118,7 +138,7 @@ class NTNE(BaseAPI):
 
             params['page'] += 1
 
-    def iter_search(self, stop_date: date | None = None):
+    def iter_search(self, stop_date: date | None = None) -> Generator[Offer, Any, None]:
         url = self.base_url + self.endpoints['search']
         params = {
             'serjobsearch': True,

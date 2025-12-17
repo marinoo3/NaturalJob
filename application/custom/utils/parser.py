@@ -52,13 +52,14 @@ class ParseHTML:
         Returns:
             str: the cleaned text
         """
-
+        if not html:
+            return None
         return cls.__parse_html(html)
     
     @staticmethod
     def __parse_html(html:str) -> str:
         soup = BeautifulSoup(html, 'html.parser')
-        return soup.get_text(separator=" ")
+        return soup.get_text(separator=" ", strip=True)
     
 
 class ParseNumeric:

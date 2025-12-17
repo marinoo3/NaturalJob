@@ -29,7 +29,13 @@ function buildTable(content) {
     const rowElement = document.createElement('tr');
     keys.forEach(key => {
         const cell = document.createElement('td');
-        cell.textContent = row[key];
+        let value = row[key]
+        if (key == 'not_null' || key == 'pk') {
+            cell.classList.add(value);
+            value = value.toString();
+            value = value.charAt(0).toUpperCase() + value.slice(1);
+        }
+        cell.textContent = value;
         cell.classList.add(key);
         rowElement.appendChild(cell);
     });
@@ -83,8 +89,9 @@ function startUpdate(source, database) {
         }
         if (payload.status === 'done') {
             progress.style.width = '100%';
-            initDB(source, database);
+            progress.remove();
             evt.close();
+            initDB(source, database);
         }
     };
 

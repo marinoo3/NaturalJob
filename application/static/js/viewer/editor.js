@@ -1,4 +1,8 @@
+import { createPopup } from '../_helpers/file_manager.js';
+
 const wrapper = document.querySelector('section#viewer .wrapper');
+const fileManager = wrapper.querySelector('.file-manager');
+const loadContainer = fileManager.querySelector('.load');
 let easyMDE = null;
 let savedContent = null;
 
@@ -60,4 +64,20 @@ export async function loadTemplate(uuid) {
 }
 
 
+async function loadTemplates() {
+    const response = await fetch('ajax/get_templates');
+    const content = await response.json();
+
+    console.log(content);
+
+    
+}
+
+
+loadContainer.querySelectorAll('button').forEach(button => {
+
+});
+
+
 loadEditor();
+loadTemplates();

@@ -109,6 +109,15 @@ class APEC(BaseAPI):
             name = XPathSearch(result, 'adresseOffre', 'adresseVille', warning=False),
             region = region
         )
+
+        skills = []
+        skills_list = XPathSearch(result, 'competences')
+        if skills_list is not None:
+            for skill_element in skills_list:
+                skill = XPathSearch(skill_element, 'libelle')
+                if skill:
+                    skills.append(skill)
+
         return Offer(
             title = XPathSearch(result, 'intitule'),
             job_name = XPathSearch(result, 'intitule'),
@@ -137,7 +146,6 @@ class APEC(BaseAPI):
             # Check if stop date reached
             for result in content['resultats']:
                 publish_date = self.__parse_date(result)
-                print(stop_date, publish_date)
                 if stop_date and publish_date <= stop_date:
                     return job_ids
                 job_ids.append(result['numeroOffre'])

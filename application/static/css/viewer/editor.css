@@ -28,6 +28,15 @@ section#viewer .view[data-active-view="editor"] {
     .EasyMDEContainer .editor-toolbar .actions button.main-button {
         margin-left: .4rem;
     }
+    .EasyMDEContainer .editor-toolbar .actions button.main-button:hover {
+        background-color: var(--accent-color);
+        border-color: var(--accent-second-color);
+        color: white;
+    }
+    .EasyMDEContainer .editor-toolbar .actions button.second-button:hover {
+        background-color: var(--bg-second-color);
+        border-color: var(--border-color);
+    }
     
 
     .EasyMDEContainer .CodeMirror {
@@ -100,6 +109,35 @@ section#viewer .view[data-active-view="editor"] {
     }
     .wrapper[data-file-type="md"] .EasyMDEContainer {
         display: grid;
+    }
+
+    .file-manager {
+        padding: 2rem;
+        display: flex;
+        gap: 4rem;
+
+        .container {
+            width: 300px;
+
+            li button {
+                padding: .6rem 1rem;
+                border: none;
+                border-radius: var(--border-radius);
+                text-align: left;
+                font-weight: 700;
+                background-color: var(--bg-second-color);
+                width: 100%;
+                display: flex;
+                align-items: center;
+                gap: .5rem;
+                margin-top: 1rem;
+                transition: background-color 125s ease;
+            }
+            li button:hover {
+                background-color: var(--bg-selected-color);
+                text-decoration: underline;
+            }
+        }
     }
 
 }

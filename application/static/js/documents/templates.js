@@ -1,3 +1,6 @@
+import { createPopup } from '../_helpers/file_manager.js';
+
+
 const section = document.querySelector('#documents');
 const editorTab = document.querySelector('#viewer li[data-tab-id="editor"]');
 const categoryContainers = section.querySelectorAll('.category');
@@ -9,6 +12,8 @@ let templates = {
     'coverletter': [],
     'email': []
 };
+
+
 
 
 
@@ -59,37 +64,6 @@ async function loadTemplates() {
         const documents = category.querySelector('.docs');
         renderTemplate(documents);
     });
-}
-
-function createPopup(html) {
-    // Create popup
-    const popup = document.createElement('div');
-    popup.classList.add('popup');
-    popup.innerHTML = html;
-    // Any input change
-    const form = popup.querySelector('form');
-    form.addEventListener('input', () => {
-        let allFilled = true;
-        form.querySelectorAll('input').forEach(input => {
-            if (input.value.trim() == '') {
-                allFilled = false;
-            }
-        });
-
-        if (allFilled) {
-            form.querySelector('button.main-button').classList.remove('disabled');
-        } else {
-            form.querySelector('button.main-button').classList.add('disabled');
-        }
-    });
-    // Close popup
-    popup.addEventListener('click', (event) => {
-        if (event.target === popup || event.target.closest('button.cancel')) {
-            popup.remove();
-        }
-    });
-
-    return { popup, form };
 }
 
 async function createTemplate(formData) {
@@ -244,7 +218,6 @@ createEmailButton.addEventListener('click', async () => {
 
     document.body.appendChild(popup);
 });
-
 
 
 // Load and render templates
