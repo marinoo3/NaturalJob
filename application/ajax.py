@@ -81,7 +81,7 @@ def serve_template_file(filename):
 def read_template(template_uuid:str):
     template = app.user_db.get_template(template_uuid)
     if template.category == 'resume':
-        content = url_for('ajax.serve_template_file', filename=template.path, _external=True)
+        content = url_for('ajax.serve_template_file', filename=template.path)
     else:
         content = app.data.read(template.path) 
     return jsonify({'category': template.category, 'content': content})
