@@ -12,8 +12,28 @@ section#source .view:is([data-active-view="ntne"], [data-active-view="apec"]) {
         background-color: var(--bg-second-color);
         border-radius: var(--border-radius);
         padding: .6rem;
+        position: relative;
+        overflow: hidden;
+
+        .progress {
+            position: absolute;
+            z-index: 5;
+            left: 0;
+            top: 0;
+            width: 0px;
+            background-color: var(--good-color);
+            height: 3px;
+            transition: width 1s ease;
+        }
+        .progress.error {
+            background-color: var(--bad-color);
+            .progress {
+                background-color: var(--bad-color);
+            }
+        }
 
         .status, .actions {
+            z-index: 10;
             display: flex;
             align-items: center;
             gap: .5rem;
@@ -23,7 +43,7 @@ section#source .view:is([data-active-view="ntne"], [data-active-view="apec"]) {
     .status_icon {
         height: 16px;
         width: 16px;
-        background-color: #50e660;
+        background-color: var(--good-color);
         border-radius: 50%;
     }
 }

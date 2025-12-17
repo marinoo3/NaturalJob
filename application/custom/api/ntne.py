@@ -103,47 +103,34 @@ class NTNE(BaseAPI):
             company = company,
             city = city
         )
+    
+    def _loop_recent(self):
+        print('bonjour')
 
-    def _loop_recent(self, url:str, params:dict, stop_date:date|None) -> list[Offer]:
-        jobs = []
+    def _iter_recent(self, url: str, params: dict, stop_date: date | None):
         while True:
-            # Request content and skip if empty (reached end)
             content = self._safe_requests(url, method='GET', params=params)
-            if len(content['content']) == 0:
-                break
-            # Check if stop date reached
+            if not content['content']:
+                return
+
             for result in content['content']:
                 publish_date = self.__parse_date(result)
                 if stop_date and publish_date <= stop_date:
-                    return jobs
-                offer = self.__create_offer(result)
-                jobs.append(offer)
-            # Next page
+                    return
+                yield self.__create_offer(result)
+
             params['page'] += 1
 
-        return jobs
-
-    def search(self, stop_date:date=None) -> list[Offer]:
-        """Loop search on NTNE job API from most recent to a specific date
-
-        Args:
-            stop_date (date): The date to stop the search. Parse all jobs if `None`.
-
-        Return
-            (list[dict]): The concatened json response
-        """
-
+    def iter_search(self, stop_date: date | None = None):
         url = self.base_url + self.endpoints['search']
         params = {
             'serjobsearch': True,
-            'scoringVersion': "SERJOBSEARCH",
-            'sorting': "DATE",
+            'scoringVersion': 'SERJOBSEARCH',
+            'sorting': 'DATE',
             'expandLocations': True,
             'facet': ["cities", "date", "company", "industry", "contract", "job", "macroJob", "jobType", "content_language", "license", "degree", "experienceLevel"],
             'page': 1,
             'limit': 20,
-            'what': self.keyword
+            'what': self.keyword,
         }
-
-        jobs = self._loop_recent(url, params, stop_date)
-        return jobs
+        yield from self._iter_recent(url, params, stop_date)

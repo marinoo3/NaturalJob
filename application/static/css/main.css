@@ -13,6 +13,7 @@
     --accent-color: #2776ff;
     --accent-second-color: #5f99ff;
     --bad-color: #ff4d4d;
+    --good-color: #4EA252
 }
 
 :where(:not(.EasyMDEContainer *, a)) {

@@ -1,5 +1,6 @@
-from flask import Blueprint, url_for, render_template, send_from_directory, abort, jsonify, request, current_app
+from flask import Blueprint, Response, url_for, render_template, send_from_directory, stream_with_context, abort, jsonify, request, current_app
 from jinja2.exceptions import TemplateNotFound
+import json
 from typing import cast
 from datetime import date
 
@@ -122,6 +123,62 @@ def update_bdd(source:str):
     app.offer_db.add(new_jobs)
     print('saved')
     return jsonify({'success': True})
+
+@ajax.route('/update_bdd_stream/<source>')
+def update_bdd_stream(source: str):
+    if source not in {'NTNE', 'APEC'}:
+        abort(404, description='Invalid source')
+
+    
+    def event_stream():
+        latest_date = app.offer_db.get_latest_date(source=source)
+
+        if source == 'NTNE':
+            iterator = app.ntne_api.iter_search(stop_date=latest_date)
+        else:
+            return abort(404)
+            # iterator = app.apec_api.iter_search(stop_date=latest_date)
+
+        today = date.today()
+        origin = latest_date or date(2025, 8, 10)
+        days = today.day - origin.day
+        print(origin)
+        print(days)
+            
+        total = 0
+        batch = []
+
+        try:
+            for offer in iterator:
+                batch.append(offer)
+                total += 1
+
+                # Persist every N offers (adjust to your needs)
+                if len(batch) >= 50:
+                    app.offer_db.add(batch)
+                    batch = []
+
+                done = days - (today.day - date.fromisoformat(offer.date).day)
+                progress = done / days
+                yield f"data: {json.dumps({'count': total, 'progress': progress*100})}\n\n"
+
+            # if batch:
+            #     app.offer_db.add(batch)
+
+            yield f"data: {json.dumps({'status': 'done', 'count': total})}\n\n"
+            yield "event: end\ndata: complete\n\n"
+
+        except Exception as exc:
+            yield f"event: error\ndata: {json.dumps({'message': str(exc)})}\n\n"
+            raise
+
+    headers = {
+        'Cache-Control': 'no-cache',
+        'X-Accel-Buffering': 'no',  # disable buffering if behind nginx
+    }
+    return Response(stream_with_context(event_stream()),
+                    mimetype='text/event-stream',
+                    headers=headers)
 
 ajax.route('/bdd_info')
 def bdd_info():
