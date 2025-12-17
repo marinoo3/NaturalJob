@@ -75,7 +75,7 @@ def create_template():
 
 @ajax.route('/templates/<path:filename>')
 def serve_template_file(filename):
-    return send_from_directory('../data', filename)
+    return send_from_directory('../data', filename, mimetype='application/pdf', as_attachment=False)
 
 @ajax.route('/read_template/<template_uuid>')
 def read_template(template_uuid:str):
