@@ -171,6 +171,24 @@ input[type="text"] {
 }
 
 
+/* DOCUMENTS */
+
+.template.wrapper {
+    position: relative;
+    display: flex;
+    gap: .6rem;
+    align-items: center;
+    padding: .6rem 1rem;
+    background-color: var(--bg-second-color);
+    border-radius: var(--border-radius);
+    margin-top: .6rem;
+}
+
+.template.wrapper:hover h3 {
+    text-decoration: underline;
+}
+
+
 @keyframes slideUp {
     from {
         transform: translateY(20px);

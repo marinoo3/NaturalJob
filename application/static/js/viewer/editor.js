@@ -1,8 +1,10 @@
-import { createPopup } from '../_helpers/file_manager.js';
+import { templates } from '../_helpers/file_manager.js';
 
-const wrapper = document.querySelector('section#viewer .wrapper');
+const section = document.querySelector('section#viewer');
+const wrapper = section.querySelector('.wrapper');
 const fileManager = wrapper.querySelector('.file-manager');
 const loadContainer = fileManager.querySelector('.load');
+const createContainer = fileManager.querySelector('.create');
 let easyMDE = null;
 let savedContent = null;
 
@@ -63,21 +65,47 @@ export async function loadTemplate(uuid) {
     }
 }
 
+function renderTemplate(html) {
+    const li = document.createElement('li');
+    li.innerHTML = html;
+    const uuid = li.querySelector('.wrapper').dataset.uuid;
 
-async function loadTemplates() {
-    const response = await fetch('ajax/get_templates');
-    const content = await response.json();
+    const actions = li.querySelector('.more');
+    actions.remove();
 
-    console.log(content);
+    li.querySelector('.template.wrapper').addEventListener('click', () => {
+        // Preview template content
+        loadTemplate(uuid);
+    });
 
-    
+    loadContainer.querySelector('ul').appendChild(li);
 }
 
 
-loadContainer.querySelectorAll('button').forEach(button => {
+async function displayTemplates() {
+    let count = 0
+    Object.values(templates).forEach(category => {
+        category.forEach(html => {
+            renderTemplate(html)
+            count += 1;
+        });
+    });
 
+    if(count == 0) {
+        loadContainer.classList.add('hidden');
+    } else {
+        loadContainer.classList.remove('hidden');
+    }
+
+}
+
+
+createContainer.querySelectorAll('.action').forEach(button => {
+    button.addEventListener('click', () => {
+
+    });
 });
 
 
 loadEditor();
-loadTemplates();
+displayTemplates();

@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import date
 import os
 
 from .models import Template
@@ -52,6 +53,7 @@ class UserDB():
                 SELECT ID, Title, Description, Category, Path, Date FROM USER_FILE
             """)
             rows = cursor.fetchall()
+
         return [Template(*row) for row in rows]
     
     def get_template(self, uuid:str) -> Template:

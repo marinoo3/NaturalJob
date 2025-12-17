@@ -138,6 +138,21 @@ section#viewer .view[data-active-view="editor"] {
                 text-decoration: underline;
             }
         }
+        .container.hidden {
+            display: none;
+        }
+
+        .template.wrapper {
+            margin-top: 1rem;
+
+            .second {
+                display:none
+            }
+
+            img {
+                height: 16px;
+            }
+        }
     }
 
 }

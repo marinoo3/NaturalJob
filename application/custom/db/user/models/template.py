@@ -1,7 +1,7 @@
 from flask import render_template
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import date
 
 
 @dataclass
@@ -11,7 +11,12 @@ class Template:
     description: str
     category: str
     path: str
-    date: datetime = field(default_factory=datetime.today)
+    creation_date: date = field(default_factory=date.today)
+
+    def __post_init__(self) -> None:
+        # Convert creation_date to a date object if is string
+        if isinstance(self.creation_date, str):
+            self.creation_date = date.fromisoformat(self.creation_date)
 
     def values(self) -> tuple[str]:
         return (self.uuid, self.title, self.description, self.category, self.path, self.date_str())
@@ -22,9 +27,9 @@ class Template:
             uuid=self.uuid, 
             title=self.title, 
             description=self.description,   
-            date=self.date,
+            date=self.date_str(),
             category=self.category)
         return html
     
-    def date_str(self, format='%d/%m/%Y'):
-        return self.date.strftime(format)
+    def date_str(self):
+        return self.creation_date.isoformat()

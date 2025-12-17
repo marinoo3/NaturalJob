@@ -5,35 +5,28 @@
 <div class="file-manager">
     <div class="container load">
         <h1>Mes documents</h1>
-        <ul>
-            <li>
-                <button data-uuid="">
-                    <img src="" alt="">
-                    <h3>CV - Marin 1</h3>
-                </button>
-            </li>    
-        </ul>
+        <ul></ul>
     </div>
     <div class="container create">
         <h1>Créer un document</h1>
         <ul>
             <li>
-                <button>
+                <div class="action" data-type="resume">
                     <img src="{{ url_for('static', filename='images/plus.svg') }}" alt="" height="12px">
                     <h3>Ajouter un CV</h3>
-                </button>
+                </div>
             </li>
             <li>
-                <button>
+                <div class="action" data-type="coverletter">
                     <img src="{{ url_for('static', filename='images/plus.svg') }}" alt="" height="12px">
                     <h3>Créer une lettre de motivation</h3>
-                </button>
+                </div>
             </li>
             <li>
-                <button>
+                <div class="action" data-type="email">
                     <img src="{{ url_for('static', filename='images/plus.svg') }}" alt="" height="12px">
                     <h3>Créer un email</h3>
-                </button>
+                </div>
             </li>
         </ul>
     </div>

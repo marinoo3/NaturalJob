@@ -29,17 +29,6 @@ section#documents .view[data-active-view="templates"] {
         transition: height ease 1s;
     }
 
-    .docs .wrapper {
-        position: relative;
-        display: flex;
-        gap: .6rem;
-        align-items: center;
-        padding: .6rem 1rem;
-        background-color: var(--bg-second-color);
-        border-radius: var(--border-radius);
-        margin-top: .6rem;
-    }
-
     .docs > p {
         margin-top: .6rem;
     }
