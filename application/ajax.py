@@ -1,8 +1,8 @@
 from flask import Blueprint, Response, url_for, render_template, send_from_directory, stream_with_context, abort, jsonify, request, current_app
 from jinja2.exceptions import TemplateNotFound
 import json
-from typing import cast
 from datetime import date
+from typing import cast
 
 from . import AppContext
 from .custom.db.user.models import Template
@@ -131,41 +131,32 @@ def update_bdd_stream(source: str):
 
     
     def event_stream():
+        db_total = app.offer_db.get_total(source=source)
         latest_date = app.offer_db.get_latest_date(source=source)
 
         if source == 'NTNE':
+            api_total = app.ntne_api.get_total()
             iterator = app.ntne_api.iter_search(stop_date=latest_date)
         else:
-            return abort(404)
-            # iterator = app.apec_api.iter_search(stop_date=latest_date)
+            api_total = app.apec_api.get_total()
+            iterator = app.apec_api.iter_search(stop_date=latest_date)
 
-        today = date.today()
-        origin = latest_date or date(2025, 8, 10)
-        days = today.day - origin.day
-        print(origin)
-        print(days)
-            
         total = 0
-        batch = []
+        step = 1 / (api_total - db_total)
+        offers = []
 
         try:
             for offer in iterator:
-                batch.append(offer)
+                offers.append(offer)
                 total += 1
+                yield f"data: {json.dumps({'count': total, 'progress': total*step*100})}\n\n"
 
-                # Persist every N offers (adjust to your needs)
-                if len(batch) >= 50:
-                    app.offer_db.add(batch)
-                    batch = []
+            # Add remaining batch
+            if offers:
+                app.offer_db.add(offers)
 
-                done = days - (today.day - date.fromisoformat(offer.date).day)
-                progress = done / days
-                yield f"data: {json.dumps({'count': total, 'progress': progress*100})}\n\n"
-
-            # if batch:
-            #     app.offer_db.add(batch)
-
-            yield f"data: {json.dumps({'status': 'done', 'count': total})}\n\n"
+            db_total = app.offer_db.get_total(source=source)
+            yield f"data: {json.dumps({'status': 'done'})}\n\n"
             yield "event: end\ndata: complete\n\n"
 
         except Exception as exc:
@@ -180,7 +171,17 @@ def update_bdd_stream(source: str):
                     mimetype='text/event-stream',
                     headers=headers)
 
-ajax.route('/bdd_info')
-def bdd_info():
-    # Get the type and number of NA for each column of OFFER_TABLE
-    pass
+@ajax.route('/bdd_info/<source>')
+def bdd_info(source:str):
+    if source not in {'NTNE', 'APEC'}:
+        abort(404, description='Invalid source')
+
+    total = app.offer_db.get_total(source=source)
+    latest_date = app.offer_db.get_latest_date(source=source, isostring=True)
+    rows = app.offer_db.summary(source=source)
+    
+    return jsonify({
+        'total': total,
+        'date': latest_date or 'NA',
+        'summary': rows
+    })

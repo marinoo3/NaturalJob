@@ -168,8 +168,62 @@ class OfferDB():
                 self._sync_skills(cur, offer_id, offer.skills)
 
             conn.commit()
+
+    def summary(self, source:str=None) -> list[dict]:
+        with self.connect() as conn:
+            cur = conn.cursor()
+            # Get column metadata (name, declared type, etc.)
+            cur.execute("PRAGMA table_info('OFFER')")
+            columns = cur.fetchall()
+
+            summary = []
+            for cid, name, type, notnull, _, pk in columns:
+                # Count NULLs in this column
+                if source:
+                    cur.execute(
+                        f"SELECT COUNT(*) FROM OFFER WHERE source = ? and {name} IS NULL", [source]
+                    )
+                else:
+                    cur.execute(
+                        "SELECT COUNT(*) FROM OFFER WHERE ? IS NULL", [name]
+                    )
+                na_count = cur.fetchone()[0]
+                summary.append({
+                    'name': name,
+                    'id': cid,
+                    'na': na_count,
+                    'not_null': bool(notnull),
+                    'type': type,
+                    'pk': bool(pk)
+                })
+
+            return summary
+
+    def get_total(self, source:str|None) -> int:
+        """Get count from a specific source, or all source if `source` is None.
+
+        Args:
+            source (str | None): The source ('NTNE', 'APEC', None)
+
+        Returns:
+            int: Total count of offers
+        """
+
+        with self.connect() as conn:
+            cur = conn.cursor()
+            if source:
+                cur.execute(
+                    "SELECT count(offer_id) FROM OFFER WHERE source = ?", [source]
+                )
+            else:
+                cur.execute(
+                    "SELECT count(offer_id) FROM OFFER"
+                )
+            count = cur.fetchone()[0]
+        return count
+            
     
-    def get_latest_date(self, source:str=None) -> date|None:
+    def get_latest_date(self, source:str=None, isostring=False) -> date|None:
         """Search the latest date from database
 
         Args:
@@ -193,5 +247,8 @@ class OfferDB():
             row = cur.fetchone()
             if not row:
                 return None
-            
-        return date.fromisoformat(row[0])
+        
+        latest = date.fromisoformat(row[0])
+        if isostring:
+            latest = latest.isoformat() 
+        return latest

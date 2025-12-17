@@ -165,20 +165,16 @@ class APEC(BaseAPI):
             key_map[category][key] = value
         return key_map
     
-    def _collect_content(self, url:str, params:dict, job_ids:list[str], hierarchy:dict) -> list[Offer]:
-        jobs = []
+    def _iter_content(self, url:str, params:dict, job_ids:list[str], hierarchy:dict):
         for id in job_ids:
             params['numeroOffre'] = id
             result = self._safe_requests(url, method='GET', params=params, raise_status=False)
             if not result:
                 print(f'WARNING: APEC job {id} not found')
                 continue # skip if no response
-            offer = self.__create_offer(result, hierarchy)
-            jobs.append(offer)
+            yield self.__create_offer(result, hierarchy)
 
-        return jobs
-
-    def search(self, stop_date:date=None):
+    def iter_search(self, stop_date:date=None):
         """Loop search on APEC job API from most recent to a specific date. First collect recent offer IDs, then request individual content.
 
         Args:
@@ -227,7 +223,37 @@ class APEC(BaseAPI):
         params = {
             'numeroOffre' : None
         }
-        jobs = self._collect_content(offer_url, params, job_ids, hierarchy)
+        yield from self._iter_content(offer_url, params, job_ids, hierarchy)
+    
+    def get_total(self) -> int|None:
+        """Get total of result on API
 
-        return jobs
+        Returns:
+            int|None: Total result
+        """
+
+        url = self.base_url + self.endpoints['search']
+        payload = {
+            "lieux": [],
+            "fonctions": [],
+            "statutPoste": [],
+            "typesContrat": [],
+            "typesConvention": ["143684", "143685", "143686", "143687", "143706"],
+            "niveauxExperience": [],
+            "idsEtablissement": [],
+            "secteursActivite": [],
+            "typesTeletravail": [],
+            "idNomZonesDeplacement": [],
+            "positionNumbersExcluded": [],
+            "typeClient": "CADRE",
+            "sorts": [{"type": "DATE", "direction": "DESCENDING"}],
+            "pagination": {"range": 0, "startIndex": 0},
+            "activeFiltre": True,
+            "pointGeolocDeReference": {"distance": 0},
+            "motsCles": "data",
+        }
+        result = self._safe_requests(url, method='POST', json=payload)
+        if not result:
+            return None
+        return result.get('totalCount')
 

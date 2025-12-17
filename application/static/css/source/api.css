@@ -1,4 +1,6 @@
 section#source .view:is([data-active-view="ntne"], [data-active-view="apec"]) {
+    overflow: scroll;
+
     .origin {
         margin-bottom: 1rem;
     }
@@ -38,12 +40,66 @@ section#source .view:is([data-active-view="ntne"], [data-active-view="apec"]) {
             align-items: center;
             gap: .5rem;
         }
+
+        .status_icon {
+            height: 16px;
+            width: 16px;
+            background-color: var(--good-color);
+            border-radius: 50%;
+        }
     }
 
-    .status_icon {
-        height: 16px;
-        width: 16px;
-        background-color: var(--good-color);
-        border-radius: 50%;
+    .database.waiting {
+        .progress {
+            animation: waiting 2s ease-in-out infinite alternate;
+        }
+    }
+
+    .database.error {
+        .status_icon {
+            background-color: var(--bad-color);
+        }
+
+        .progress {
+            background-color: var(--bad-color);
+        }
+    }
+
+    table.summary {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 1rem;
+
+        thead {
+            background-color: var(--bg-second-color);
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: .2rem .5rem;
+            text-align: left;
+        }
+
+        td.name {
+            font-weight: 700;
+        }
+    }
+
+}
+
+
+
+@keyframes waiting {
+    0% {
+        left: 0;
+        width: 20px;
+    }
+
+    50% {
+        width: 50px;
+    }
+    100% {
+        left: calc(100% - 20px);
+        width: 20px;
     }
 }

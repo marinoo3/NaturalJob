@@ -103,9 +103,6 @@ class NTNE(BaseAPI):
             company = company,
             city = city
         )
-    
-    def _loop_recent(self):
-        print('bonjour')
 
     def _iter_recent(self, url: str, params: dict, stop_date: date | None):
         while True:
@@ -134,3 +131,26 @@ class NTNE(BaseAPI):
             'what': self.keyword,
         }
         yield from self._iter_recent(url, params, stop_date)
+
+    def get_total(self) -> int|None:
+        """Get total of result on API
+
+        Returns:
+            int|None: Total result
+        """
+
+        url = self.base_url + self.endpoints['search']
+        params = {
+            'serjobsearch': True,
+            'scoringVersion': 'SERJOBSEARCH',
+            'sorting': 'DATE',
+            'expandLocations': True,
+            'facet': ["cities", "date", "company", "industry", "contract", "job", "macroJob", "jobType", "content_language", "license", "degree", "experienceLevel"],
+            'page': 1,
+            'limit': 0,
+            'what': self.keyword,
+        }
+        result = self._safe_requests(url, method='GET', params=params)
+        if not result:
+            return None
+        return result.get('total')

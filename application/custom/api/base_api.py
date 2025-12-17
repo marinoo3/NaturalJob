@@ -23,10 +23,6 @@ class BaseAPI(ABC):
         if cffi:
             return cffi_requests.Session()
         return requests.Session()
-    
-    @abstractmethod
-    def _loop_recent(self):
-        ...
 
     def _safe_requests(self, url:str, method='GET', raise_status=True, _tic=0, **kwargs) -> dict|None:
         """Make a requests with exeption and retries
@@ -55,3 +51,11 @@ class BaseAPI(ABC):
                 return self._safe_requests(url, method, raise_status=raise_status, _tic=_tic+1, **kwargs)
             else:
                 raise Exception(f'Request failed ({response.status_code}): {e}')
+            
+    @abstractmethod
+    def iter_search(self):
+        ...
+
+    @abstractmethod
+    def get_total(self):
+        ...

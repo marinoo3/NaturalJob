@@ -16,5 +16,5 @@ COPY --chown=user . /app
 
 EXPOSE 7860
 
-CMD ["gunicorn", "--bind", ":7860", "app:app"]
+CMD ["gunicorn", "--bind", ":7860", "--timeout", "1200", "--threads", "6", "app:app"]
 
