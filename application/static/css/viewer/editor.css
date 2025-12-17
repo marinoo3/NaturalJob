@@ -119,7 +119,7 @@ section#viewer .view[data-active-view="editor"] {
         .container {
             width: 300px;
 
-            li button {
+            li .action {
                 padding: .6rem 1rem;
                 border: none;
                 border-radius: var(--border-radius);
@@ -131,10 +131,8 @@ section#viewer .view[data-active-view="editor"] {
                 align-items: center;
                 gap: .5rem;
                 margin-top: 1rem;
-                transition: background-color 125s ease;
             }
-            li button:hover {
-                background-color: var(--bg-selected-color);
+            li .action:hover {
                 text-decoration: underline;
             }
         }

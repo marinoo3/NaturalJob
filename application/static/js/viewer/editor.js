@@ -1,4 +1,4 @@
-import { templates } from '../_helpers/file_manager.js';
+import { createResumePopup, createCoverletterPopup, createEmailPopup, templates } from '../_helpers/file_manager.js';
 
 const section = document.querySelector('section#viewer');
 const wrapper = section.querySelector('.wrapper');
@@ -100,10 +100,17 @@ async function displayTemplates() {
 }
 
 
-createContainer.querySelectorAll('.action').forEach(button => {
-    button.addEventListener('click', () => {
-
-    });
+createContainer.querySelector('.action.create-resume').addEventListener('click', async () => {
+    const popup = await createResumePopup();
+    document.body.appendChild(popup);
+});
+createContainer.querySelector('.action.create-coverletter').addEventListener('click', async () => {
+    const popup = await createCoverletterPopup();
+    document.body.appendChild(popup);
+});
+createContainer.querySelector('.action.create-email').addEventListener('click', async () => {
+    const popup = await createEmailPopup();
+    document.body.appendChild(popup);
 });
 
 
