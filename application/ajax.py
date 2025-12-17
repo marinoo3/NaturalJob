@@ -1,7 +1,6 @@
 from flask import Blueprint, Response, url_for, render_template, send_from_directory, stream_with_context, abort, jsonify, request, current_app
 from jinja2.exceptions import TemplateNotFound
 import json
-from datetime import date
 from typing import cast
 
 from . import AppContext
@@ -76,7 +75,7 @@ def create_template():
 
 @ajax.route('/templates/<path:filename>')
 def serve_template_file(filename):
-    return send_from_directory('data', filename)
+    return send_from_directory('../data', filename)
 
 @ajax.route('/read_template/<template_uuid>')
 def read_template(template_uuid:str):
@@ -167,3 +166,10 @@ def bdd_info(source:str):
         'date': latest_date or 'NA',
         'summary': rows
     })
+
+
+
+# TEST
+@ajax.route('/serve_pdf')
+def serve_pdf():
+    return send_from_directory('../data/usr/resume/', '03f85020-1dc6-4ac5-a33d-d7727fb4f08e.pdf')
