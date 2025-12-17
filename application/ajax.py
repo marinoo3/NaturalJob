@@ -1,6 +1,7 @@
 from flask import Blueprint, url_for, render_template, send_from_directory, abort, jsonify, request, current_app
 from jinja2.exceptions import TemplateNotFound
 from typing import cast
+from datetime import date
 
 from . import AppContext
 from .custom.db.user.models import Template
@@ -56,7 +57,6 @@ def create_template():
     description = request.form.get('description')
     category = request.form.get('category')
 
-    # TODO: Use Transactions - Wrap database insert and file write in a transaction-like process, so I don’t end up with orphaned files or metadata if something fails.
     match category:
         case 'resume':
             file = request.files.get('file')
@@ -105,11 +105,25 @@ def delete_template(template_uuid:str):
 # --------------------
 # DATA
 
-@ajax.route('/update_ntne')
-def update_ntne():
-    latest_date = app.offer_db.get_latest_date(source='NTNE')
-    new_jobs = app.ntne_api.search(stop_date=latest_date)
+@ajax.route('/update_bdd/<source>', methods=['POST'])
+def update_bdd(source:str):
+    print(source)
+    if source not in ['NTNE', 'APEC']:
+        abort(404, description='Unvalid `source` value, expected `NTNE` or `APEC`')
+
+    latest_date = app.offer_db.get_latest_date(source=source)
+    match source:
+        case 'NTNE':
+            new_jobs = app.ntne_api.search(stop_date=latest_date)
+        case 'APEC':
+            new_jobs = app.apec_api.search(stop_date=latest_date)
+            
     print('collected')
     app.offer_db.add(new_jobs)
     print('saved')
     return jsonify({'success': True})
+
+ajax.route('/bdd_info')
+def bdd_info():
+    # Get the type and number of NA for each column of OFFER_TABLE
+    pass

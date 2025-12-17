@@ -28,22 +28,7 @@ class BaseAPI(ABC):
     def _loop_recent(self):
         ...
 
-    def _get_key(self, result:dict, xpath:list[str|list], fallback:list[str|list]=None) -> str|float|None:
-        value = result
-        try:
-            for key in xpath:
-                if isinstance(key, str):
-                    value = value.get(key)
-                elif isinstance(key, list):
-                    value = value[key[0]]
-            return value
-        except (KeyError, IndexError, AttributeError):
-            if fallback:
-                return self._get_key(result, xpath=fallback)
-            print('WARNING: failed to get', xpath)
-            return None
-
-    def _safe_requests(self, url:str, method='GET', _tic=0, **kwargs):
+    def _safe_requests(self, url:str, method='GET', raise_status=True, _tic=0, **kwargs) -> dict|None:
         """Make a requests with exeption and retries
 
         Args:
@@ -59,11 +44,14 @@ class BaseAPI(ABC):
 
         try:
             response = self.session.request(method, url, **kwargs)
-            response.raise_for_status()
-            return response.json()
+            if response.status_code in [200, 400]:
+                return response.json()
+            elif raise_status:
+                response.raise_for_status()
+            return None
         except requests.RequestException as e:
             if _tic < 3:
                 time.sleep(.5)
-                return self.safe_requests(url, method, _tic=_tic+1, **kwargs)
+                return self._safe_requests(url, method, raise_status=raise_status, _tic=_tic+1, **kwargs)
             else:
                 raise Exception(f'Request failed ({response.status_code}): {e}')

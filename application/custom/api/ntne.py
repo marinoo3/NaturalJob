@@ -1,6 +1,7 @@
 from datetime import date
 
 from .base_api import BaseAPI
+from ..utils.parser import XPathSearch, ParseNumeric
 from ..db.offer.models import Offer, Description, Company, City, Region
 
 
@@ -21,34 +22,82 @@ class NTNE(BaseAPI):
     def __init__(self, keyword="data"):
         super().__init__(self.base_url, keyword=keyword, headers=self.headers, cffi=True)
 
+    def __parse_date(self, result:dict) -> date|None:
+        # Parse date
+        date_str = XPathSearch(result, 'publicationDate')
+        if not date_str:
+            return None
+        # Convert to iso date
+        return date.fromisoformat(date_str[:10])
+
+    
+    def __parse_salary(self, result:dict, source='label') -> float|None:
+        # Parse and return salary label
+        if source == 'label':
+            label = XPathSearch(result, 'labels', 'salary', 'value')
+            if label.lower() == 'salaire selon profil':
+                return None
+            return label
+        
+        _match = {
+            'min': 'from',
+            'max': 'to'
+        }
+        # Raise exeption if unexpected `source` value
+        key = _match.get(source)
+        if not key:
+            raise ValueError("Unexpected `source` value, should be in ('label', 'min', 'max)")
+        # Parse salary and return if None
+        salary = XPathSearch(result, 'salary', key)
+        if not salary:
+            return None
+        # Convert to annual period
+        period = XPathSearch(result, 'salary', 'period')
+        match period:
+            case 'MONTH':
+                salary = salary * 12
+            case 'HOUR':
+                salary = salary * 35 * 52
+
+        return salary
+    
+    def __parse_experience(self, result:dict) -> int|None:
+        label = XPathSearch(result, 'labels', 'experienceLevelList', [0], 'value', warning=False)
+        if not label:
+            return None
+        numbers = ParseNumeric(label)
+        return min(numbers)
+
     def __create_offer(self, result:dict) -> Offer:
         description = Description(
-            offer_description = self._get_key(result, ['description']),
-            profile_description = self._get_key(result, ['profileDescription']),
+            offer_description = XPathSearch(result, 'description'),
+            profile_description = XPathSearch(result, 'profileDescription'),
         )
         company = Company(
-            name = self._get_key(result, ['company', 'name']),
-            description = self._get_key(result, ['companyDescription']),
-            industry = self._get_key(result, ['company', 'industryField', 'value'])
+            name = XPathSearch(result, 'company', 'name'),
+            description = XPathSearch(result, 'companyDescription'),
+            industry = XPathSearch(result, 'company', 'industryField', 'value')
         )
         region = Region(
-            code = self._get_key(result, ['locations', [0], 'admin2Code']),
-            name = self._get_key(result, ['locations', [0], 'admin2Label'])
+            code = XPathSearch(result, 'locations', [0], 'admin2Code'),
+            name = XPathSearch(result, 'locations', [0], 'admin2Label')
         )
         city = City(
-            name = self._get_key(result, ['locations', [0], 'admin3Label']),
+            name = XPathSearch(result, 'locations', [0], 'admin3Label'),
             region = region
         )
         return Offer(
-            title = self._get_key(result, ['title']),
-            job_name = self._get_key(result, ['mainJob', 'label'], fallback=['unknownJob']),
-            job_type = self._get_key(result, ['jobType', [0]]),
-            contract_type = self._get_key(result, ['contractTypes', [0]]),
-            salary = self._get_key(result, ['labels', 'salary', 'value']),
-            min_experience = self._get_key(result, ['labels', 'experienceLevelList', [0], 'value']),
-            latitude = self._get_key(result, ['locations', [0], 'lat']),
-            longitude = self._get_key(result, ['locations', [0], 'lon']),
-            date = date.fromisoformat(result['publicationDate'][:10]).isoformat(),
+            title = XPathSearch(result, 'title'),
+            job_name = XPathSearch(result, 'mainJob', 'label', warning=False) or XPathSearch(result, 'unknownJob'),
+            job_type = XPathSearch(result, 'jobType', [0]),
+            contract_type = XPathSearch(result, 'contractTypes', [0]),
+            salary_label = self.__parse_salary(result, source='label'),
+            salary_min = self.__parse_salary(result, source='min'),
+            salary_max = self.__parse_salary(result, source='max'),
+            min_experience = self.__parse_experience(result),
+            latitude = XPathSearch(result, 'locations', [0], 'lat'),
+            longitude = XPathSearch(result, 'locations', [0], 'lon'),
+            date = (d := self.__parse_date(result)) and d.isoformat(),
             source = 'NTNE',
             description = description,
             company = company,
@@ -64,7 +113,7 @@ class NTNE(BaseAPI):
                 break
             # Check if stop date reached
             for result in content['content']:
-                publish_date = date.fromisoformat(result['publicationDate'][:10])
+                publish_date = self.__parse_date(result)
                 if stop_date and publish_date <= stop_date:
                     return jobs
                 offer = self.__create_offer(result)

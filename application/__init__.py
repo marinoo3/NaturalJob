@@ -2,7 +2,7 @@ from flask import Flask
 
 from .custom.data import Data
 from .custom.db import UserDB, OfferDB
-from .custom.api import NTNE
+from .custom.api import NTNE, APEC
 
 
 class AppContext(Flask):
@@ -10,6 +10,7 @@ class AppContext(Flask):
     user_db: UserDB
     offer_db: OfferDB
     ntne_api: NTNE
+    apec_api: APEC
 
 
 def create_app():
@@ -23,6 +24,7 @@ def create_app():
         app.user_db = UserDB()
         app.offer_db = OfferDB()
         app.ntne_api = NTNE()
+        app.apec_api = APEC()
 
     # Init pages routes
     from .routes import main as main_blueprint

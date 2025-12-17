@@ -8,7 +8,7 @@ schema_statements = [
     """
     CREATE TABLE IF NOT EXISTS COMPANY (
         company_id   INTEGER PRIMARY KEY,
-        name         TEXT NOT NULL,
+        name         TEXT,
         description  TEXT,
         industry     TEXT
     );
@@ -42,7 +42,9 @@ schema_statements = [
         job_name       TEXT,
         job_type       TEXT,
         contract_type  TEXT,
-        salary         TEXT,
+        salary_label   TEXT,
+        salary_min     REAL,
+        salary_max     REAL,
         min_experience TEXT,
         latitude       REAL,
         longitude      REAL,

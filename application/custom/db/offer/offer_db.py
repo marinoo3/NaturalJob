@@ -45,7 +45,7 @@ class OfferDB():
         ).fetchone()
         if row:
             return row[0]
-
+        
         cur.execute(
             "INSERT INTO COMPANY(name, description, industry) VALUES (?, ?, ?)",
             [company.name, company.description, company.industry]
@@ -76,17 +76,19 @@ class OfferDB():
             """
             INSERT INTO OFFER
                 (title, job_name, job_type, contract_type,
-                 salary, min_experience, latitude, longitude,
+                 salary_label, salary_min, salary_max, min_experience, latitude, longitude,
                  date, source,
                  description_id, city_id, company_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 offer.title,
                 offer.job_name,
                 offer.job_type,
                 offer.contract_type,
-                offer.salary,
+                offer.salary_label,
+                offer.salary_min,
+                offer.salary_max,
                 offer.min_experience,
                 offer.latitude,
                 offer.longitude,

@@ -7,7 +7,8 @@ const tabLoaders = {
    "documents/templates": () => import("./documents/templates.js"),
    "viewer/map": () => import("./viewer/map.js"),
    "viewer/editor": () => import("./viewer/editor.js"),
-   "source/ntne": () => import("./source/ntne.js")
+   "source/ntne": () => import("./source/api.js"),
+   "source/apec": () => import("./source/api.js")
 };
 
 
@@ -95,6 +96,7 @@ async function switchTab(tab) {
       // Otherwise load tab content and save in cache
       try {
          const module = await loadTab(key, view);
+         module?.update?.(); // Call update method if exists
          domCache.set(key, { node: view.firstElementChild, module });
       } catch (err) {
          view.innerHTML = "<p class='error'>Error loading content.</p>";

@@ -28,7 +28,9 @@ class Offer:
     job_name: str
     job_type: Optional[str]
     contract_type: Optional[str]
-    salary: Optional[str]
+    salary_label: Optional[str]
+    salary_min: Optional[float]
+    salary_max: Optional[float]
     min_experience: Optional[str]
     latitude: Optional[float]
     longitude: Optional[float]
