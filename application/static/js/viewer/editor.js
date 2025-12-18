@@ -53,8 +53,8 @@ export async function loadTemplate(uuid) {
     const content = await response.json();
     if(content.category == 'resume') {
         wrapper.dataset.fileType = 'pdf';
-        const iframe = wrapper.querySelector('iframe');
-        iframe.src = 'https://mozilla.github.io/pdf.js/web/viewer.html?file=' + content.content;
+        const embed = wrapper.querySelector('embed');
+        embed.src = content.content;
     } else {
         wrapper.dataset.fileType = 'md';
         // Display content

@@ -1,0 +1,58 @@
+section#console .view{
+    padding: 0;
+}
+
+.model-grid {
+    display:flex;
+}
+
+.model-container {
+    width: 100%;
+    padding: 1rem;
+    overflow-y: auto;
+}
+.model-container:not(:last-child) {
+    border-right: solid 1px var(--border-color);
+}
+
+.model-container h2 {
+    margin-top: 1rem;
+    margin-bottom: .5rem;
+}
+
+.model-container .title {
+    display: flex;
+    margin-bottom: 1.5rem;
+    align-items: center;
+    gap: 1rem;
+}
+
+.model-container .features {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    border-top: solid var(--bg-selected-color);
+    padding: 6px 1rem;
+}
+
+.model-container .features li {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.model-container .model {
+    background-color: var(--bg-second-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .8rem 1rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 1.5rem;
+}
+
+.model-container .model .info > * {
+    display: inline;
+    margin-right: .5rem;
+}

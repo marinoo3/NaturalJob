@@ -13,6 +13,7 @@
    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
    <link rel="stylesheet" href="{{ url_for('static', filename='css/_components.css') }}">
    <link rel="stylesheet" href="{{ url_for('static', filename='css/console/statistics.css') }}">
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/console/models.css') }}">
    <link rel="stylesheet" href="{{ url_for('static', filename='css/documents/templates.css') }}">
    <link rel="stylesheet" href="{{ url_for('static', filename='css/viewer/editor.css') }}">
    <link rel="stylesheet" href="{{ url_for('static', filename='css/viewer/map.css') }}">
@@ -27,8 +28,8 @@
             <nav class="tabs">
                <ul>
                    <li data-tab-id="map" class="selected">Carte</li>
-                   <li data-tab-id="graph">Graph</li>
                    <li data-tab-id="list">Liste</li>
+                   <li data-tab-id="graph">Graph</li>
                    <li data-tab-id="editor">Editeur</li>
                </ul>
             </nav>
@@ -37,8 +38,9 @@
          <section id="console" data-section-id="console">
             <nav class="tabs">
                <ul>
-                  <li data-tab-id="statistics" class="selected">Statistiques</li>
+                  <li data-tab-id="statistics" >Statistiques</li>
                   <li data-tab-id="clusters">Clusters</li>
+                  <li data-tab-id="models" class="selected">Models</li>
                </ul>
             </nav>
             <div class="view"></div>
