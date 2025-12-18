@@ -85,16 +85,17 @@ section#source .view:is([data-active-view="ntne"], [data-active-view="apec"]) {
         }
 
         td.false {
-            color: #bb7742;
+            color: var(--purple-color);
         }
         td.true {
-            color: #4271bb;
+            color: var(--accent-color);
         }
         td.na, td.id {
-            color: var(--good-color);
+            color: var(--purple-color);
         }
         td.type {
-            color: var(--text-second-color);
+            color: var(--accent-color);
+            opacity:.6;
         }
     }
 
