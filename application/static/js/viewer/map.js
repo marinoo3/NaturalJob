@@ -5,12 +5,16 @@ var tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}
 const footer = document.querySelector('footer');
 const cooElement = footer.querySelector('.coo');
 const zoomElement = footer.querySelector('.zomm');
+// Hexbin
+const palette = ['#440154', '#3b528b', '#21918c', '#5ec962', '#fde725'];
 
 
-// Create hexbin layer
+
+
+// Add hexbin to map
 var hexLayer = L.hexbinLayer({
-  radiusRange: [1, 10],
-  radius: 10,
+  radiusRange: [1, 6],
+  radius: 6,
   opacity: 1
 }).addTo(map);
 
@@ -24,22 +28,30 @@ async function requestData() {
     const response = await fetch('ajax/get_offers');
     const content = await response.json();
 
-    const cleanPoints = content['offers'].filter(
+    const points = content['offers'].filter(
         d => d.longitude != null && d.latitude != null
     );
 
-    const maxCount = Math.max(1, d3.max(cleanPoints, d => d.count));
+    // quantile color scale (≈20% of bins per color)
+    const colorScale = d3.scaleQuantile().range(palette);
 
-    const logColor = d3.scaleLog()
-        .domain([1, maxCount])
-        .range(['#f7fbff', '#08306b']);
+    // bind log transforms when needed
+    const binders = {
+    count: bins => bins.length,
+    weight: bins => bins.reduce((sum, { data }) => sum + (data.weight ?? 0), 0)
+    };
+    const logWrapper = fn => bins => {
+    const value = fn(bins);
+    return value > 0 ? Math.log(value) : 0;
+    };
+    const colorBinding = logWrapper(binders.count);   // log(count)
 
     hexLayer
         .lng(d => d.longitude)
         .lat(d => d.latitude)
-        .colorScale(logColor)
-        .colorValue(bin => Math.max(1, bin.length)) // avoid log(0)
-        .data(cleanPoints);
+        .colorValue(colorBinding)
+        .colorScale(colorScale)
+        .data(points)
 }
 
 
