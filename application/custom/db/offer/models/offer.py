@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from typing import Optional, List
 
 @dataclass
@@ -41,3 +41,5 @@ class Offer:
     city: City
     degrees: List[str] = field(default_factory=list)  # degree names
     skills: List[str] = field(default_factory=list)   # skill names
+
+    dict = asdict

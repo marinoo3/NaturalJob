@@ -168,6 +168,11 @@ def bdd_info(source:str):
     })
 
 
+@ajax.route('/get_offers')
+def get_offers():
+    offers = app.offer_db.get()
+    return jsonify({'count': len(offers), 'offers': [offer.dict() for offer in offers]})
+
 
 # TEST
 @ajax.route('/serve_pdf')
