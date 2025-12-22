@@ -1,1 +1,1 @@
-from .offer import Offer, Description, City, Region, Company
+from .offer import Offer, Description, City, Region, Company, Cluster

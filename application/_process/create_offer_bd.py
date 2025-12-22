@@ -1,6 +1,9 @@
-import sqlite3
+import sqlean as sqlite3
+import sqlite_vec
 
 connection = sqlite3.connect("data/db/offer.db")
+connection.enable_load_extension(True)
+sqlite_vec.load(connection)
 connection.execute("PRAGMA foreign_keys = ON;")
 cursor = connection.cursor()
 
@@ -35,6 +38,21 @@ schema_statements = [
         profile_description TEXT
     );
     """,
+    # TODO: Maybe I shouldn't set cluster_id to primary key
+    """
+    CREATE TABLE IF NOT EXISTS CLUSTER (
+        cluster_id    INTEGER PRIMARY KEY,
+        cluster_name  TEXT,
+        main_tokens   TEXT NOT NULL
+    );
+    """,
+    """
+    CREATE VIRTUAL TABLE IF NOT EXISTS TFIDF
+    USING vec0(
+        emb_50d  FLOAT[50],
+        emb_3d   FLOAT[3]
+    );
+    """,
     """
     CREATE TABLE IF NOT EXISTS OFFER (
         offer_id       INTEGER PRIMARY KEY,
@@ -53,9 +71,13 @@ schema_statements = [
         description_id INTEGER NOT NULL,
         city_id        INTEGER NOT NULL,
         company_id     INTEGER NOT NULL,
+        cluster_id     INTEGER,
+        tfidf_id       INTEGER,
         FOREIGN KEY (description_id) REFERENCES DESCRIPTION(description_id),
         FOREIGN KEY (city_id)        REFERENCES CITY(city_id),
-        FOREIGN KEY (company_id)     REFERENCES COMPANY(company_id)
+        FOREIGN KEY (company_id)     REFERENCES COMPANY(company_id),
+        FOREIGN KEY (cluster_id)     REFERENCES CLUSTER(cluster_id),
+        FOREIGN KEY (tfidf_id)       REFERENCES TFIDF(rowid)
     );
     """,
     """

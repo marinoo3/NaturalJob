@@ -1,13 +1,15 @@
 import sqlite3
+import sqlite_vec
 from datetime import date
 import os
+import numpy as np
 
-from .models import Offer, Description, City, Region, Company
+from .models import Offer, Description, City, Region, Company, Cluster
 
 
 
 
-class OfferDB():
+class OfferDB:
 
     path = 'db/offer.db'
 
@@ -136,7 +138,19 @@ class OfferDB():
 
         cur.execute("INSERT INTO SKILL(skill) VALUES (?)", [skill])
         return cur.lastrowid
-    
+
+    def _get_or_create_cluster(self, cur:sqlite3.Cursor, cluster:Cluster) -> int:
+        print(cluster, flush=True)
+        print(cluster.main_tokens, flush=True)
+        row = cur.execute(
+            "SELECT cluster_id FROM CLUSTER WHERE cluster_id = ?", [cluster.id]
+        ).fetchone()
+        if row:
+            return row[0]
+
+        cur.execute("INSERT INTO CLUSTER(cluster_id, cluster_name, main_tokens) VALUES (?, ?, ?)", [cluster.id, cluster.name, cluster.main_tokens])
+        return cluster.id
+
     def _row_to_offer(self, row: sqlite3.Row) -> Offer:
         degrees = row["degrees"].split("||") if row["degrees"] else []
         skills = row["skills"].split("||") if row["skills"] else []
@@ -175,8 +189,41 @@ class OfferDB():
         )
 
     def connect(self) -> sqlite3.Connection:
-        return sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path)
+        conn.enable_load_extension(True)
+        sqlite_vec.load(conn) 
+        return conn
     
+    def summary(self, source:str=None) -> list[dict]:
+        with self.connect() as conn:
+            cur = conn.cursor()
+            # Get column metadata (name, declared type, etc.)
+            cur.execute("PRAGMA table_info('OFFER')")
+            columns = cur.fetchall()
+
+            summary = []
+            for cid, name, type, notnull, _, pk in columns:
+                # Count NULLs in this column
+                if source:
+                    cur.execute(
+                        f"SELECT COUNT(*) FROM OFFER WHERE source = ? and {name} IS NULL", [source]
+                    )
+                else:
+                    cur.execute(
+                        "SELECT COUNT(*) FROM OFFER WHERE ? IS NULL", [name]
+                    )
+                na_count = cur.fetchone()[0]
+                summary.append({
+                    'name': name,
+                    'id': cid,
+                    'na': na_count,
+                    'not_null': bool(notnull),
+                    'type': type,
+                    'pk': bool(pk)
+                })
+
+            return summary
+
     def add(self, offers:list[Offer]) -> int:
         """Insert offers into database.
         
@@ -206,8 +253,23 @@ class OfferDB():
 
             conn.commit()
 
-    def get(self, id:str=None) -> list[Offer]:
-        """Get an offer by id, returns all offers if no ID.
+    def add_nlp(self, conn:sqlite3.Connection, offer_id:int, emb_50d:np.ndarray, emb_3d:np.ndarray, cluster:Cluster) -> None:
+        cur = conn.cursor()
+        # add tfidf vector (sqlite-vec)
+        
+        cluster_id = self._get_or_create_cluster(cur, cluster)
+        conn.execute(
+            "INSERT INTO TFIDF(emb_50d, emb_3d) VALUES (vec_f32(?), vec_f32(?))", 
+            [emb_50d.tobytes(), emb_3d.tobytes()]
+        )
+        tfidf_id = cur.lastrowid
+        cur.execute(
+            "UPDATE OFFER SET tfidf_id = ?, cluster_id = ? WHERE offer_id = ?", 
+            [tfidf_id, cluster_id, offer_id]
+        )
+
+    def search(self, id:str=None) -> list[Offer]:
+        """Search an offer by id, returns all offers if no ID.
 
         Args:
             id (str, optional): Offer ID. Defaults to None.
@@ -269,38 +331,6 @@ class OfferDB():
                 return self._row_to_offer(rows[0]) if rows else None
             return [self._row_to_offer(row) for row in rows]
 
-
-
-    def summary(self, source:str=None) -> list[dict]:
-        with self.connect() as conn:
-            cur = conn.cursor()
-            # Get column metadata (name, declared type, etc.)
-            cur.execute("PRAGMA table_info('OFFER')")
-            columns = cur.fetchall()
-
-            summary = []
-            for cid, name, type, notnull, _, pk in columns:
-                # Count NULLs in this column
-                if source:
-                    cur.execute(
-                        f"SELECT COUNT(*) FROM OFFER WHERE source = ? and {name} IS NULL", [source]
-                    )
-                else:
-                    cur.execute(
-                        "SELECT COUNT(*) FROM OFFER WHERE ? IS NULL", [name]
-                    )
-                na_count = cur.fetchone()[0]
-                summary.append({
-                    'name': name,
-                    'id': cid,
-                    'na': na_count,
-                    'not_null': bool(notnull),
-                    'type': type,
-                    'pk': bool(pk)
-                })
-
-            return summary
-
     def get_total(self, source:str|None) -> int:
         """Get count from a specific source, or all source if `source` is None.
 
@@ -324,7 +354,6 @@ class OfferDB():
             count = cur.fetchone()[0]
         return count
             
-    
     def get_latest_date(self, source:str=None, isostring=False) -> date|None:
         """Search the latest date from database
 
@@ -354,3 +383,32 @@ class OfferDB():
         if isostring:
             latest = latest.isoformat() 
         return latest
+    
+    def get_unprocessed(self, source=None) -> tuple[list[int], list[str]]:
+
+        with self.connect() as conn:
+            cur = conn.cursor()
+            if source:
+                cur.execute(
+                    """
+                    SELECT o.offer_id, d.offer_description
+                    FROM OFFER AS o
+                    JOIN DESCRIPTION AS d ON d.description_id = o.description_id
+                    WHERE o.source = ? and o.cluster_id IS NULL
+                    """, [source]
+                )
+            else:
+                cur.execute(
+                    """
+                    SELECT o.offer_id, d.offer_description
+                    FROM OFFER AS o
+                    JOIN DESCRIPTION AS d ON d.description_id = o.description_id
+                    WHERE o.cluster_id IS NULL
+                    """
+                )
+
+            result = cur.fetchall()
+            ids = [row[0] for row in result]
+            descriptions = [row[1] for row in result]
+            return ids, descriptions
+

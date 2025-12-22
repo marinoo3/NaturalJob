@@ -105,6 +105,21 @@ def delete_template(template_uuid:str):
 # --------------------
 # DATA
 
+@ajax.route('/bdd_info/<source>')
+def bdd_info(source:str):
+    if source not in {'NTNE', 'APEC'}:
+        abort(404, description='Invalid source')
+
+    total = app.offer_db.get_total(source=source)
+    latest_date = app.offer_db.get_latest_date(source=source, isostring=True)
+    rows = app.offer_db.summary(source=source)
+    
+    return jsonify({
+        'total': total,
+        'date': latest_date or 'NA',
+        'summary': rows
+    })
+
 @ajax.route('/update_bdd_stream/<source>')
 def update_bdd_stream(source: str):
     if source not in {'NTNE', 'APEC'}:
@@ -137,7 +152,6 @@ def update_bdd_stream(source: str):
                 app.offer_db.add(offers)
 
             db_total = app.offer_db.get_total(source=source)
-            yield f"data: {json.dumps({'status': 'done'})}\n\n"
             yield "event: end\ndata: complete\n\n"
 
         except Exception as exc:
@@ -152,25 +166,47 @@ def update_bdd_stream(source: str):
                     mimetype='text/event-stream',
                     headers=headers)
 
-@ajax.route('/bdd_info/<source>')
-def bdd_info(source:str):
+@ajax.route('process_nlp/<source>')
+def process_nlp(source:str):
     if source not in {'NTNE', 'APEC'}:
         abort(404, description='Invalid source')
 
-    total = app.offer_db.get_total(source=source)
-    latest_date = app.offer_db.get_latest_date(source=source, isostring=True)
-    rows = app.offer_db.summary(source=source)
-    
-    return jsonify({
-        'total': total,
-        'date': latest_date or 'NA',
-        'summary': rows
-    })
+    def event_stream():
+        try:
+            ids, descriptions = app.offer_db.get_unprocessed(source)
+            if not ids:
+                yield "event: end\ndata: complete\n\n"
+                return
+            
+            yield "event: progress\ndata: Computing TF-IDF\n\n"
+            emb_50ds, emb_3ds, tokens = app.nlp.tfidf.transform(descriptions)
 
+            yield "event: progress\ndata: Clustering\n\n"
+            clusters = app.nlp.kmeans.predict(emb_50ds, tokens)
+
+            yield "event: progress\ndata: Saving\n\n"
+            with app.offer_db.connect() as conn:
+                for id, emd_50d, emb_3d, cluster in zip(ids, emb_50ds, emb_3ds, clusters):
+                    app.offer_db.add_nlp(conn, id, emd_50d, emb_3d, cluster)
+                conn.commit()
+
+            yield "event: end\ndata: complete\n\n"
+
+        except Exception as exc:
+            yield f"event: error\ndata: {json.dumps({'message': str(exc)})}\n\n"
+            raise
+
+    headers = {
+        'Cache-Control': 'no-cache',
+        'X-Accel-Buffering': 'no',  # disable buffering if behind nginx
+    }
+    return Response(stream_with_context(event_stream()),
+                    mimetype='text/event-stream',
+                    headers=headers)
 
 @ajax.route('/get_offers')
 def get_offers():
-    offers = app.offer_db.get()
+    offers = app.offer_db.search()
     return jsonify({'count': len(offers), 'offers': [offer.dict() for offer in offers]})
 
 

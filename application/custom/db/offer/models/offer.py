@@ -23,6 +23,12 @@ class Description:
     profile_description: Optional[str] = None
 
 @dataclass
+class Cluster:
+    id: int
+    main_tokens: str
+    name: str = None
+
+@dataclass
 class Offer:
     title: str
     job_name: str
@@ -39,6 +45,7 @@ class Offer:
     description: Description
     company: Company
     city: City
+    cluster: Cluster = None
     degrees: List[str] = field(default_factory=list)  # degree names
     skills: List[str] = field(default_factory=list)   # skill names
 

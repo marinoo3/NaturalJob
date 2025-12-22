@@ -65,6 +65,12 @@ section#source .view:is([data-active-view="ntne"], [data-active-view="apec"]) {
         }
     }
 
+    .database.waiting, .database.loading {
+        .progress, .status_icon {
+            background-color: var(--neutral-color);
+        }
+    }
+
     table.summary {
         border-collapse: collapse;
         width: 100%;

@@ -2,6 +2,7 @@ const section = document.querySelector('#source');
 const view = section.querySelector('.view')
 
 
+
 function buildTable(content) {
     const summaryTable = view.querySelector('table.summary');
     summaryTable.innerHTML = '';
@@ -68,6 +69,34 @@ async function initDB(source, database) {
 }
 
 
+function processNLP(source, database, countLabel, progress) {
+    // Send SSE request (update bdd)
+    const nlpEvt = new EventSource(`/ajax/process_nlp/${source}`);
+    database.classList.remove('loading');
+    database.classList.add('waiting');
+
+    nlpEvt.addEventListener('progress', (event) => {
+        countLabel.textContent = event.data;
+    });
+
+    nlpEvt.addEventListener('error', (event) => {
+        countLabel.textContent = "Erreur lors du traitement";
+        database.classList.remove('waiting');
+        database.classList.remove('loading');
+        database.classList.add('error');
+        console.error('SSE error', event);
+        nlpEvt.close();
+    });
+
+    nlpEvt.addEventListener('end', () => {
+        database.classList.remove('waiting');
+        progress.remove();
+        initDB(source, database);
+        nlpEvt.close();
+    });
+}
+
+
 function startUpdate(source, database) {
     const progress = view.querySelector('.database .progress');
     const countLabel = database.querySelector('.status #label');
@@ -75,11 +104,13 @@ function startUpdate(source, database) {
     database.classList.remove('error');
     database.classList.add('waiting');
     countLabel.textContent = `Initialization`;
-    // Send SSE request
-    const evt = new EventSource(`/ajax/update_bdd_stream/${source}`);
 
-    evt.onmessage = (event) => {
+    // Send SSE request (update bdd)
+    const bddEvt = new EventSource(`/ajax/update_bdd_stream/${source}`);
+
+    bddEvt.onmessage = (event) => {
         database.classList.remove('waiting');
+        database.classList.add('loading');
         progress.style.left = '0px';
         progress.style.width = '0px';
         const payload = JSON.parse(event.data);
@@ -87,23 +118,22 @@ function startUpdate(source, database) {
             progress.style.width = payload.progress + "%";
             countLabel.textContent = `Collecting ${payload.count} jobs`;
         }
-        if (payload.status === 'done') {
-            progress.style.width = '100%';
-            progress.remove();
-            evt.close();
-            initDB(source, database);
-        }
     };
 
-    evt.addEventListener('error', (event) => {
-        countLabel.textContent = "Erreur de chargement"
+    bddEvt.addEventListener('error', (event) => {
+        countLabel.textContent = "Erreur de chargement";
         database.classList.remove('waiting');
+        database.classList.remove('loading');
         database.classList.add('error');
         console.error('SSE error', event);
-        evt.close();
+        bddEvt.close();
     });
 
-    evt.addEventListener('end', () => evt.close());
+    bddEvt.addEventListener('end', () => {
+        progress.style.width = '100%';
+        bddEvt.close();
+        processNLP(source, database, countLabel, progress);
+    });
 }
 
 
