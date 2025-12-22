@@ -12,6 +12,7 @@ WORKDIR /app
 COPY --chown=user ./requirements.txt requirements.txt
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 RUN python -m spacy download fr_core_news_sm
+RUN python -m nltk.downloader stopwords
 
 COPY --chown=user . /app
 
