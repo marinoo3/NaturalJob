@@ -25,7 +25,7 @@ class Description:
 @dataclass
 class Cluster:
     id: int
-    main_tokens: str
+    main_tokens: str = None
     name: str = None
 
 @dataclass

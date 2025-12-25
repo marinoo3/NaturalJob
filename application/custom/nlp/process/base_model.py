@@ -26,14 +26,16 @@ class Model(Generic[EstimatorT]):
 
     def _make_model_path(self) -> str:
         path = os.environ.get('DATA_PATH', 'data/')
-        return os.path.join(path, 'model', self.model_name)
+        return os.path.join(path, 'model')
 
     def _load_model(self) -> EstimatorT|None:
         try:
-            return joblib.load(self.model_path)
+            path = os.path.join(self.model_path, self.model_name)
+            return joblib.load(path)
         except FileNotFoundError:
             return None
         
     def _save_model(self, model:EstimatorT) -> None:
-        joblib.dump(model, self.model_path)
+        path = os.path.join(self.model_path, self.model_name)
+        joblib.dump(model, path)
         self.model = model

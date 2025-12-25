@@ -4,15 +4,17 @@ from .custom.data import Data
 from .custom.nlp import NLP
 from .custom.db import UserDB, OfferDB
 from .custom.api import NTNE, APEC
+from .custom.plot import Plot
 
 
 class AppContext(Flask):
     data: Data
-    nlp: NLP
     user_db: UserDB
     offer_db: OfferDB
     ntne_api: NTNE
     apec_api: APEC
+    nlp: NLP
+    plot: Plot
 
 
 def create_app():
@@ -23,11 +25,12 @@ def create_app():
     # Load configuration
     with app.app_context():
         app.data = Data()
-        app.nlp = NLP()
         app.user_db = UserDB()
         app.offer_db = OfferDB()
         app.ntne_api = NTNE()
         app.apec_api = APEC()
+        app.nlp = NLP()
+        app.plot = Plot()
 
     # Init pages routes
     from .routes import main as main_blueprint

@@ -1,5 +1,5 @@
 <div class="model-grid">
-    <div class="model-container">
+    <div class="model-container" data-model-name="kmeans">
         <div class="title">
             <img src="{{ url_for('static', filename='images/shapes.svg') }}" height="26px">
             <h1>Kmeans</h1>
@@ -42,7 +42,7 @@
         <h2>Projections sur le plan</h2>
         <p>Les clusters sont ensuite projetés en 2D ou 3D au moyen d’un t-SNE, méthode de réduction de dimension conservant les relations de voisinage pour une représentation factorielle interprétable.</p>
     </div>
-    <div class="model-container">
+    <div class="model-container" data-model-name="tfidf">
         <div class="title">
             <img src="{{ url_for('static', filename='images/node.svg') }}" height="26px">
             <h1>Knowledge Graph</h1>
@@ -79,5 +79,4 @@
         <h2>Liens entre les offres</h2>
         <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap</p>
     </div>
-    <div class="model-container"></div>
 </div>

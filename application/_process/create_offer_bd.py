@@ -38,7 +38,6 @@ schema_statements = [
         profile_description TEXT
     );
     """,
-    # TODO: Maybe I shouldn't set cluster_id to primary key
     """
     CREATE TABLE IF NOT EXISTS CLUSTER (
         cluster_id    INTEGER PRIMARY KEY,

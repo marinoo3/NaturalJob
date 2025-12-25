@@ -1,4 +1,4 @@
-import sqlite3
+import sqlean as sqlite3
 import sqlite_vec
 from datetime import date
 import os
@@ -16,6 +16,11 @@ class OfferDB:
     def __init__(self) -> None:
         root = os.environ.get('DATA_PATH', 'data/')
         self.db_path = os.path.join(root, self.path)
+
+    @staticmethod
+    def _vecf32_converter(blob:bytes) -> np.ndarray:
+        # copy() so the array owns the memory even after SQLite frees the buffer
+        return np.frombuffer(blob, dtype=np.float32).copy()
 
     def _get_or_create_region(self, cur:sqlite3.Cursor, region:Region) -> int:
         row = cur.execute(
@@ -140,8 +145,6 @@ class OfferDB:
         return cur.lastrowid
 
     def _get_or_create_cluster(self, cur:sqlite3.Cursor, cluster:Cluster) -> int:
-        print(cluster, flush=True)
-        print(cluster.main_tokens, flush=True)
         row = cur.execute(
             "SELECT cluster_id FROM CLUSTER WHERE cluster_id = ?", [cluster.id]
         ).fetchone()
@@ -151,7 +154,7 @@ class OfferDB:
         cur.execute("INSERT INTO CLUSTER(cluster_id, cluster_name, main_tokens) VALUES (?, ?, ?)", [cluster.id, cluster.name, cluster.main_tokens])
         return cluster.id
 
-    def _row_to_offer(self, row: sqlite3.Row) -> Offer:
+    def _row_to_offer(self, row:sqlite3.Row) -> Offer:
         degrees = row["degrees"].split("||") if row["degrees"] else []
         skills = row["skills"].split("||") if row["skills"] else []
 
@@ -187,9 +190,16 @@ class OfferDB:
             degrees=degrees,
             skills=skills,
         )
+    
+    def _row_to_cluster(self, row:sqlite3.Row) -> Cluster:
+        return Cluster(
+            id=row['cluster_id'],
+            name=row['cluster_name'],
+            main_tokens=row['main_tokens']
+        )
 
     def connect(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, detect_types=sqlite3.PARSE_DECLTYPES)
         conn.enable_load_extension(True)
         sqlite_vec.load(conn) 
         return conn
@@ -253,34 +263,59 @@ class OfferDB:
 
             conn.commit()
 
-    def add_nlp(self, conn:sqlite3.Connection, offer_id:int, emb_50d:np.ndarray, emb_3d:np.ndarray, cluster:Cluster) -> None:
-        cur = conn.cursor()
-        # add tfidf vector (sqlite-vec)
-        
-        cluster_id = self._get_or_create_cluster(cur, cluster)
-        conn.execute(
-            "INSERT INTO TFIDF(emb_50d, emb_3d) VALUES (vec_f32(?), vec_f32(?))", 
-            [emb_50d.tobytes(), emb_3d.tobytes()]
-        )
-        tfidf_id = cur.lastrowid
-        cur.execute(
-            "UPDATE OFFER SET tfidf_id = ?, cluster_id = ? WHERE offer_id = ?", 
-            [tfidf_id, cluster_id, offer_id]
-        )
+    def add_nlp(self, conn:sqlite3.Connection, offer_id:int, emb_50d:np.ndarray=None, emb_3d:np.ndarray=None, cluster:Cluster=None) -> None:
+        """Add offer's nlp data to db. Skip non provided data.
 
-    def search(self, id:str=None) -> list[Offer]:
+        Args:
+            conn (sqlite3.Connection): Database connection
+            offer_id (int): The ID of the offer
+            emb_50d (np.ndarray, optional): 50 dimenssions embeddings. Default to None
+            emb_3d (np.ndarray, optional): 3 dimenssions embeddings. Default to None
+            cluster (Cluster, optional): The offer cluster object. Default to None
+        """
+
+        cur = conn.cursor()
+        
+        if cluster:
+            cluster_id = self._get_or_create_cluster(cur, cluster)
+            cur.execute(
+                "UPDATE OFFER SET cluster_id = ? WHERE offer_id = ?", 
+                [cluster_id, offer_id]
+            )
+
+        if emb_50d is not None and emb_3d is not None:
+            cur.execute(
+                "INSERT INTO TFIDF(emb_50d, emb_3d) VALUES (vec_f32(?), vec_f32(?))", 
+                [emb_50d.tobytes(), emb_3d.tobytes()]
+            )
+            tfidf_id = cur.lastrowid
+            cur.execute(
+                "UPDATE OFFER SET tfidf_id = ? WHERE offer_id = ?", 
+                [tfidf_id, offer_id]
+            )
+
+    def update_clusters(self, conn:sqlite3.Connection, cluster:Cluster):
+        """Update offer's nlp data on db. Update only provided data, skip Nones.
+
+        Args:
+            conn (sqlite3.Connection): _description_
+            cluster (Cluster): The offer cluster object. Default to None
+        """
+
+        curr = conn.cursor()
+
+    def search_offer(self, id:str=None) -> tuple[list[Offer], list[int]]:
         """Search an offer by id, returns all offers if no ID.
 
         Args:
             id (str, optional): Offer ID. Defaults to None.
 
         Returns:
-            Offer|list[Offer]: Offers
+            list[Offer]: Offers
+            list[int]: Offer IDs
         """
 
         with self.connect() as conn:
-            cur = conn.cursor()
-
             conn.row_factory = sqlite3.Row
             cur = conn.cursor()
 
@@ -327,9 +362,78 @@ class OfferDB:
             cur.execute(sql, (id,))
             rows = cur.fetchall()
 
-            if id is not None:
-                return self._row_to_offer(rows[0]) if rows else None
-            return [self._row_to_offer(row) for row in rows]
+            return [self._row_to_offer(row) for row in rows], [row['offer_id'] for row in rows]
+        
+    def search_clusters(self, id:str=None) -> list[Cluster]:
+        """Search an offer cluster by id, returns all offer clusters if no ID.
+
+        Args:
+            id (str, optional): Offer ID. Defaults to None.
+
+        Returns:
+            list[Cluster]: Offer clusters
+        """
+
+        with self.connect() as conn:
+            conn.row_factory = sqlite3.Row
+            cur = conn.cursor()
+
+            sql = """
+            SELECT 
+                c.ROWID as cluster_id, c.cluster_name, c.main_tokens, o.title
+            FROM OFFER o
+            JOIN CLUSTER c ON c.ROWID = o.cluster_id
+            WHERE (?1 IS NULL OR o.offer_id = ?1)
+            """
+
+            cur.execute(sql, (id,))
+            rows = cur.fetchall()
+
+            return [self._row_to_cluster(row) for row in rows], [row['title'] for row in rows]
+
+    def get_table(self, table_name:str, columns:list[str]=None, convert_blob=False) -> list:
+        """Get the content of a table from OFFER db
+
+        Args:
+            table_name (str): The name of the table
+            columns (list[str], optional): The list of columns to select, all if not provided. Default to None
+            convert_blob (bool): To convert the result to vectors (if stored as blob from sqlite-vec). Default to None
+
+        Returns:
+            list: Result
+        """
+
+        with self.connect() as conn:
+            cur = conn.cursor()
+            if columns:
+                cols = ', '.join(columns)
+                cur.execute(f"SELECT {cols} FROM {table_name}")
+            else:
+                cur.execute(f"SELECT * FROM {table_name}")
+
+            content = cur.fetchall()
+
+            result = []
+            for row in content:
+                if convert_blob:
+                    # Decode blob to np array
+                    row = [self._vecf32_converter(blob) for blob in row]
+                if columns and len(columns) == 1:
+                    # Convert 3d array to 2d if only 1 item
+                    row = row[0]
+                result.append(row)
+
+            return result
+
+    def clear_table(self, conn:sqlite3.Connection, table_name:str) -> None:
+        """Delete the content of a database table. Warning this action is permanent.
+
+        Args:
+            table_name (str): The name of the table to clear
+        """
+
+        cur = conn.cursor()
+        cur.execute(f"DELETE FROM {table_name}")
 
     def get_total(self, source:str|None) -> int:
         """Get count from a specific source, or all source if `source` is None.

@@ -8,7 +8,9 @@ const tabLoaders = {
    "viewer/map": () => import("./viewer/map.js"),
    "viewer/editor": () => import("./viewer/editor.js"),
    "source/ntne": () => import("./source/api.js"),
-   "source/apec": () => import("./source/api.js")
+   "source/apec": () => import("./source/api.js"),
+   "console/clusters": () => import("./console/clusters.js"),
+   "console/models": () => import("./console/models.js"),
 };
 
 

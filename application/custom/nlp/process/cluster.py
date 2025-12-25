@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.sparse import csc_matrix
 
 from sklearn.cluster import KMeans
 
@@ -17,24 +18,36 @@ class Kmeans(Model[KMeans]):
 
         super().__init__()
 
-    def __top_tokens(self, terms, n_terms=8):
+
+    def __top_tokens(self, X:csc_matrix, labels:np.ndarray, terms:np.ndarray, n_terms=8):
+        X_csr = X.tocsr()      # convenient row slicing
         main_tokens = []
-        for center in self.model.cluster_centers_:
-            top_idx = center.argsort()[::-1][:n_terms]
+        for cluster_id in range(self.model.n_clusters):
+            mask = (labels == cluster_id)
+            cluster_docs = X_csr[mask]
+
+            if cluster_docs.shape[0] == 0:    # no docs assigned
+                continue
+
+            mean_vec = np.asarray(cluster_docs.mean(axis=0)).ravel()
+            top_idx = mean_vec.argsort()[::-1][:n_terms]
             main_tokens.append(terms[top_idx])
+
         return main_tokens
 
 
-    def fit_predict(self, emb_50d:np.ndarray, tokens:np.ndarray, K=10) -> list[Cluster]:
-        """fit_predict Kmeans model then
+    def fit_predict(self, X:csc_matrix, emb_50d:np.ndarray, tokens:np.ndarray, K=5) -> tuple[list[int], list[Cluster]]:
+        """fit_predict Kmeans model
 
         Args:
+            X (csc_matrix): TF-IDF matrix
             emb_50d (np.ndarray): The 50 dimensions embeddings of the TF-IDF matrix
             tokens (np.ndarray): The list of TF-IDF tokens
-            K (int): Number of clusters
+            K (int): Number of clusters. Default to 5
 
         Returns:
-            list[CLuster]: The list of clusters
+            list[int]: The list of cluster assignments
+            list[Clusters]: List of unique clusters
         """
 
         model = KMeans(n_clusters=K)
@@ -42,40 +55,32 @@ class Kmeans(Model[KMeans]):
         self._save_model(model)
 
         clusters = []
-        main_tokens = self.__top_tokens(tokens)
-        for cluster_id in labels:
+        main_tokens = self.__top_tokens(X, labels, tokens)
+        for cluster_id in np.unique(labels):
             c = Cluster(
                 id = int(cluster_id),
                 main_tokens = ', '.join(main_tokens[cluster_id])
             )
             clusters.append(c)
 
-        return clusters
+        return labels.tolist(), clusters
     
-    def predict(self, emb_50d:np.ndarray, tokens:np.ndarray) -> list[Cluster]:
-        """Reduce to 50 dimensions using TruncatedSVD, predict on saved Kmeans model then reduce to 3 dimensions with t-SNE
+    def predict(self, emb_50d:np.ndarray) -> tuple[list[int], list[Cluster]]:
+        """Predict cluster assignments on saved Kmeans model
 
         Args:
             X (csc_matrix): The TF-IDF matrix
+            emb_50d (np.ndarray): 50 dimensions reduction
 
         Returns:
-            np.ndarray: Cluster labels
-            np.ndarray: 50d reduction
-            np.ndarray: 3d reduction
+            list[int]: The list of cluster assignments
+            list[Cluster]: List of unique clusters (only cluster id)
         """
 
         if not self.model:
             raise Exception(f"Impossible to predict on {self.model_name} since the model doesn't exist yet. Use `fit_predict` method first to create the model")
         
         labels = self.model.predict(emb_50d)
+        clusters = [Cluster(id = int(cluster_id)) for cluster_id in np.unique(labels)]
 
-        clusters = []
-        main_tokens = self.__top_tokens(tokens)
-        for cluster_id in labels:
-            c = Cluster(
-                id = int(cluster_id),
-                main_tokens = ', '.join(main_tokens[cluster_id])
-            )
-            clusters.append(c)
-
-        return clusters
+        return labels.tolist(), clusters

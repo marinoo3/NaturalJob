@@ -178,16 +178,15 @@ def process_nlp(source:str):
                 yield "event: end\ndata: complete\n\n"
                 return
             
-            yield "event: progress\ndata: Computing TF-IDF\n\n"
-            emb_50ds, emb_3ds, tokens = app.nlp.tfidf.transform(descriptions)
+            yield "event: progress\ndata: Traitement des données\n\n"
+            
+            emb_50d, emb_3d = app.nlp.tfidf.transform(descriptions)
+            labels, clusters = app.nlp.kmeans.predict(emb_50d)
 
-            yield "event: progress\ndata: Clustering\n\n"
-            clusters = app.nlp.kmeans.predict(emb_50ds, tokens)
-
-            yield "event: progress\ndata: Saving\n\n"
             with app.offer_db.connect() as conn:
-                for id, emd_50d, emb_3d, cluster in zip(ids, emb_50ds, emb_3ds, clusters):
-                    app.offer_db.add_nlp(conn, id, emd_50d, emb_3d, cluster)
+                for id, emb50, emb3, cluster_id in zip(ids, emb_50d, emb_3d, labels):
+                    c = clusters[cluster_id]
+                    app.offer_db.add_nlp(conn, id, emb_50d=emb50, emb_3d=emb3, cluster=c)
                 conn.commit()
 
             yield "event: end\ndata: complete\n\n"
@@ -204,13 +203,68 @@ def process_nlp(source:str):
                     mimetype='text/event-stream',
                     headers=headers)
 
+@ajax.route('fit_kmeans', methods=['POST'])
+def fit_kmeans():
+    K = request.form.get('K')
+    K = 5
+    if not K:
+        abort(400, 'Missing required parameter "K"')
+
+    ids = app.offer_db.get_table('OFFER', columns=['offer_id'])
+    emb_50ds = app.offer_db.get_table('TFIDF', columns=['emb_50d'], convert_blob=True)
+    X, tokens = app.nlp.tfidf.load_matrix()
+    labels, clusters = app.nlp.kmeans.fit_predict(X, emb_50ds, tokens, K=K)
+
+    # Create cluster names
+    template = [{
+        'cluster_id': c.id,
+        'main_tokens': c.main_tokens,
+        'cluster_name': None
+    } for c in clusters]
+    response = app.nlp.llm.request_json(
+        "Je fais du clustering d'offres d'emploi dans la data. Je me base sur les descriptions des offres. Trouve des noms pour mes clusters selon les tokens principaux.",
+        json_template=template
+    )
+    for c in response:
+        cluster_id = c['cluster_id']
+        clusters[cluster_id].name = c['cluster_name']
+
+    # Save data
+    with app.offer_db.connect() as conn:
+        app.offer_db.clear_table(conn, 'CLUSTER')
+        for id, cluster_id in zip(ids, labels):
+            c = clusters[cluster_id]
+            app.offer_db.add_nlp(conn, id, cluster=c)
+
+    return jsonify({'success': True})
+
+@ajax.route('fit_tfidf', methods=['POST'])
+def fit_tfidf():
+    offers, ids = app.offer_db.search_offer()
+    descriptions = [offer.description.offer_description for offer in offers]
+    emb_50d, emb_3d = app.nlp.tfidf.fit_transform(descriptions)
+
+    with app.offer_db.connect() as conn:
+        app.offer_db.clear_table(conn, 'TFIDF')
+        for offer_id, emb50, emb3 in zip(ids, emb_50d, emb_3d):
+            app.offer_db.add_nlp(conn, offer_id, emb_50d=emb50, emb_3d=emb3)
+
+    return jsonify({'success': True})
+
 @ajax.route('/get_offers')
 def get_offers():
-    offers = app.offer_db.search()
+    offers, _ = app.offer_db.search_offer()
     return jsonify({'count': len(offers), 'offers': [offer.dict() for offer in offers]})
 
 
-# TEST
-@ajax.route('/serve_pdf')
-def serve_pdf():
-    return send_from_directory('../data/usr/resume/', '03f85020-1dc6-4ac5-a33d-d7727fb4f08e.pdf')
+
+# --------------------
+# PLOTS
+
+
+@ajax.route('/cluster_plot')
+def cluster_plot():
+    emb_3d = app.offer_db.get_table('TFIDF', columns=['emb_3d'], convert_blob=True)
+    clusters, titles = app.offer_db.search_clusters()
+    fig_dict = app.plot.clusters.render(emb_3d, clusters, titles)
+    return jsonify(fig_dict)

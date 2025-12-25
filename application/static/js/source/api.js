@@ -71,6 +71,7 @@ async function initDB(source, database) {
 
 function processNLP(source, database, countLabel, progress) {
     // Send SSE request (update bdd)
+    const response = await fetch(`/ajax/process_nlp/${source}`);
     const nlpEvt = new EventSource(`/ajax/process_nlp/${source}`);
     database.classList.remove('loading');
     database.classList.add('waiting');
@@ -103,7 +104,7 @@ function startUpdate(source, database) {
     // Reset progress bar
     database.classList.remove('error');
     database.classList.add('waiting');
-    countLabel.textContent = `Initialization`;
+    countLabel.textContent = `Initialisation`;
 
     // Send SSE request (update bdd)
     const bddEvt = new EventSource(`/ajax/update_bdd_stream/${source}`);
@@ -116,7 +117,7 @@ function startUpdate(source, database) {
         const payload = JSON.parse(event.data);
         if (payload.count !== undefined) {
             progress.style.width = payload.progress + "%";
-            countLabel.textContent = `Collecting ${payload.count} jobs`;
+            countLabel.textContent = `${payload.count} offres trouvées`;
         }
     };
 
