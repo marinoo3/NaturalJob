@@ -67,7 +67,7 @@ class _SVD(Model[TruncatedSVD]):
         return emb
     
 
-class _TSNE(Model[])
+
 
 
 

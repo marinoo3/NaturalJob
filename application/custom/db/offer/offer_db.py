@@ -1,4 +1,4 @@
-import sqlean as sqlite3
+import sqlite3
 import sqlite_vec
 from datetime import date
 import os
