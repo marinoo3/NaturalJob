@@ -1,5 +1,7 @@
-section#console .view {
+section#console .view[data-active-view="clusters"] {
     padding: 0;
+    padding-right: 1rem;
+    background-color: var(--bg-frame-color);
 
     .cluster-grid {
         display:flex;

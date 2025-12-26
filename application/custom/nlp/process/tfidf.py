@@ -17,7 +17,7 @@ from .base_model import Model
 
 
 
-class Norm(Model[Normalizer]):
+class _Norm(Model[Normalizer]):
     
     model_name = 'normalizer.joblib'
 
@@ -38,7 +38,7 @@ class Norm(Model[Normalizer]):
 
 
 
-class SVD(Model[TruncatedSVD]):
+class _SVD(Model[TruncatedSVD]):
 
     model_name = 'svd.joblib'
 
@@ -46,7 +46,7 @@ class SVD(Model[TruncatedSVD]):
         """Create a SVD instance, using Kmeans algorithm."""
 
         super().__init__()
-        self.normalizer = Norm()
+        self.normalizer = _Norm()
 
     def fit_transform(self, X:csc_matrix, n=50) -> np.ndarray:
         if X.shape[0] < n:
@@ -65,6 +65,9 @@ class SVD(Model[TruncatedSVD]):
             self.model.transform(X)
         )
         return emb
+    
+
+class _TSNE(Model[])
 
 
 
@@ -80,7 +83,7 @@ class TFIDF(Model[TfidfVectorizer]):
         super().__init__()
         self.nlp = spacy.load("fr_core_news_sm", disable=["parser", "ner", "tagger"])
         self.englisg_stops = stopwords.words('english')
-        self.svd = SVD()
+        self.svd = _SVD()
 
     def _spacy_tokenizer(self, _doc) -> list:
         """Tokenize with spaCy and keep only real tokens (no punctuation/space)."""
@@ -92,7 +95,6 @@ class TFIDF(Model[TfidfVectorizer]):
     
     def _save_matrix(self, X:csc_matrix) -> None:
         path = os.path.join(self.model_path, self.matrix_name)
-        print(path)
         save_npz(path, X)
 
     def load_matrix(self) -> tuple[csc_matrix, np.ndarray]:
@@ -133,7 +135,8 @@ class TFIDF(Model[TfidfVectorizer]):
         self._save_matrix(X)
         self._save_model(model)
 
-        tsne = TSNE(n_components=3, metric='cosine', init='pca', perplexity=min(30, X.shape[0]-1))
+        p = min(30, X.shape[0]-1)
+        tsne = TSNE(n_components=3, metric='cosine', init='pca', perplexity=max(1, p))
         emb_50d = self.svd.fit_transform(X)
         emb_3d = tsne.fit_transform(emb_50d)
         
@@ -154,8 +157,11 @@ class TFIDF(Model[TfidfVectorizer]):
             raise Exception(f"Impossible to predict on {self.model_name} since the model doesn't exist yet. Use `fit_transform` method first to create the model")
         
         X = self.model.transform(corpus)
-        tsne = TSNE(n_components=3, metric='cosine', init='pca', perplexity=min(30, X.shape[0]-1))
+        print('DTYPE:', X.dtype, flush=True)
+        p = min(30, X.shape[0]-1)
+        tsne = TSNE(n_components=3, metric='cosine', init='pca', perplexity=max(.5, p))
         emb_50d = self.svd.transform(X)
+        print(emb_50d.dtype, flush=True)
         emb_3d = tsne.fit_transform(emb_50d)
 
         return emb_50d, emb_3d

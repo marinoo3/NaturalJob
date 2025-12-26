@@ -1,12 +1,15 @@
 // Init the map
 let map = L.map('map', {maxZoom: 14}).setView([46.603354, 1.888334], 6);
-var tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+var tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                maxZoom: 20
+            }).addTo(map);
 // Elements
 const footer = document.querySelector('footer');
 const cooElement = footer.querySelector('.coo');
 const zoomElement = footer.querySelector('.zomm');
 // Hexbin
-const palette = ['#440154', '#3b528b', '#21918c', '#5ec962', '#fde725'];
+let palette = ['#440154CC', '#3b528b', '#21918c', '#5ec962', '#fde725'];
+palette = ['#32173fff', '#7e03a8', '#cc4778', '#f89540', '#f0f921']
 
 
 
@@ -37,12 +40,12 @@ async function requestData() {
 
     // bind log transforms when needed
     const binders = {
-    count: bins => bins.length,
-    weight: bins => bins.reduce((sum, { data }) => sum + (data.weight ?? 0), 0)
+        count: bins => bins.length,
+        weight: bins => bins.reduce((sum, { data }) => sum + (data.weight ?? 0), 0)
     };
     const logWrapper = fn => bins => {
-    const value = fn(bins);
-    return value > 0 ? Math.log(value) : 0;
+        const value = fn(bins);
+        return value > 0 ? Math.log(value) : 0;
     };
     const colorBinding = logWrapper(binders.count);   // log(count)
 

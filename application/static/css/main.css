@@ -1,21 +1,22 @@
 /* INIT */
 
 :root {
-    --text-color: #151515;
+        --text-color: #E5E5E5;
     --text-second-color: #7e7e7e;
     --text-third-color: #a5a5a5;
-    --bg-color: #fff;
-    --bg-second-color: #F7F8FA;
-    --bg-selected-color: #E9EDF0;
+    --bg-color: #252526;
+    --bg-second-color: #151414;
+    --bg-selected-color: #2B2D2E;
+    --bg-frame-color: #1e1e1e;
     --bg-overlay-color: #00000093;
-    --border-color: #d1d9e0;
+    --border-color: #404040;
     --border-radius: 5px;
-    --accent-color: #2776ff;
-    --accent-second-color: #5f99ff;
+    --accent-color: #73ef88;
+    --accent-second-color: #5bc16c;
     --bad-color: #ff4d4d;
-    --good-color: #4EA252;
     --neutral-color: #ffa64d;
-    --purple-color: #d065d2;
+    --purple-color: #cc4778;
+    --blue-color: #7393ef;
 }
 
 :where(:not(.EasyMDEContainer *, a)) {
@@ -39,6 +40,14 @@ body {
 
 html, body, main {
     height: 100%;
+}
+
+img {
+    filter: invert(1);
+}
+
+a {
+    color: #4BA3E3 !important;
 }
 
 main {

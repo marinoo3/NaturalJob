@@ -4,6 +4,7 @@ section#viewer .view[data-active-view="map"] {
 
     #map {
         height: 100%;
+        background-color: black;
     }
 
     #map .leaflet-bar a {
@@ -16,7 +17,7 @@ section#viewer .view[data-active-view="map"] {
         right: 0;
         bottom: 0;
         z-index: 999;
-        background-color: rgb(255 255 255 / 85%);
+        background-color: rgba(0, 0, 0, 0.85);
     }
 
     footer > p {
@@ -25,4 +26,23 @@ section#viewer .view[data-active-view="map"] {
     footer > p:not(:last-child) {
         margin-right: .4rem;
     }
+}
+
+.leaflet-control-attribution {
+    background-color: rgba(0, 0, 0, 0.85) !important;
+}
+.leaflet-control-attribution a {
+    color: var(--text-second-color) !important;
+}
+
+
+.leaflet-bar {
+    border: 1px solid var(--border-color) !important;
+}
+
+.leaflet-bar a {
+    background-color: var(--bg-overlay-color) !important;
+}
+.leaflet-bar a:not(:last-child) {
+    border-bottom: 1px solid var(--border-color) !important;
 }

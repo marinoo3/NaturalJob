@@ -1,4 +1,8 @@
 section#documents .view[data-active-view="templates"] {
+    overflow: scroll;
+    > div {
+        height: auto !important;
+    }
 
     .actions {
         display: flex;
@@ -16,7 +20,7 @@ section#documents .view[data-active-view="templates"] {
         border-bottom: solid 1px var(--bg-selected-color);
     }
     .category .foldable:hover {
-        background-color: var(--bg-second-color);
+        background-color: var(--bg-frame-color);
     }
 
     .category .foldable img {

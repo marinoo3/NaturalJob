@@ -171,37 +171,21 @@ def process_nlp(source:str):
     if source not in {'NTNE', 'APEC'}:
         abort(404, description='Invalid source')
 
-    def event_stream():
-        try:
-            ids, descriptions = app.offer_db.get_unprocessed(source)
-            if not ids:
-                yield "event: end\ndata: complete\n\n"
-                return
-            
-            yield "event: progress\ndata: Traitement des données\n\n"
-            
-            emb_50d, emb_3d = app.nlp.tfidf.transform(descriptions)
-            labels, clusters = app.nlp.kmeans.predict(emb_50d)
+    ids, descriptions = app.offer_db.get_unprocessed(source)
+    if not ids:
+        return jsonify({"success": True})
+    
+    emb_50d, emb_3d = app.nlp.tfidf.transform(descriptions)
+    labels, clusters = app.nlp.kmeans.predict(emb_50d)
 
-            with app.offer_db.connect() as conn:
-                for id, emb50, emb3, cluster_id in zip(ids, emb_50d, emb_3d, labels):
-                    c = clusters[cluster_id]
-                    app.offer_db.add_nlp(conn, id, emb_50d=emb50, emb_3d=emb3, cluster=c)
-                conn.commit()
+    with app.offer_db.connect() as conn:
+        for id, emb50, emb3, cluster_id in zip(ids, emb_50d, emb_3d, labels):
+            c = clusters[cluster_id]
+            app.offer_db.add_nlp(conn, id, emb_50d=emb50, emb_3d=emb3, cluster=c)
+        conn.commit()
 
-            yield "event: end\ndata: complete\n\n"
+    return jsonify({"success": True})
 
-        except Exception as exc:
-            yield f"event: error\ndata: {json.dumps({'message': str(exc)})}\n\n"
-            raise
-
-    headers = {
-        'Cache-Control': 'no-cache',
-        'X-Accel-Buffering': 'no',  # disable buffering if behind nginx
-    }
-    return Response(stream_with_context(event_stream()),
-                    mimetype='text/event-stream',
-                    headers=headers)
 
 @ajax.route('fit_kmeans', methods=['POST'])
 def fit_kmeans():
@@ -236,7 +220,7 @@ def fit_kmeans():
             c = clusters[cluster_id]
             app.offer_db.add_nlp(conn, id, cluster=c)
 
-    return jsonify({'success': True})
+    return jsonify({'model_name': 'Model Name'})
 
 @ajax.route('fit_tfidf', methods=['POST'])
 def fit_tfidf():
@@ -249,7 +233,7 @@ def fit_tfidf():
         for offer_id, emb50, emb3 in zip(ids, emb_50d, emb_3d):
             app.offer_db.add_nlp(conn, offer_id, emb_50d=emb50, emb_3d=emb3)
 
-    return jsonify({'success': True})
+    return jsonify({'model_name': 'Model Name'})
 
 @ajax.route('/get_offers')
 def get_offers():

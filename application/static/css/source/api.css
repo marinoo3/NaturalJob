@@ -1,5 +1,8 @@
 section#source .view:is([data-active-view="ntne"], [data-active-view="apec"]) {
     overflow: scroll;
+    > div {
+        height: auto !important;
+    }
 
     .origin {
         margin-bottom: 1rem;
@@ -11,7 +14,7 @@ section#source .view:is([data-active-view="ntne"], [data-active-view="apec"]) {
     .database {
         display: flex;
         justify-content: space-between;
-        background-color: var(--bg-second-color);
+        background-color: var(--bg-frame-color);
         border-radius: var(--border-radius);
         padding: .6rem;
         position: relative;
@@ -23,15 +26,9 @@ section#source .view:is([data-active-view="ntne"], [data-active-view="apec"]) {
             left: 0;
             top: 0;
             width: 0px;
-            background-color: var(--good-color);
+            background-color: var(--accent-color);
             height: 3px;
             transition: width 1s ease;
-        }
-        .progress.error {
-            background-color: var(--bad-color);
-            .progress {
-                background-color: var(--bad-color);
-            }
         }
 
         .status, .actions {
@@ -44,7 +41,7 @@ section#source .view:is([data-active-view="ntne"], [data-active-view="apec"]) {
         .status_icon {
             height: 16px;
             width: 16px;
-            background-color: var(--good-color);
+            background-color: var(--accent-color);
             border-radius: 50%;
         }
     }
@@ -77,11 +74,11 @@ section#source .view:is([data-active-view="ntne"], [data-active-view="apec"]) {
         margin-top: 1rem;
 
         thead {
-            background-color: var(--bg-second-color);
+            background-color: var(--bg-frame-color);
         }
 
         th, td {
-            border: 1px solid #ccc;
+            border: 1px solid var(--border-color);
             padding: .2rem .5rem;
             text-align: left;
         }
@@ -91,17 +88,16 @@ section#source .view:is([data-active-view="ntne"], [data-active-view="apec"]) {
         }
 
         td.false {
-            color: var(--purple-color);
+            color: var(--accent-color);
         }
         td.true {
-            color: var(--accent-color);
+            color: var(--bad-color);
         }
         td.na, td.id {
             color: var(--purple-color);
         }
         td.type {
-            color: var(--accent-color);
-            opacity:.6;
+            color: var(--blue-color);
         }
     }
 

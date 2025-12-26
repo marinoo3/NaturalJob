@@ -36,7 +36,38 @@ class ClusterFig(BaseFig):
             legend=dict(
                 y=0.5,              # middle of plotting area
                 yanchor='middle',   # anchor legend to its middle
+            ),
+            paper_bgcolor='#1e1e1e',
+            font={'color': '#E5E5E5'} ,
+            scene=dict(
+                bgcolor='#1e1e1e',  # color of the 3‑D box “interior”
+                xaxis=dict(
+                    title='t-SNE 1',
+                    color='#E5E5E5',          # axis label/ticks color
+                    gridcolor='#555555',      # grid lines
+                    zerolinecolor='#888888',
+                    backgroundcolor='#1e1e1e' # panel color for planes
+                ),
+                yaxis=dict(
+                    title='t-SNE 2',
+                    color='#E5E5E5',
+                    gridcolor='#555555',
+                    zerolinecolor='#888888',
+                    backgroundcolor='#1e1e1e'
+                ),
+                zaxis=dict(
+                    title='t-SNE 3',
+                    color='#E5E5E5',
+                    gridcolor='#555555',
+                    zerolinecolor='#888888',
+                    backgroundcolor='#1e1e1e'
+                ),
+            ),
+            scene_camera=dict(                            # initial rotation/zoom
+                eye=dict(x=1.2, y=1.2, z=.55),            # position of the camera; larger values zoom out
+                center=dict(x=0, y=0, z=-.2),               # optional, where the camera is pointing
             )
         )
+        
 
         return self._get_json_2(fig)

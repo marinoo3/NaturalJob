@@ -66,35 +66,27 @@ async function initDB(source, database) {
     dateLabel.textContent = content.date;
     // Create summary table
     buildTable(content);
+    // TODO: Reload map / viewer tab
 }
 
 
-function processNLP(source, database, countLabel, progress) {
-    // Send SSE request (update bdd)
-    const response = await fetch(`/ajax/process_nlp/${source}`);
-    const nlpEvt = new EventSource(`/ajax/process_nlp/${source}`);
+async function processNLP(source, database, countLabel, progress) {
+    // Send nlp request
+    countLabel.textContent = "Traitement des données";
     database.classList.remove('loading');
     database.classList.add('waiting');
-
-    nlpEvt.addEventListener('progress', (event) => {
-        countLabel.textContent = event.data;
-    });
-
-    nlpEvt.addEventListener('error', (event) => {
+    
+    const response = await fetch(`/ajax/process_nlp/${source}`);
+    if (response.ok) {
+        database.classList.remove('waiting');
+        progress.remove();
+        initDB(source, database);
+    } else {
         countLabel.textContent = "Erreur lors du traitement";
         database.classList.remove('waiting');
         database.classList.remove('loading');
         database.classList.add('error');
-        console.error('SSE error', event);
-        nlpEvt.close();
-    });
-
-    nlpEvt.addEventListener('end', () => {
-        database.classList.remove('waiting');
-        progress.remove();
-        initDB(source, database);
-        nlpEvt.close();
-    });
+    }
 }
 
 

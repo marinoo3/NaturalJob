@@ -50,6 +50,39 @@ section#console .view{
     padding: .8rem 1rem;
     border-radius: var(--border-radius);
     margin-bottom: 1.5rem;
+    overflow: hidden;
+    position: relative;
+
+    .progress {
+        position: absolute;
+        z-index: 5;
+        left: 0;
+        top: 0;
+        width: 0px;
+        background-color: var(--neutral-color);
+        height: 3px;
+        transition: width 1s ease;
+    }
+}
+
+.model-container .model.waiting {
+    .progress {
+        animation: waiting 2s ease-in-out infinite alternate;
+    }
+    .date {
+        display: none;
+    }
+    .main-button {
+        background-color: var(--neutral-color);
+        border-color: var(--neutral-color);
+    }
+}
+
+.model-container .model.error {
+    .progress {
+        background-color: var(--bad-color);
+        width: 100%;
+    }
 }
 
 .model-container .model .info > * {

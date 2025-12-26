@@ -125,7 +125,7 @@ section#viewer .view[data-active-view="editor"] {
                 border-radius: var(--border-radius);
                 text-align: left;
                 font-weight: 700;
-                background-color: var(--bg-second-color);
+                background-color: var(--bg-frame-color);
                 width: 100%;
                 display: flex;
                 align-items: center;

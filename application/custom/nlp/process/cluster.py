@@ -80,6 +80,7 @@ class Kmeans(Model[KMeans]):
         if not self.model:
             raise Exception(f"Impossible to predict on {self.model_name} since the model doesn't exist yet. Use `fit_predict` method first to create the model")
         
+        print(emb_50d.dtype, flush=True)
         labels = self.model.predict(emb_50d)
         clusters = [Cluster(id = int(cluster_id)) for cluster_id in np.unique(labels)]
 
