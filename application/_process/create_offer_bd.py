@@ -13,7 +13,8 @@ schema_statements = [
         company_id   INTEGER PRIMARY KEY,
         name         TEXT,
         description  TEXT,
-        industry     TEXT
+        industry     TEXT,
+        logo_url     TEXT
     );
     """,
     """

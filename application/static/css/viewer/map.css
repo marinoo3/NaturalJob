@@ -26,6 +26,79 @@ section#viewer .view[data-active-view="map"] {
     footer > p:not(:last-child) {
         margin-right: .4rem;
     }
+
+    .search-container {
+        position: absolute;
+        z-index: 9999;
+        background-color: var(--bg-overlay-color);
+        border: solid 1px var(--border-color);
+        border-radius: var(--border-radius);
+        top: 1.2rem;
+        left: 1.2rem;
+        overflow: hidden;
+
+        .search {
+            border-bottom: solid 1px var(--border-color);
+            position: relative;
+        }
+
+        #search-input {
+            border-color: var(--bg-overlay-color);
+            background-color: inherit;
+            padding: .6rem;
+            padding-left: calc(16px + 1.2rem);
+            width: 100%;
+            border-radius: var(--border-radius) var(--border-radius) 0px 0px;
+        }
+        label {
+            font-size: 0;
+            position: absolute;
+            left: .6rem;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .offers > li {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+            padding: 1rem;
+
+            .content {
+                margin-right: 50px;
+            }
+
+            .logo {
+                height: 40px;
+                width: 40px;
+                background-size: contain;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-color: white;
+                border-radius: var(--border-radius);
+            }
+
+            .title {
+                width: 300px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .score {
+                position: absolute;
+                right: 1rem;
+                padding: .2rem .6rem;
+                background-color: var(--accent-second-color);
+                color: white;
+                border-radius: 20px;
+            }
+        }
+        .offers > li:hover {
+            background-color: var(--bg-frame-color);
+        }
+    }
 }
 
 .leaflet-control-attribution {
@@ -38,6 +111,8 @@ section#viewer .view[data-active-view="map"] {
 
 .leaflet-bar {
     border: 1px solid var(--border-color) !important;
+    margin-right: 1.2rem !important;
+    margin-bottom: 1.5rem !important;
 }
 
 .leaflet-bar a {
@@ -45,4 +120,11 @@ section#viewer .view[data-active-view="map"] {
 }
 .leaflet-bar a:not(:last-child) {
     border-bottom: 1px solid var(--border-color) !important;
+}
+
+.hexbin-container {
+    cursor: pointer;
+}
+.hexbin-container:hover .hexbin-hexagon {
+    fill: var(--accent-color);
 }

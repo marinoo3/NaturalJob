@@ -11,7 +11,8 @@ const zoomElement = footer.querySelector('.zomm');
 const palette = ['#A167F280', '#7e03a8', '#cc4778', '#f89540', '#f0f921']
 
 
-
+// Move controls to bottom right
+map.zoomControl.setPosition('bottomright');
 
 // Add hexbin to map
 var hexLayer = L.hexbinLayer({
@@ -59,7 +60,7 @@ hexLayer.dispatch().on('click', bin => {
 
 
 // Request data
-async function requestData() {
+async function requestMapData() {
     const response = await fetch('ajax/get_offers');
     const content = await response.json();
 
@@ -114,6 +115,10 @@ map.on('zoomend', function () {
     setZoom();
 });
 
+document.addEventListener('dataUpdate', () => {
+    requestMapData();
+});
+
 
 
 
@@ -121,4 +126,4 @@ map.on('zoomend', function () {
 
 setZoom();
 setCoo();
-requestData();
+requestMapData();

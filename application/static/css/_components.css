@@ -116,7 +116,7 @@ input[type="text"] {
 }
 input[type="text"]:focus {
     outline: none;
-    border: solid 1px var(--accent-color);
+    border: solid 1px var(--accent-color) !important;
 }
 
 /* Drop area */

@@ -1,4 +1,5 @@
 const section = document.querySelector('#source');
+const viewerSection = document.querySelector("section#viewer");
 const view = section.querySelector('.view')
 
 
@@ -81,6 +82,10 @@ async function processNLP(source, database, countLabel, progress) {
         database.classList.remove('waiting');
         progress.remove();
         initDB(source, database);
+        // Send custom event
+        const event = new Event('dataUpdate');
+        document.dispatchEvent(event);
+
     } else {
         countLabel.textContent = "Erreur lors du traitement";
         database.classList.remove('waiting');

@@ -1,8 +1,53 @@
 <div>
+    <div class="search-container">
+        <div class="search">
+            <label for="search-input">
+                <img src="{{ url_for('static', filename='images/search.svg') }}" alt="" height="16px">
+            </label>
+            <input type="text" id="search-input" placeholder="Rechercher une offre">
+        </div>
+        <ul class="filters"></ul>
+        <div class="results">
+            <ul class="offers">
+                <li>
+                    <div class="logo" style="background-image: url('https://www.apec.fr/files/live/mounts/images/media_entreprise/716123/logo_ICSIS_NORD_716123.jpg');"></div>
+                    <div class="content">
+                        <h3 class="title">Chef de Projet Technique Poste de Travail / Digital Workplace F/H</h3>
+                        <p class="second">VAISALA FRANCE</p>
+                    </div>
+                    <p class="score">96</p>
+                </li>
+                <li>
+                    <div class="logo" style="background-image: url('https://www.apec.fr/files/live/mounts/images/media_entreprise/720421/logo_ACPQUALIFE_720421_1017330.png');"></div>
+                    <div class="content">
+                        <h3 class="title">Infirmier en HAD/X) F/H</h3>
+                        <p class="second">HPS Acpqualife</p>
+                    </div>
+                    <p class="score">92</p>
+                </li>
+                <li>
+                    <div class="logo" style="background-image: url('https://www.apec.fr/files/live/mounts/images/media_entreprise/429809/logo_ISO_SECURITE_429809_1544902.jpg');"></div>
+                    <div class="content">
+                        <h3 class="title">Responsable administratif et financier multi-sites/x) F/H</h3>
+                        <p class="second">ISO SECURITE</p>
+                    </div>
+                    <p class="score">87</p>
+                </li>
+                <li>
+                    <div class="logo" style="background-image: url('https://www.apec.fr/files/live/mounts/images/media_entreprise/161785/logo_161785_STEF1340189572640.JPG');"></div>
+                    <div class="content">
+                        <h3 class="title">Data scientist F/H</h3>
+                        <p class="second">STEF</p>
+                    </div>
+                    <p class="score">85</p>
+                </li>
+            </ul>
+        </div>
+    </div>
     <div id="map" style="height: 100%"></div>
     <footer>
         <p class="second coo"></p>
-        <p class="second">|</p>
+        <p class="second"></p>
         <p class="second zomm"></p>
     </footer>
 </div>

@@ -6,6 +6,7 @@ class Company:
     name: str
     description: Optional[str] = None
     industry: Optional[str] = None
+    logo_url: Optional[str] = None
 
 @dataclass
 class Region:
@@ -45,7 +46,7 @@ class Offer:
     description: Description
     company: Company
     city: City
-    cluster: Cluster = None
+    cluster: Optional[Cluster] = None
     degrees: List[str] = field(default_factory=list)  # degree names
     skills: List[str] = field(default_factory=list)   # skill names
 

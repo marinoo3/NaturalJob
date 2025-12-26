@@ -54,8 +54,8 @@ class OfferDB:
             return row[0]
         
         cur.execute(
-            "INSERT INTO COMPANY(name, description, industry) VALUES (?, ?, ?)",
-            [company.name, company.description, company.industry]
+            "INSERT INTO COMPANY(name, description, industry, logo_url) VALUES (?, ?, ?, ?)",
+            [company.name, company.description, company.industry, company.logo_url]
         )
         return cur.lastrowid
     

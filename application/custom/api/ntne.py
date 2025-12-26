@@ -10,6 +10,7 @@ from ..db.offer.models import Offer, Description, Company, City, Region
 
 class NTNE(BaseAPI):
 
+    domain = 'https://nostalentsnosemplois.auvergnerhonealpes.fr'
     base_url = "https://nostalentsnosemplois.auvergnerhonealpes.fr/api"
     endpoints = {
         'search': '/joboffers/search'
@@ -68,6 +69,12 @@ class NTNE(BaseAPI):
             return None
         numbers = ParseNumeric(label)
         return min(numbers)
+    
+    def __parse_company_logo(self, result) -> str|None:
+        url = XPathSearch(result, 'url', 'logo')
+        if not url:
+            return None
+        return self.domain + url
 
     def __create_offer(self, result:dict) -> Offer:
         description = Description(
@@ -77,7 +84,8 @@ class NTNE(BaseAPI):
         company = Company(
             name = XPathSearch(result, 'company', 'name'),
             description = ParseHTML(XPathSearch(result, 'companyDescription')),
-            industry = XPathSearch(result, 'company', 'industryField', 'value')
+            industry = XPathSearch(result, 'company', 'industryField', 'value'),
+            logo_url = self.__parse_company_logo(result)
         )
         region = Region(
             code = XPathSearch(result, 'locations', [0], 'admin2Code'),

@@ -11,6 +11,7 @@ from ..db.offer.models import Offer, Description, Company, City, Region
 class APEC(BaseAPI):
 
     size = 100
+    domain = 'https://www.apec.fr'
     base_url = "https://www.apec.fr/cms/webservices"
     endpoints = {
         'search': '/rechercheOffre',
@@ -77,7 +78,7 @@ class APEC(BaseAPI):
         
         amounts = ParseNumeric(label)
         if len(amounts) >= index+1:
-            return amounts[index]
+            return amounts[index] * 1000
         return None
         
     def __parse_experience(self, result:dict, hierarchy:dict) -> str|None:
@@ -89,6 +90,12 @@ class APEC(BaseAPI):
         if not year:
             return None
         return year[0]
+    
+    def __parse_company_logo(self, result) -> str|None:
+        url = XPathSearch(result, 'logoEtablissement')
+        if not url:
+            return None
+        return self.domain + '/files/live/mounts/images' + url
 
 
     def __create_offer(self, result:dict, hierarchy:dict) -> Offer:
@@ -99,7 +106,8 @@ class APEC(BaseAPI):
         company = Company(
             name = XPathSearch(result, 'enseigne'),
             description = ParseHTML(XPathSearch(result, 'texteHtmlEntreprise')),
-            industry = self.__parse_industry(result, hierarchy)
+            industry = self.__parse_industry(result, hierarchy),
+            logo_url = self.__parse_company_logo(result)
         )
         region = Region(
             code = self.__parse_region_code(result),
