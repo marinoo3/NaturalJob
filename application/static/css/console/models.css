@@ -83,6 +83,10 @@ section#console .view{
         background-color: var(--bad-color);
         width: 100%;
     }
+    .main-button {
+        background-color: var(--bad-color);
+        border-color: var(--bad-color);
+    }
 }
 
 .model-container .model .info > * {

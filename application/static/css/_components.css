@@ -60,7 +60,7 @@ button:hover {
 button.main-button {
     transition: background-color .125s ease;
 }
-button:hover.main-button {
+button:hover.main-button:not(:hover) {
     opacity: 1;
     background-color: var(--accent-color);
 }
@@ -114,6 +114,10 @@ input[type="text"] {
     background-color: var(--bg-second-color);
     padding: .6rem;
 }
+input[type="text"]:focus {
+    outline: none;
+    border: solid 1px var(--accent-color);
+}
 
 /* Drop area */
 
@@ -132,7 +136,7 @@ input[type="text"] {
         color: var(--text-second-color);
     }
 }
-.drop-area.dragover {
+.drop-area.dragover, .drop-area:active {
     border-color: var(--accent-color);
 
     p {

@@ -42,7 +42,11 @@ html, body, main {
     height: 100%;
 }
 
-img {
+header {
+    display: none !important;
+}
+
+img, i {
     filter: invert(1);
 }
 
@@ -88,29 +92,30 @@ main {
     cursor: col-resize;
     top: 0;
     bottom: 0;
-    width: 4px;
-    left: calc(var(--left) - 2px);
+    width: 2px;
+    left: calc(var(--left) - 1px);
 }
 
 .handle.horizontal {
     cursor: row-resize;
     left: 0;
     right: 0;
-    height: 4px;
+    height: 2px;
 }
 
 .handle.horizontal.left {
-    top: calc(var(--top-left) - 2px);
+    top: calc(var(--top-left) - 1px);
     right: calc(100% - var(--left));
 }
 
 .handle.horizontal.right {
-    top: calc(var(--top-right) - 2px);
+    top: calc(var(--top-right) - 1px);
     left: var(--left);
 }
 
 .handle:hover {
-    background: rgba(0, 0, 0, 0.12);
+    background-color: var(--accent-color);
+    z-index: 99999;
 }
 
 

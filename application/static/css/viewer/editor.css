@@ -25,6 +25,11 @@ section#viewer .view[data-active-view="editor"] {
         font-weight: 400;
     }
 
+    .EasyMDEContainer button:hover {
+        background: var(--bg-second-color);
+        border-color: var(--border-color);
+    }
+
     .EasyMDEContainer .editor-toolbar .actions button.main-button {
         margin-left: .4rem;
     }
@@ -32,6 +37,9 @@ section#viewer .view[data-active-view="editor"] {
         background-color: var(--accent-color);
         border-color: var(--accent-second-color);
         color: white;
+    }
+    .EasyMDEContainer .editor-toolbar .actions button.second-button {
+        color: var(--text-color);
     }
     .EasyMDEContainer .editor-toolbar .actions button.second-button:hover {
         background-color: var(--bg-second-color);
@@ -45,6 +53,8 @@ section#viewer .view[data-active-view="editor"] {
         border-radius: 0;
         border: solid 1px var(--bg-selected-color);
         border-left: none;
+        background-color: var(--bg-second-color);
+        color: var(--text-color);
     }
 
     .EasyMDEContainer .editor-preview {
@@ -53,6 +63,7 @@ section#viewer .view[data-active-view="editor"] {
         border-radius: 0;
         border: solid 1px var(--bg-selected-color);
         border-right: none;
+        background-color: var(--bg-frame-color);
     }
 
 
@@ -60,6 +71,7 @@ section#viewer .view[data-active-view="editor"] {
         grid-column: 1 / 3;
         padding: .2rem;
         width: inherit;
+        background-color: rgba(0, 0, 0, 0.85);
     }
 
     .editor-statusbar > span {

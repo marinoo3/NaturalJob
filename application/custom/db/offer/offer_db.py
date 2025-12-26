@@ -423,6 +423,10 @@ class OfferDB:
                     row = row[0]
                 result.append(row)
 
+            if convert_blob:
+                # Convert to np.ndarray with float32 dtype
+                result = np.asarray(result, dtype=np.float32)
+
             return result
 
     def clear_table(self, conn:sqlite3.Connection, table_name:str) -> None:
