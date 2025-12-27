@@ -42,10 +42,6 @@ html, body, main {
     height: 100%;
 }
 
-header {
-    display: none !important;
-}
-
 img, i {
     filter: invert(1);
 }

@@ -22,8 +22,14 @@ class Template:
         return (self.uuid, self.title, self.description, self.category, self.path, self.date_str())
 
     def render_html(self) -> str:
+        """Create html template object
+
+        Returns:
+            str: The html object
+        """
+
         html = render_template(
-            'elements/doc_template.html', 
+            'elements/template.html', 
             uuid=self.uuid, 
             title=self.title, 
             description=self.description,   

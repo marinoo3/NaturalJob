@@ -1,11 +1,12 @@
 const desktop = document.querySelector('main');
-const minSize = 250;
+const minSize = 100;
 
 const domCache = new Map();
 const tabs = document.querySelectorAll('section .tabs li');
 const tabLoaders = {
    "documents/templates": () => import("./documents/templates.js"),
    "viewer/map": () => import("./viewer/map.js"),
+   "viewer/list": () => import("./viewer/list.js"),
    "viewer/editor": () => import("./viewer/editor.js"),
    "source/ntne": () => import("./source/api.js"),
    "source/apec": () => import("./source/api.js"),

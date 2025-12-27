@@ -162,7 +162,7 @@ class TFIDF(Model[TfidfVectorizer]):
         
         return emb_50d, emb_3d
     
-    def transform(self, corpus:list[str]) -> tuple[np.ndarray, np.ndarray]:
+    def transform(self, corpus:list[str], save=False) -> tuple[np.ndarray, np.ndarray]:
         """Create a TF-IDF matrix from documents
 
         Args:
@@ -177,8 +177,8 @@ class TFIDF(Model[TfidfVectorizer]):
             raise Exception(f"Impossible to predict on {self.model_name} since the model doesn't exist yet. Use `fit_transform` method first to create the model")
         
         X = self.model.transform(corpus)
-        # Update saved sparse matrix with new data
-        self._update_matrix(X)
+        if save:
+            self._update_matrix(X)
 
         emb_50d = self.svd.transform(X)
         emb_3d = self.tsne.fit_transform(emb_50d)

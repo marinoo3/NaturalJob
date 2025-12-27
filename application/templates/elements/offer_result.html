@@ -1,0 +1,33 @@
+<li class="offer" data-offer-id="{{ offer_id }}">
+    <div class="logo" style="background-image: url('{{ company_logo }}');"></div>
+    <div class="content">
+        <div class="info">
+            <p class="company">{{ company_name }}</p>
+            <p class="second date">{{ date }}</p>
+            <ul class="tags">
+                {% for tag in tags %}
+                    <li>{{ tag }}</li>
+                {% endfor %}
+            </ul>    
+        </div>
+        <h2 class="title">{{ title }}</h2>
+        <p class="description">{{ description }}</p>
+    </div>
+    <ul class="actions">
+        <li>
+            <button class="icon-button save">
+                <img src="{{ url_for('static', filename='images/bookmark.svg') }}" alt="" height="16px">
+            </button>
+        </li>
+        <li>
+            <button class="icon-button like">
+                <img src="{{ url_for('static', filename='images/like.svg') }}" alt="" height="16px">
+            </button>
+        </li>
+        <li>
+            <button class="icon-button dislike">
+                <img src="{{ url_for('static', filename='images/dislike.svg') }}" alt="" height="16px">
+            </button>
+        </li>
+    </ul>
+</li>

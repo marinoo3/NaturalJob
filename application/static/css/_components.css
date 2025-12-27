@@ -119,6 +119,19 @@ input[type="text"]:focus {
     border: solid 1px var(--accent-color) !important;
 }
 
+/* Selects */
+
+select {
+    background-color: var(--bg-second-color);
+    border: solid 1px var(--border-color);
+    border-radius: var(--border-radius);
+    padding: .6rem;
+}
+select:focus {
+    outline: none;
+    border: solid 1px var(--accent-color) !important;
+}
+
 /* Drop area */
 
 .drop-area {

@@ -1,5 +1,9 @@
 from dataclasses import dataclass, field, asdict
 from typing import Optional, List
+from flask import render_template
+from datetime import date
+
+
 
 @dataclass
 class Company:
@@ -51,3 +55,36 @@ class Offer:
     skills: List[str] = field(default_factory=list)   # skill names
 
     dict = asdict
+
+    def date_str(self, format:str):
+        date_obj = date.fromisoformat(format)
+        return date_obj.strftime(format)
+
+    def render(self, id:int, style='result') -> str:
+        """Create html template object
+
+        Args:
+            id (int): The offer id
+            style (str): The type of template to render: 'preview', 'result', 'fullview'. Defaults to 'result'.
+
+        Returns:
+            str: The html object
+        """
+
+        match style:
+            case 'preview':
+                return None
+            case 'result':
+                return render_template(
+                    'elements/offer_result.html', 
+                    offer_id=id, 
+                    title=self.title,
+                    description=self.description.offer_description,
+                    company_name=self.company.name,
+                    company_logo=self.company.logo_url,
+                    date=self.date_str('%D %M %Y'),
+                    tags=[])
+            case 'fullview':
+                return None
+            case _:
+                raise ValueError("Wrong `style` value, expected 'preview', 'result' or 'fullview'")

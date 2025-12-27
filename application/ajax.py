@@ -175,7 +175,7 @@ def process_nlp(source:str):
     if not ids:
         return jsonify({"success": True})
     
-    emb_50d, emb_3d = app.nlp.tfidf.transform(descriptions)
+    emb_50d, emb_3d = app.nlp.tfidf.transform(descriptions, save=True)
     labels, clusters = app.nlp.kmeans.predict(emb_50d)
 
     with app.offer_db.connect() as conn:
@@ -235,10 +235,25 @@ def fit_tfidf():
 
     return jsonify({'model_name': 'Model Name'})
 
+
+
+# --------------------
+# SEARCH
+
 @ajax.route('/get_offers')
 def get_offers():
     offers, _ = app.offer_db.search_offer()
     return jsonify({'count': len(offers), 'offers': [offer.dict() for offer in offers]})
+
+@ajax.route('/search_offer')
+def search_offer():
+    query = request.args.get('query')
+    q_emb_50d, _ = app.nlp.tfidf.transform([query])
+    offers, ids = app.offer_db.search_offer(query=q_emb_50d)
+    offer_htmls = [offer.render(id, style='result') for offer, id in zip(offers, ids)]
+    print(ids)
+    return jsonify(offer_htmls)
+
 
 
 

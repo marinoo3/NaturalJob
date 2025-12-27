@@ -1,0 +1,87 @@
+<div class="wrapper">
+    <header>
+        <div class="search">
+            <label for="search-input">
+                <img src="{{ url_for('static', filename='images/search.svg') }}" alt="" height="16px">
+            </label>
+            <input type="text" id="search-input" placeholder="Rechercher un terme">
+        </div>
+        <select name="search-type" id="search-type">
+            <option value="offer">Offres d'emploi</option>
+            <option value="company">Entreprises</option>
+        </select>
+    </header>
+    <div class="container">
+        <nav class="filters">
+            <div class="salary">
+                <label>Salaire</label>
+                <div id="salary-slider"></div>
+            </div>
+            <div class="category">
+                <label>Categorie</label>
+                <select id="category-select">
+                    <option value="all">Tous</option>
+                    <option value="0">Développement et Architecture Technique</option>
+                    <option value="1">Développement Commercial et Stratégie d'Entreprise</option>
+                    <option value="2">Gestion de la Qualité et Production</option>
+                    <option value="3">Data et Intelligence Artificielle</option>
+                    <option value="4">Comptabilité et Soins Sociaux</option>
+                </select>
+            </div>
+            <div class="company">
+                <label>Entreprise</label>
+                <select id="company-select">
+                    <option value="all">Tous</option>
+                    <option value="iveco">IVECO</option>
+                </select>
+            </div>
+            <div class="city">
+                <label>Ville</label>
+                <select id="city-select">
+                    <option value="all">Tous</option>
+                    <option value="iveco">Lyon</option>
+                </select>
+            </div>
+        </nav>
+        <ul class="results">
+            <li class="offer">
+                <div class="logo" style="background-image: url('https://www.apec.fr/files/live/mounts/images/media_entreprise/716123/logo_ICSIS_NORD_716123.jpg');"></div>
+                <div class="content">
+                    <div class="info">
+                        <p class="company">AVECO</p>
+                        <p class="second date">Publié le 30 mars 2025</p>
+                        <ul class="tags">
+                            <li>Projet</li>
+                            <li>Linux</li>
+                            <li>Industrie</li>
+                        </ul>
+                    </div>
+                    <h2 class="title">Chef de Projet Technique Poste de Travail / Digital Workplace F/H</h2>
+                    <p class="description">En tant qu'Ingénieur Système, vous serez amené à travailler sur les missions suivantes : - Industrialiser l'administration des socles techniques Linux et/ou Microsoft. - Assurer le suivi des évolutions des environnements ...</p>
+                </div>
+                <ul class="actions">
+                    <li>
+                        <button class="icon-button save">
+                            <img src="{{ url_for('static', filename='images/bookmark.svg') }}" alt="" height="16px">
+                        </button>
+                    </li>
+                    <li>
+                        <button class="icon-button like">
+                            <img src="{{ url_for('static', filename='images/like.svg') }}" alt="" height="16px">
+                        </button>
+                    </li>
+                    <li>
+                        <button class="icon-button dislike">
+                            <img src="{{ url_for('static', filename='images/dislike.svg') }}" alt="" height="16px">
+                        </button>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <div class="refine">
+            <p class="count">3</p>
+            <h3>Affiner la recherche</h3>
+            <img src="{{ url_for('static', filename='images/down-arrow.svg') }}" alt="" height="16px">
+        </div>
+    </div>
+</div>

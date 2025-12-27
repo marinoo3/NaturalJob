@@ -1,0 +1,186 @@
+section#viewer .view[data-active-view="list"] {
+    padding: 0;
+
+    .wrapper {
+        display: flex;
+        flex-direction: column;
+    }
+
+    header {
+        display: flex;
+        gap: 1rem;
+        background-color: var(--bg-frame-color);
+        border-bottom: solid 1px var(--border-color);
+        padding: 1rem;
+
+        .search {
+            width: 100%;
+            position: relative;
+        }
+
+        #search-input {
+            border-color: var(--border-color);
+            background-color: var(--bg-second-color);
+            padding: .6rem;
+            padding-left: calc(16px + 1.2rem);
+            width: 100%;
+            border-radius: var(--border-radius);
+            height: 100%;
+        }
+        label {
+            font-size: 0;
+            position: absolute;
+            left: .6rem;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    }
+
+    .container {
+        display: flex;
+        height: 100%;
+        position: relative;
+    }
+
+    nav.filters {
+        min-width: 250px;
+        border-right: solid 1px var(--border-color);
+        padding: 1rem;
+
+        > div:not(:last-child) {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            padding-bottom: .4rem;
+        }
+
+        select, .noUi-target {
+            width: 100%;
+        }
+    }
+
+    .results {
+        padding: 1rem;
+
+        .offer {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            position: relative;
+            padding: 1rem;
+
+            .content {
+                width: calc(100% - 100px);
+                padding-right: 40px;
+            }
+
+            .logo {
+                height: 80px;
+                width: 80px;
+                background-size: contain;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-color: white;
+                border-radius: var(--border-radius);
+            }
+
+            .title {
+                margin-bottom: .4rem;
+            }
+
+            .info {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                margin-bottom: .6rem;
+            }
+
+            .company {
+                background-color: var(--bg-second-color);
+                padding: .2rem .6rem;
+                border-radius: 20px;
+            }
+
+            ul.tags {
+                opacity: 0;
+                transition: opacity .125s ease;
+            }
+
+            ul.tags > li {
+                display: inline-block;
+                padding: .2rem .6rem;
+                background-color: var(--bg-color);
+                border: solid 1px var(--border-color);
+                border-radius: var(--border-radius);
+            }
+
+            .actions {
+                display: none;
+                position: absolute;
+                right: 1rem;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+
+            .actions > li:not(:last-child) {
+                margin-bottom: .6rem;
+            }
+        }
+
+        .offer:hover {
+            cursor: pointer;
+
+            .title {
+                text-decoration: underline;
+            }
+
+            ul.tags {
+                opacity: 1
+            }
+
+            .actions {
+                display: block;
+            }
+        }
+    }
+
+    .refine {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        display: flex;
+        gap: .5rem;
+        align-items: center;
+        background-color: var(--bg-second-color);
+        padding: .6rem;
+        border-radius: var(--border-radius) 0;
+        z-index: 10;
+
+        .count {
+            background-color: var(--bg-selected-color);
+            padding: .4rem;
+            border-radius: 20px;
+        }
+    }
+}
+
+
+
+.noUi-connect {
+    background: var(--accent-color);
+    border: solid 1px var(--accent-second-color);
+}
+.noUi-target {
+    border-color: var(--border-color);
+    width: calc(100% - 20px);
+    margin: 6px 0;
+    padding: 0 15px;
+    background: var(--bg-frame-color);
+    box-shadow: none;
+}
+.noUi-handle {
+    border-color: var(--border-color);
+    background: var(--bg-second-color);
+    box-shadow: none;
+}
