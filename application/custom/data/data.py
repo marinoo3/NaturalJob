@@ -1,7 +1,8 @@
 from werkzeug.datastructures import FileStorage
-
 import uuid
 import os
+
+from ..utils.parser import ParsePDF
 
 
 
@@ -79,7 +80,7 @@ class Data():
             f.write(default)
         return template_id, relative_path
     
-    def read(self, relative_path:str) -> str:
+    def read(self, relative_path:str, pdf=False) -> str:
         """Read the content of a template file from disk
 
         Arguments:
@@ -89,10 +90,11 @@ class Data():
             str: Content of the template file
         """
 
-        path = os.path.join(self.path, relative_path)
+        path = os.path.join(self.path, relative_path)  
+        if pdf:
+            return ParsePDF(path)
         with open(path, 'r') as f:
-            content = f.read()
-        return content
+            return f.read()
     
     def update(self, relative_path:str, content:str):
         """Update the content of a file on disk

@@ -1,10 +1,12 @@
 from flask import Blueprint, Response, url_for, render_template, send_from_directory, stream_with_context, abort, jsonify, request, current_app
 from jinja2.exceptions import TemplateNotFound
 import json
+import numpy as np
 from typing import cast
 
 from . import AppContext
 from .custom.db.user.models import Template
+from .custom.utils.parser import ParsePDF
 
 
 # Cast app_context typing
@@ -35,6 +37,13 @@ def upload_file_popup(title:str):
 @ajax.route('/create_file_popup/<title>', methods=['GET'])
 def create_file_popup(title:str):
     popup = render_template('elements/create_file_popup.html', title=title)
+    return popup
+
+@ajax.route('/attach_resume_popup', methods=['GET'])
+def attach_resume_popup():
+    templates = app.user_db.get_templates()
+    resumes = [template.dict() for template in templates if template.category == 'resume']
+    popup = render_template('elements/attach_resume_popup.html', resumes=resumes)
     return popup
 
 
@@ -180,7 +189,10 @@ def process_nlp(source:str):
 
     with app.offer_db.connect() as conn:
         for id, emb50, emb3, cluster_id in zip(ids, emb_50d, emb_3d, labels):
-            c = clusters[cluster_id]
+            for cluster in clusters:
+                if cluster.id == cluster_id:
+                    c = cluster
+                    break
             app.offer_db.add_nlp(conn, id, emb_50d=emb50, emb_3d=emb3, cluster=c)
         conn.commit()
 
@@ -224,7 +236,7 @@ def fit_kmeans():
 
 @ajax.route('fit_tfidf', methods=['POST'])
 def fit_tfidf():
-    offers, ids = app.offer_db.search_offer()
+    offers, ids = app.offer_db.get_offers()
     descriptions = [offer.description.offer_description for offer in offers]
     emb_50d, emb_3d = app.nlp.tfidf.fit_transform(descriptions)
 
@@ -242,16 +254,56 @@ def fit_tfidf():
 
 @ajax.route('/get_offers')
 def get_offers():
-    offers, _ = app.offer_db.search_offer()
+    offers, _ = app.offer_db.get_offers()
     return jsonify({'count': len(offers), 'offers': [offer.dict() for offer in offers]})
 
 @ajax.route('/search_offer')
 def search_offer():
-    query = request.args.get('query')
-    q_emb_50d, _ = app.nlp.tfidf.transform([query])
-    offers, ids = app.offer_db.search_offer(query=q_emb_50d)
-    offer_htmls = [offer.render(id, style='result') for offer, id in zip(offers, ids)]
-    print(ids)
+    query = None
+    resume = None
+    filters = []
+    far = []
+    near = []
+
+    # create filters
+    for key in ['salary', 'category', 'company', 'city']:
+        if request.args.get(key):
+            filters.append({key: request.args.get(key)})
+    # create query embeddings
+    if request.args.get('query'):
+        emb, _ = app.nlp.tfidf.transform([request.args.get('query')])
+        query = emb
+    # create resume embeddings
+    if request.args.get('resume'):
+        template = app.user_db.get_template(request.args.get('resume'))
+        template_text = app.data.read(template.path, pdf=True)
+        emb, _ = app.nlp.tfidf.transform([template_text])
+        resume = emb
+    # create refines (like and dislikes)
+    if request.args.get('refine'):
+        with app.offer_db.connect() as conn:
+            for refine in json.loads(request.args.get('refine')):
+                offer_id = refine['offer_id']
+                emb, _ = app.offer_db.get_nlp(conn, offer_id)
+                match refine['type']:
+                    case 'like':
+                        near.append(emb)
+                    case 'dislike':
+                        far.append(emb)
+
+    # adjust query based on refines
+    if near:
+        mean_near = np.mean(np.stack(near, axis=0), axis=0)
+        query = query + (0.5 * mean_near)
+    if far:
+        mean_far = np.mean(np.stack(far, axis=0), axis=0)
+        query = query - (0.5 * mean_far)
+    if any([near, far]):
+        # normalize the query if has been adjusted (divide by its L2 norm)
+        query = query / np.linalg.norm(query)
+
+    offers, ids, scores = app.offer_db.search_offer(query=query, resume=resume, filters=filters)
+    offer_htmls = [offer.render(id, score=score, style='result') for offer, id, score in zip(offers, ids, scores)]
     return jsonify(offer_htmls)
 
 
@@ -264,6 +316,6 @@ def search_offer():
 @ajax.route('/cluster_plot')
 def cluster_plot():
     emb_3d = app.offer_db.get_table('TFIDF', columns=['emb_3d'], convert_blob=True)
-    clusters, titles = app.offer_db.search_clusters()
+    clusters, titles = app.offer_db.get_clusters()
     fig_dict = app.plot.clusters.render(emb_3d, clusters, titles)
     return jsonify(fig_dict)

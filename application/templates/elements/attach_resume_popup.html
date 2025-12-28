@@ -1,0 +1,17 @@
+<div class="content">
+    <h2>Joindre un CV</h2>
+    <div class="fieldset">
+        {% for resume in resumes %}
+            <label class="resume" for="{{ resume.uuid }}">
+                <img src="{{ url_for('static', filename='images/resume.svg') }}" alt="" height="20px">
+                <input type="radio" name="resume" value="{{ resume.uuid }}" id="{{ resume.uuid }}" hidden 
+                    {% if loop.first %}checked{% endif %}/>
+                <h3>{{ resume.title }}</h3>
+            </label>
+        {% endfor %}
+    </div>
+    <div class="actions">
+        <button class="second-button cancel">Annuler</button>
+        <button class="main-button submit">Joindre</button>
+    </div>
+</div>

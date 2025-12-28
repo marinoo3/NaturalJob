@@ -69,7 +69,6 @@ class Kmeans(Model[KMeans]):
         """Predict cluster assignments on saved Kmeans model
 
         Args:
-            X (csc_matrix): The TF-IDF matrix
             emb_50d (np.ndarray): 50 dimensions reduction
 
         Returns:

@@ -1,6 +1,7 @@
 import sqlite3
-from datetime import date
+
 import os
+import numpy as np
 
 from .models import Template
 
@@ -23,21 +24,18 @@ class UserDB():
         
         Args:
             conn (sqlite3.Connection): a connection to the database
-            uuid (str): the UUID of the new template object
-            title (str): the title of the template
-            description (str): the description of the template
-            category (str): the category of the template
-            path (str): the path of the template
+            template (Template): the template object to save on db
 
         Return
             (Template): the created template oject
         """
 
-        with self.connect() as conn:
+        with self.connect() as conn:                
             conn.execute("""
                 INSERT INTO USER_FILE (ID, Title, Description, Category, Path, Date)
                 VALUES (?, ?, ?, ?, ?, ?)
-            """, template.values())
+            """, (template.values()))
+
     
     def get_templates(self) -> list[Template]:
         """Get all user template from DB
@@ -66,6 +64,7 @@ class UserDB():
         Return
             (Template): the template oject
         """
+
         with self.connect() as conn:
             row = conn.execute("""
                 SELECT ID, Title, Description, Category, Path, Date

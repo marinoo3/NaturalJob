@@ -1,5 +1,6 @@
 import sqlite3
 import sqlite_vec
+
 from datetime import date
 import os
 import numpy as np
@@ -179,6 +180,7 @@ class OfferDB:
                 name=row["company_name"],
                 description=row["company_description"],
                 industry=row["company_industry"],
+                logo_url=row["logo_url"]
             ),
             city=City(
                 name=row["city_name"],
@@ -302,11 +304,13 @@ class OfferDB:
 
         curr = conn.cursor()
 
-    def search_offer(self, query:np.ndarray=None) -> tuple[list[Offer], list[int]]:
-        """Search an offer by query, returns all offers if no query.
+    def search_offer(self, query:np.ndarray=None, resume:np.ndarray=None, filters:list[dict]=None) -> tuple[list[Offer], list[int]]:
+        """Search an offer by query, resume and filters.
 
         Args:
             query (ndarray, optional): 50d embeddings of a query. Default to None.
+            resume (ndarray, optional): 50d embeddings of a resume. Default to None.
+            filters (list[dict], optional): Simple result filters. Default to None.
 
         Returns:
             list[Offer]: Offers
@@ -319,102 +323,140 @@ class OfferDB:
             conn.row_factory = sqlite3.Row
             cur = conn.cursor()
 
-            if not query:
-                sql = """
+            sql = """
+            WITH nearest_query AS (
                 SELECT
-                    o.offer_id,
-                    o.title,
-                    o.job_name,
-                    o.job_type,
-                    o.contract_type,
-                    o.salary_label,
-                    o.salary_min,
-                    o.salary_max,
-                    o.min_experience,
-                    o.latitude,
-                    o.longitude,
-                    o.date,
-                    o.source,
-                    c.name AS company_name,
-                    c.description AS company_description,
-                    c.industry AS company_industry,
-                    ci.name AS city_name,
-                    r.code AS region_code,
-                    r.name AS region_name,
-                    d.offer_description,
-                    d.profile_description,
-                    (SELECT GROUP_CONCAT(de.degree, '||')
-                    FROM OFFER_DEGREE od
-                    JOIN degree de ON de.degree_id = od.degree_id
-                    WHERE od.offer_id = o.offer_id) AS degrees,
-                    (SELECT GROUP_CONCAT(s.skill, '||')
-                    FROM OFFER_SKILL os
-                    JOIN skill s ON s.skill_id = os.skill_id
-                    WHERE os.offer_id = o.offer_id) AS skills
-                FROM OFFER o
-                JOIN COMPANY c     ON c.company_id     = o.company_id
-                JOIN DESCRIPTION d ON d.description_id = o.description_id
-                JOIN CITY ci        ON ci.city_id       = o.city_id
-                JOIN REGION r       ON r.region_id      = ci.region_id
-                ORDER BY o.date DESC;
-                """
-                params = ()
-            else:
-                sql = """
-                WITH nearest AS (
-                    SELECT rowid AS tfidf_id, distance
-                    FROM TFIDF
-                    WHERE vmatch(emb_50d, ?)
-                    ORDER BY distance
-                    LIMIT 50
-                )
+                    rowid AS tfidf_id,
+                    vec_distance_cosine(emb_50d, vec_f32(?)) AS query_distance
+                FROM TFIDF
+                ORDER BY query_distance ASC
+                LIMIT 50
+            ),
+            scored AS (
                 SELECT
-                    o.offer_id,
-                    o.title,
-                    o.job_name,
-                    o.job_type,
-                    o.contract_type,
-                    o.salary_label,
-                    o.salary_min,
-                    o.salary_max,
-                    o.min_experience,
-                    o.latitude,
-                    o.longitude,
-                    o.date,
-                    o.source,
-                    c.name AS company_name,
-                    c.description AS company_description,
-                    c.industry AS company_industry,
-                    ci.name AS city_name,
-                    r.code AS region_code,
-                    r.name AS region_name,
-                    d.offer_description,
-                    d.profile_description,
-                    nearest.distance,
-                    (SELECT GROUP_CONCAT(de.degree, '||')
-                    FROM OFFER_DEGREE od
-                    JOIN degree de ON de.degree_id = od.degree_id
-                    WHERE od.offer_id = o.offer_id) AS degrees,
-                    (SELECT GROUP_CONCAT(s.skill, '||')
-                    FROM OFFER_SKILL os
-                    JOIN skill s ON s.skill_id = os.skill_id
-                    WHERE os.offer_id = o.offer_id) AS skills
-                FROM nearest
-                JOIN OFFER o          ON o.tfidf_id       = nearest.tfidf_id
-                JOIN COMPANY c     ON c.company_id     = o.company_id
-                JOIN DESCRIPTION d ON d.description_id = o.description_id
-                JOIN CITY ci        ON ci.city_id       = o.city_id
-                JOIN REGION r       ON r.region_id      = ci.region_id 
-                """
-                query_blob = query.astype("float32").tobytes()
-                params = (query_blob,)
+                    n.tfidf_id,
+                    n.query_distance,
+                    CASE
+                        WHEN ? IS NULL THEN NULL
+                        ELSE vec_distance_cosine(t.emb_50d, vec_f32(?))
+                    END AS resume_distance
+                FROM nearest_query n
+                JOIN TFIDF t ON t.rowid = n.tfidf_id
+            )
+            SELECT
+                o.offer_id,
+                o.title,
+                o.job_name,
+                o.job_type,
+                o.contract_type,
+                o.salary_label,
+                o.salary_min,
+                o.salary_max,
+                o.min_experience,
+                o.latitude,
+                o.longitude,
+                o.date,
+                o.source,
+                c.name AS company_name,
+                c.description AS company_description,
+                c.industry AS company_industry,
+                c.logo_url AS logo_url,
+                ci.name AS city_name,
+                r.code AS region_code,
+                r.name AS region_name,
+                d.offer_description,
+                d.profile_description,
+                scored.query_distance,
+                scored.resume_distance AS score,
+                (SELECT GROUP_CONCAT(de.degree, '||')
+                FROM OFFER_DEGREE od
+                JOIN degree de ON de.degree_id = od.degree_id
+                WHERE od.offer_id = o.offer_id) AS degrees,
+                (SELECT GROUP_CONCAT(s.skill, '||')
+                FROM OFFER_SKILL os
+                JOIN skill s ON s.skill_id = os.skill_id
+                WHERE os.offer_id = o.offer_id) AS skills
+            FROM scored
+            JOIN OFFER o          ON o.tfidf_id       = scored.tfidf_id
+            JOIN COMPANY c     ON c.company_id     = o.company_id
+            JOIN DESCRIPTION d ON d.description_id = o.description_id
+            JOIN CITY ci        ON ci.city_id       = o.city_id
+            JOIN REGION r       ON r.region_id      = ci.region_id 
+            ORDER BY
+                CASE
+                    WHEN scored.resume_distance IS NOT NULL THEN scored.resume_distance
+                    ELSE scored.query_distance
+                END ASC;
+            """
 
+            query_blob = query.astype("float32").tobytes()
+            resume_blob = None
+            if resume is not None:
+                resume_blob = resume.astype("float32").tobytes()
+
+            params = (query_blob, resume_blob, resume_blob)
             cur.execute(sql, params)
             rows = cur.fetchall()
 
+            return [self._row_to_offer(row) for row in rows], [row['offer_id'] for row in rows], [row['score'] for row in rows]
+
+    def get_offers(self, id:str=None) -> tuple[list[Offer], list[int]]:
+        """Get offer by ID, returns all offers if no ID
+
+        Args:
+            id (str, optional): Offer ID. Defaults to None.
+
+        Returns:
+            list[Offer]: The list of offers
+        """
+        with self.connect() as conn:
+            conn.row_factory = sqlite3.Row
+            cur = conn.cursor()
+
+            cur.execute("""
+            SELECT
+                o.offer_id,
+                o.title,
+                o.job_name,
+                o.job_type,
+                o.contract_type,
+                o.salary_label,
+                o.salary_min,
+                o.salary_max,
+                o.min_experience,
+                o.latitude,
+                o.longitude,
+                o.date,
+                o.source,
+                c.name AS company_name,
+                c.description AS company_description,
+                c.industry AS company_industry,
+                c.logo_url AS logo_url,
+                ci.name AS city_name,
+                r.code AS region_code,
+                r.name AS region_name,
+                d.offer_description,
+                d.profile_description,
+                (SELECT GROUP_CONCAT(de.degree, '||')
+                FROM OFFER_DEGREE od
+                JOIN degree de ON de.degree_id = od.degree_id
+                WHERE od.offer_id = o.offer_id) AS degrees,
+                (SELECT GROUP_CONCAT(s.skill, '||')
+                FROM OFFER_SKILL os
+                JOIN skill s ON s.skill_id = os.skill_id
+                WHERE os.offer_id = o.offer_id) AS skills
+            FROM OFFER o
+            JOIN COMPANY c     ON c.company_id     = o.company_id
+            JOIN DESCRIPTION d ON d.description_id = o.description_id
+            JOIN CITY ci        ON ci.city_id       = o.city_id
+            JOIN REGION r       ON r.region_id      = ci.region_id
+            ORDER BY o.date DESC;
+            """)
+
+            rows = cur.fetchall()
             return [self._row_to_offer(row) for row in rows], [row['offer_id'] for row in rows]
-        
-    def search_clusters(self, id:str=None) -> list[Cluster]:
+
+    def get_clusters(self, id:str=None) -> list[Cluster]:
         """Search an offer cluster by id, returns all offer clusters if no ID.
 
         Args:
@@ -440,6 +482,31 @@ class OfferDB:
             rows = cur.fetchall()
 
             return [self._row_to_cluster(row) for row in rows], [row['title'] for row in rows]
+
+    def get_nlp(self, conn:sqlite3.Connection, id:str) -> tuple[np.ndarray, np.ndarray]:
+        """Get the nlp embeddings from an offer ID
+
+        Args:
+            conn (sqlite3.Connection): Database connection
+            id (str): Offer id
+
+        Returns:
+            np.ndarray: 50 dimensions embeddings
+            np.ndarray: 3 dimensions embeddings
+        """
+
+        with conn:
+            cur = conn.cursor()
+            
+            cur.execute("""
+                SELECT t.emb_50d, t.emb_3d
+                FROM OFFER o
+                JOIN TFIDF t  ON t.ROWID = o.tfidf_id
+                WHERE o.offer_id = ?
+            """, (id,))
+            row = cur.fetchone()
+
+            return [self._vecf32_converter(blob) for blob in row]
 
     def get_table(self, table_name:str, columns:list[str]=None, convert_blob=False) -> list:
         """Get the content of a table from OFFER db

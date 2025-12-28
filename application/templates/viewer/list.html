@@ -1,25 +1,29 @@
-<div class="wrapper">
+<form class="wrapper" id="search-form">
     <header>
         <div class="search">
-            <label for="search-input">
+            <label for="query">
                 <img src="{{ url_for('static', filename='images/search.svg') }}" alt="" height="16px">
             </label>
-            <input type="text" id="search-input" placeholder="Rechercher un terme">
+            <button class="icon-button" id="attach-resume" type="button">
+                <img src="{{ url_for('static', filename='images/resume.svg') }}" alt="" height="16px">
+                <input type="text" name="resume" hidden>
+            </button>
+            <input type="text" name="query" placeholder="Rechercher un terme">
         </div>
-        <select name="search-type" id="search-type">
-            <option value="offer">Offres d'emploi</option>
-            <option value="company">Entreprises</option>
+        <select name="order" id="search-order">
+            <option value="score">Pertinance</option>
+            <option value="date">Date</option>
         </select>
     </header>
     <div class="container">
         <nav class="filters">
             <div class="salary">
                 <label>Salaire</label>
-                <div id="salary-slider"></div>
+                <div class="salary-slider" name="salary"></div>
             </div>
             <div class="category">
                 <label>Categorie</label>
-                <select id="category-select">
+                <select name="category">
                     <option value="all">Tous</option>
                     <option value="0">Développement et Architecture Technique</option>
                     <option value="1">Développement Commercial et Stratégie d'Entreprise</option>
@@ -30,14 +34,14 @@
             </div>
             <div class="company">
                 <label>Entreprise</label>
-                <select id="company-select">
+                <select name="company">
                     <option value="all">Tous</option>
                     <option value="iveco">IVECO</option>
                 </select>
             </div>
             <div class="city">
                 <label>Ville</label>
-                <select id="city-select">
+                <select name="city">
                     <option value="all">Tous</option>
                     <option value="iveco">Lyon</option>
                 </select>
@@ -84,4 +88,4 @@
             <img src="{{ url_for('static', filename='images/down-arrow.svg') }}" alt="" height="16px">
         </div>
     </div>
-</div>
+</form>

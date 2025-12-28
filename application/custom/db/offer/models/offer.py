@@ -56,11 +56,22 @@ class Offer:
 
     dict = asdict
 
-    def date_str(self, format:str):
-        date_obj = date.fromisoformat(format)
-        return date_obj.strftime(format)
+    def convert_date(self, target_format:str) -> str:
+        date_obj = date.fromisoformat(self.date)
+        return date_obj.strftime(target_format)
+    
+    def truncate_description(self, limit:int) -> str:
+        description = self.description.offer_description
+        if len(description) <= limit:
+            return description
+        return description[:limit-3] + '...'
+    
+    def company_url(self) -> str:
+        if self.company.logo_url:
+            return self.company.logo_url
+        return 'hello'
 
-    def render(self, id:int, style='result') -> str:
+    def render(self, id:int, score:float=None, style='result') -> str:
         """Create html template object
 
         Args:
@@ -79,11 +90,12 @@ class Offer:
                     'elements/offer_result.html', 
                     offer_id=id, 
                     title=self.title,
-                    description=self.description.offer_description,
+                    description=self.truncate_description(225),
                     company_name=self.company.name,
                     company_logo=self.company.logo_url,
-                    date=self.date_str('%D %M %Y'),
-                    tags=[])
+                    date=self.convert_date('%d %B %Y'),
+                    tags=[],
+                    score=score)
             case 'fullview':
                 return None
             case _:

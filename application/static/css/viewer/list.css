@@ -1,9 +1,11 @@
 section#viewer .view[data-active-view="list"] {
     padding: 0;
+    position: relative;
 
     .wrapper {
         display: flex;
         flex-direction: column;
+        height: 100%;
     }
 
     header {
@@ -18,21 +20,36 @@ section#viewer .view[data-active-view="list"] {
             position: relative;
         }
 
-        #search-input {
+        input[name="query"] {
             border-color: var(--border-color);
             background-color: var(--bg-second-color);
             padding: .6rem;
-            padding-left: calc(16px + 1.2rem);
+            padding-left: calc(16px + 1.5rem);
             width: 100%;
             border-radius: var(--border-radius);
             height: 100%;
         }
+
         label {
             font-size: 0;
             position: absolute;
-            left: .6rem;
+            left: 1rem;
             top: 50%;
             transform: translateY(-50%);
+        }
+
+        #attach-resume {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        #attach-resume.active {
+            opacity: 1;
+
+            img {
+                filter: invert(85%) sepia(16%) saturate(1406%) hue-rotate(69deg) brightness(101%) contrast(87%);
+            }
         }
     }
 
@@ -52,6 +69,7 @@ section#viewer .view[data-active-view="list"] {
         }
 
         label {
+            color: var(--text-second-color);
             padding-bottom: .4rem;
         }
 
@@ -62,6 +80,7 @@ section#viewer .view[data-active-view="list"] {
 
     .results {
         padding: 1rem;
+        overflow-y: auto;
 
         .offer {
             display: flex;
@@ -130,6 +149,8 @@ section#viewer .view[data-active-view="list"] {
 
         .offer:hover {
             cursor: pointer;
+            background-color: var(--bg-frame-color);
+            border-radius: var(--border-radius);
 
             .title {
                 text-decoration: underline;
@@ -141,6 +162,22 @@ section#viewer .view[data-active-view="list"] {
 
             .actions {
                 display: block;
+            }
+        }
+
+        .offer.liked {
+            .actions .icon-button.like img {
+                filter: invert(85%) sepia(16%) saturate(1406%) hue-rotate(69deg) brightness(101%) contrast(87%);
+            }
+        }
+        .offer.disliked {
+            .actions .icon-button.dislike img {
+                filter: invert(85%) sepia(16%) saturate(1406%) hue-rotate(69deg) brightness(101%) contrast(87%);
+            }
+        }
+        .offer.saved {
+            .actions .icon-button.save img {
+                filter: invert(85%) sepia(16%) saturate(1406%) hue-rotate(69deg) brightness(101%) contrast(87%);
             }
         }
     }
@@ -163,6 +200,42 @@ section#viewer .view[data-active-view="list"] {
             border-radius: 20px;
         }
     }
+
+    .popup {
+        h2, .fieldset {
+            margin-bottom: 1rem
+        }
+
+        .fieldset {
+            max-height: 25vh;
+            overflow-y: auto;
+        }
+
+        .resume {
+            display: flex;
+            gap: .6rem;
+            align-items: center;
+            padding: .6rem 1rem;
+            background-color: var(--bg-frame-color);
+            border-radius: var(--border-radius);
+            border: solid 1px var(--bg-frame-color);
+            transition: border-color .125s ease;
+        }
+        .resume:not(:last-child) {
+            margin-bottom: .6rem;
+        }
+        .resume:has(> input:checked) {
+            border-color: var(--accent-color);
+
+            h3 {
+                color: var(--accent-color);
+            }
+
+            img {
+                filter: invert(85%) sepia(16%) saturate(1406%) hue-rotate(69deg) brightness(101%) contrast(87%);
+            }
+        }
+    }
 }
 
 
@@ -183,4 +256,15 @@ section#viewer .view[data-active-view="list"] {
     border-color: var(--border-color);
     background: var(--bg-second-color);
     box-shadow: none;
+}
+
+.noUi-handle .noUi-tooltip {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    padding: 0;
+}
+.noUi-handle:hover .noUi-tooltip {
+    display: block;
 }

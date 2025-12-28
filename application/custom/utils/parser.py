@@ -1,5 +1,6 @@
 from typing import Any
 from bs4 import BeautifulSoup
+import pymupdf
 import re
 
 
@@ -36,6 +37,25 @@ class XPathSearch:
             if warning:
                 print('WARNING: failed to get', xpath)
             return None
+        
+
+
+
+class ParseNumeric:
+
+    """Parse numeric values from string"""
+
+    def __new__(cls, text:str) -> list[int]:
+        return cls.__parse_numeric(text)
+    
+    @staticmethod
+    def __parse_numeric(text:str) -> list[int]:
+        numbers = []
+        for n in re.findall(r'\d[\d ]*', text):
+            formatted = n.replace(' ', '')
+            numbers.append(int(formatted))
+        return numbers
+
 
 
 
@@ -62,17 +82,24 @@ class ParseHTML:
         return soup.get_text(separator=" ", strip=True).replace('\n', ' ').strip()
     
 
-class ParseNumeric:
+class ParsePDF:
 
-    """Parse numeric values from string"""
+    """Parse text from PDF file"""
 
-    def __new__(cls, text:str) -> list[int]:
-        return cls.__parse_numeric(text)
+
+    def __new__(cls, file_path:str) -> str:
+        """Parse text in HTML string and remove all tags
+
+        Args:
+            html (str): the HTML string to parse
+
+        Returns:
+            str: the cleaned text
+        """
+        
+        return cls.__parse_pdf(file_path)
     
     @staticmethod
-    def __parse_numeric(text:str) -> list[int]:
-        numbers = []
-        for n in re.findall(r'\d[\d ]*', text):
-            formatted = n.replace(' ', '')
-            numbers.append(int(formatted))
-        return numbers
+    def __parse_pdf(file_path):
+        with pymupdf.open(file_path) as doc:
+            return '\n\n'.join(page.get_text() for page in doc)

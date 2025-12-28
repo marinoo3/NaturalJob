@@ -181,6 +181,6 @@ class TFIDF(Model[TfidfVectorizer]):
             self._update_matrix(X)
 
         emb_50d = self.svd.transform(X)
-        emb_3d = self.tsne.fit_transform(emb_50d)
+        emb_3d = self.tsne.transform(emb_50d)
 
         return emb_50d, emb_3d

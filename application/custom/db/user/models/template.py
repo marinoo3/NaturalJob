@@ -1,6 +1,6 @@
 from flask import render_template
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from datetime import date
 
 
@@ -17,6 +17,8 @@ class Template:
         # Convert creation_date to a date object if is string
         if isinstance(self.creation_date, str):
             self.creation_date = date.fromisoformat(self.creation_date)
+
+    dict = asdict
 
     def values(self) -> tuple[str]:
         return (self.uuid, self.title, self.description, self.category, self.path, self.date_str())

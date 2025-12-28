@@ -50,8 +50,7 @@ schema_statements = [
     CREATE VIRTUAL TABLE IF NOT EXISTS TFIDF
     USING vec0(
         emb_50d  FLOAT[50],
-        emb_3d   FLOAT[3],
-        distance_metric = 'cosine'
+        emb_3d   FLOAT[3]
     );
     """,
     """
