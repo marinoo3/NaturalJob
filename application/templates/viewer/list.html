@@ -1,4 +1,4 @@
-<form class="wrapper" id="search-form">
+<form class="wrapper" id="search-form" autocomplete="off">
     <header>
         <div class="search">
             <label for="query">
@@ -8,7 +8,7 @@
                 <img src="{{ url_for('static', filename='images/resume.svg') }}" alt="" height="16px">
                 <input type="text" name="resume" hidden>
             </button>
-            <input type="text" name="query" placeholder="Rechercher un terme">
+            <input type="text" name="query" placeholder="Rechercher un terme" autocomplete="off">
         </div>
         <select name="order" id="search-order">
             <option value="score">Pertinance</option>
@@ -47,41 +47,7 @@
                 </select>
             </div>
         </nav>
-        <ul class="results">
-            <li class="offer">
-                <div class="logo" style="background-image: url('https://www.apec.fr/files/live/mounts/images/media_entreprise/716123/logo_ICSIS_NORD_716123.jpg');"></div>
-                <div class="content">
-                    <div class="info">
-                        <p class="company">AVECO</p>
-                        <p class="second date">Publié le 30 mars 2025</p>
-                        <ul class="tags">
-                            <li>Projet</li>
-                            <li>Linux</li>
-                            <li>Industrie</li>
-                        </ul>
-                    </div>
-                    <h2 class="title">Chef de Projet Technique Poste de Travail / Digital Workplace F/H</h2>
-                    <p class="description">En tant qu'Ingénieur Système, vous serez amené à travailler sur les missions suivantes : - Industrialiser l'administration des socles techniques Linux et/ou Microsoft. - Assurer le suivi des évolutions des environnements ...</p>
-                </div>
-                <ul class="actions">
-                    <li>
-                        <button class="icon-button save">
-                            <img src="{{ url_for('static', filename='images/bookmark.svg') }}" alt="" height="16px">
-                        </button>
-                    </li>
-                    <li>
-                        <button class="icon-button like">
-                            <img src="{{ url_for('static', filename='images/like.svg') }}" alt="" height="16px">
-                        </button>
-                    </li>
-                    <li>
-                        <button class="icon-button dislike">
-                            <img src="{{ url_for('static', filename='images/dislike.svg') }}" alt="" height="16px">
-                        </button>
-                    </li>
-                </ul>
-            </li>
-        </ul>
+        <ul class="results"></ul>
         <div class="refine">
             <p class="count">3</p>
             <h3>Affiner la recherche</h3>

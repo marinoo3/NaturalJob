@@ -108,13 +108,13 @@ footer p {
 
 /* Inputs */
 
-input[type="text"] {
+input[type="text"], input[type="number"] {
     border-radius: var(--border-radius);
     border: solid 1px var(--border-color);
     background-color: var(--bg-second-color);
     padding: .6rem;
 }
-input[type="text"]:focus {
+input[type="text"]:focus, input[type="number"]:focus {
     outline: none;
     border: solid 1px var(--accent-color) !important;
 }

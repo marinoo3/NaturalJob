@@ -1,7 +1,5 @@
 import sqlite3
-
 import os
-import numpy as np
 
 from .models import Template
 

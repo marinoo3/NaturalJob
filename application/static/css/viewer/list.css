@@ -61,6 +61,7 @@ section#viewer .view[data-active-view="list"] {
 
     nav.filters {
         min-width: 250px;
+        width: 250px;
         border-right: solid 1px var(--border-color);
         padding: 1rem;
 

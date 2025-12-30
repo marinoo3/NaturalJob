@@ -7,4 +7,7 @@ async function loadPlot() {
     Plotly.newPlot('main-plot', fig.data, fig.layout, { responsive: true });
 }
 
+
+
+
 loadPlot();

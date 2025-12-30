@@ -1,4 +1,5 @@
 import os
+import json
 import joblib
 from typing import Generic, TypeVar, ClassVar
 
@@ -22,12 +23,18 @@ class Model(Generic[EstimatorT]):
 
     def __init__(self):
         self.model_path = self._make_model_path()
+        self.meta_path = self._make_meta_path()
         self.model = self._load_model()
+        self.metadata = self._load_metadata()
 
     def _make_model_path(self) -> str:
         path = os.environ.get('DATA_PATH', 'data/')
         return os.path.join(path, 'model')
-
+    
+    def _make_meta_path(self) -> str:
+        name = self.model_name.split('.')[0] + '.json'
+        return os.path.join(self.model_path, 'metadata', name)
+    
     def _load_model(self) -> EstimatorT|None:
         try:
             path = os.path.join(self.model_path, self.model_name)
@@ -39,3 +46,16 @@ class Model(Generic[EstimatorT]):
         path = os.path.join(self.model_path, self.model_name)
         joblib.dump(model, path)
         self.model = model
+
+    def _save_metadata(self, metadata) -> None:
+        with open(self.meta_path, 'w', encoding='utf-8') as f:
+            json.dump(metadata, f)
+        self.metadata = metadata
+
+    def _load_metadata(self) -> dict:
+        try:
+            with open(self.meta_path, 'r', encoding='utf-8') as f:
+                metadata = json.load(f)
+                return metadata
+        except FileNotFoundError:
+            return {}

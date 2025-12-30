@@ -1,4 +1,4 @@
-section#console .view{
+section#console .view {
     padding: 0;
 }
 
@@ -10,6 +10,7 @@ section#console .view{
     width: 100%;
     padding: 1rem;
     overflow-y: auto;
+    position: relative;
 }
 .model-container:not(:last-child) {
     border-right: solid 1px var(--border-color);
@@ -53,6 +54,11 @@ section#console .view{
     overflow: hidden;
     position: relative;
 
+    .actions {
+        display: flex;
+        gap: 1rem;
+    }
+
     .progress {
         position: absolute;
         z-index: 5;
@@ -92,4 +98,16 @@ section#console .view{
 .model-container .model .info > * {
     display: inline;
     margin-right: .5rem;
+}
+
+
+.model-container .popup {
+    label {
+        display: block;
+        color: var(--text-second-color);
+    }
+
+    input {
+        width: 100%;
+    }
 }

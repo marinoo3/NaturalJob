@@ -24,10 +24,7 @@ noUiSlider.create(salarySlider, {
 
 
 // Render results
-function renderResults(results, clear=false) {
-    if (clear == true) {
-        resultsContainer.innerHTML = '';
-    }
+function renderResults(results) {
     results.forEach(html => {
         const li = document.createElement('li');
         li.innerHTML = html;
@@ -112,9 +109,12 @@ function buildParamsURL() {
 }
 
 async function search(paramsURL) {
+    resultsContainer.innerHTML = '';
+    resultsContainer.classList.add('waiting');
     const response = await fetch(`/ajax/search_offer?${paramsURL}"`);
     const content = await response.json();
-    renderResults(content, true);
+    renderResults(content);
+    resultsContainer.classList.remove('waiting');
 }
 
 

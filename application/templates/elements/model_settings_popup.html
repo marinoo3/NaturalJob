@@ -1,0 +1,15 @@
+<div class="content">
+    <h2>Paramètre du modèle</h2>
+    <form>
+        {% for input in settings %}
+        <div>
+            <label>{{ input.name }}</label>
+            <input type="number" placeholder="{{ input.value }}" name="{{ input.name }}" required>
+        </div>
+        {% endfor %}
+        <div class="actions">
+            <button type="button" class="second-button cancel">Annuler</button>
+            <button type="submit" class="main-button disabled">Enregistrer</button>
+        </div>
+    </form>
+</div>

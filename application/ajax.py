@@ -6,7 +6,6 @@ from typing import cast
 
 from . import AppContext
 from .custom.db.user.models import Template
-from .custom.utils.parser import ParsePDF
 
 
 # Cast app_context typing
@@ -44,6 +43,12 @@ def attach_resume_popup():
     templates = app.user_db.get_templates()
     resumes = [template.dict() for template in templates if template.category == 'resume']
     popup = render_template('elements/attach_resume_popup.html', resumes=resumes)
+    return popup
+
+@ajax.route('/model_settings_popup', methods=['GET'])
+def model_settings_popup():
+    inputs = [{'name': key, 'value': value} for key, value in request.args.items()]
+    popup = render_template('elements/model_settings_popup.html', settings=inputs)
     return popup
 
 
@@ -201,8 +206,7 @@ def process_nlp(source:str):
 
 @ajax.route('fit_kmeans', methods=['POST'])
 def fit_kmeans():
-    K = request.form.get('K')
-    K = 5
+    K = int(request.form.get('K'))
     if not K:
         abort(400, 'Missing required parameter "K"')
 
@@ -232,20 +236,34 @@ def fit_kmeans():
             c = clusters[cluster_id]
             app.offer_db.add_nlp(conn, id, cluster=c)
 
-    return jsonify({'model_name': 'Model Name'})
+    return jsonify(app.nlp.kmeans.metadata)
 
 @ajax.route('fit_tfidf', methods=['POST'])
 def fit_tfidf():
+    min_df = int(request.form.get('min_df'))
+    max_df = float(request.form.get('max_df'))
+    if not all([min_df, max_df]):
+        abort(400, 'Missing required parameter "min_df" and / or "max_df"')
+        
     offers, ids = app.offer_db.get_offers()
     descriptions = [offer.description.offer_description for offer in offers]
-    emb_50d, emb_3d = app.nlp.tfidf.fit_transform(descriptions)
+    emb_50d, emb_3d = app.nlp.tfidf.fit_transform(descriptions, min_df=min_df, max_df=max_df)
 
     with app.offer_db.connect() as conn:
         app.offer_db.clear_table(conn, 'TFIDF')
         for offer_id, emb50, emb3 in zip(ids, emb_50d, emb_3d):
             app.offer_db.add_nlp(conn, offer_id, emb_50d=emb50, emb_3d=emb3)
 
-    return jsonify({'model_name': 'Model Name'})
+    return jsonify(app.nlp.tfidf.metadata)
+
+
+@ajax.route('get_models_metadata')
+def get_models_metadata():
+    models = {
+        'kmeans': app.nlp.kmeans.metadata,
+        'tfidf': app.nlp.tfidf.metadata
+    }
+    return jsonify(models)
 
 
 

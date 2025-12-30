@@ -1,5 +1,8 @@
+from flask import url_for
+
 import numpy as np
 from scipy.sparse import csc_matrix
+from datetime import date
 
 from sklearn.cluster import KMeans
 
@@ -34,6 +37,51 @@ class Kmeans(Model[KMeans]):
             main_tokens.append(terms[top_idx])
 
         return main_tokens
+    
+    def __compute_score(self, X:np.ndarray) -> float:
+        global_center = np.mean(X, axis=0)
+        total_inertia = np.sum(np.sum((X - global_center)**2, axis=1))
+        explained_inertia = 1 - self.model.inertia_ / total_inertia
+        return round(float(explained_inertia) * 100, 2)
+    
+    def __generate_metadata(self, new_model=False, X:np.ndarray=None) -> dict:
+        metadata = self.metadata
+
+        if new_model:
+            metadata['prefix'] = "K"
+            metadata['version'] = (metadata.get('version') or 0) + 1
+            metadata['date'] = date.today().isoformat()
+            metadata['shape'] = self.model.labels_.shape[0]
+            metadata['features'] = {
+                '0_score': {
+                    'label': "Pourcentage d'inertie expliquée",
+                    'icon': url_for('static', filename='images/smart.svg'),
+                    'value': str(self.__compute_score(X)) + '%'
+                },
+                '1_fit': {
+                    'label': "Taille de l'échantillon d'apprentissage",
+                    'icon': url_for('static', filename='images/fit.svg'),
+                    'value': self.model.labels_.shape[0]
+                },
+                '2_predict' : {
+                    'label': "Nombre de prédictions",
+                    'icon': url_for('static', filename='images/stack.svg'),
+                    'value': 0
+                },
+                '3_dimensions': {
+                    'label': 'Nombre de dimensions',
+                    'icon': url_for('static', filename='images/dimension.svg'),
+                    'value': 50
+                },
+                '4_clusters': {
+                    'label': "Nombre de cluster",
+                    'icon': url_for('static', filename='images/shapes.svg'),
+                    'value': self.model.n_clusters
+                }
+            }
+
+        metadata['features']['2_predict']['value'] += X.shape[0]
+        return metadata
 
 
     def fit_predict(self, X:csc_matrix, emb_50d:np.ndarray, tokens:np.ndarray, K=5) -> tuple[list[int], list[Cluster]]:
@@ -53,6 +101,10 @@ class Kmeans(Model[KMeans]):
         model = KMeans(n_clusters=K)
         labels = model.fit_predict(emb_50d)
         self._save_model(model)
+
+        # Update and save model metadata
+        metadata = self.__generate_metadata(new_model=True, X=emb_50d)
+        self._save_metadata(metadata)
 
         clusters = []
         main_tokens = self.__top_tokens(X, labels, tokens)
@@ -81,6 +133,11 @@ class Kmeans(Model[KMeans]):
         
         emb_50d = np.asarray(emb_50d, dtype=np.float32)
         labels = self.model.predict(emb_50d)
+
+        # Update metadata
+        metadata = self.__generate_metadata(X=emb_50d)
+        self._save_metadata(metadata)
+
         clusters = [Cluster(id = int(cluster_id)) for cluster_id in np.unique(labels)]
 
         return labels.tolist(), clusters
