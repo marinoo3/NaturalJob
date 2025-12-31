@@ -79,8 +79,9 @@ class Kmeans(Model[KMeans]):
                     'value': self.model.n_clusters
                 }
             }
-
-        metadata['features']['2_predict']['value'] += X.shape[0]
+        else:
+            metadata['features']['2_predict']['value'] += X.shape[0]
+            
         return metadata
 
 

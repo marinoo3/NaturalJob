@@ -2,13 +2,16 @@
     <div class="logo" style="background-image: url('{{ company_logo }}');"></div>
     <div class="content">
         <div class="info">
+            {% if score is not none %}
+                <p class="score">{{ score }}</p>
+            {% endif %}
             <p class="company">{{ company_name }}</p>
             <p class="second date">{{ date }}</p>
             <ul class="tags">
                 {% for tag in tags %}
                     <li>{{ tag }}</li>
                 {% endfor %}
-            </ul>    
+            </ul>
         </div>
         <h2 class="title">{{ title }}</h2>
         <p class="description">{{ description }}</p>

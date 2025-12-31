@@ -5,6 +5,7 @@ const searchForm = section.querySelector('form#search-form');
 const salarySlider = searchForm.querySelector('.salary-slider[name="salary"]');
 const attachResumeButton = searchForm.querySelector('#attach-resume');
 const resumeValueInput = searchForm.querySelector('input[name="resume"]');
+const refineWindow = section.querySelector('.refine');
 
 let likes = [];
 let dislikes = [];
@@ -23,6 +24,19 @@ noUiSlider.create(salarySlider, {
 });
 
 
+
+// Update refine window
+function updateRefine() {
+    const count = likes.length + dislikes.length;
+    refineWindow.querySelector('.count').textContent = likes.length + dislikes.length;
+    if (count == 0) {
+        refineWindow.classList.add('hidden');
+    } else {
+        refineWindow.classList.remove('hidden');
+    }
+}
+
+
 // Render results
 function renderResults(results) {
     results.forEach(html => {
@@ -38,20 +52,20 @@ function renderResults(results) {
         }
         // Like button
         offer.querySelector('.actions .icon-button.like').addEventListener('click', () => {
-            console.log(offerId);
             const index = likes.indexOf(offerId);
-            console.log(index);
             if (index == -1) {
                 offer.classList.add('liked');
                 likes.push(offerId);
                 const _index = dislikes.indexOf(offerId);
                 if (_index != -1) {
-                    dislikes.slice(index, 1);
+                    dislikes.splice(_index, 1);
+                    offer.classList.remove('disliked');
                 }
             } else {
                 offer.classList.remove('liked');
                 likes.splice(index, 1);
             }
+            updateRefine();
         });
         // Dislike button
         offer.querySelector('.actions .icon-button.dislike').addEventListener('click', () => {
@@ -61,12 +75,14 @@ function renderResults(results) {
                 dislikes.push(offerId);
                 const _index = likes.indexOf(offerId);
                 if (_index != -1) {
-                    likes.slice(index, 1);
+                    likes.splice(_index, 1);
+                    offer.classList.remove('liked');
                 }
             } else {
                 offer.classList.remove('disliked');
                 dislikes.splice(index, 1);
             }
+            updateRefine();
         });
         resultsContainer.appendChild(li);
     });
@@ -144,7 +160,6 @@ resumeValueInput.addEventListener('change', (e) => {
 });
 searchForm.addEventListener('change', () => {
     const paramsURL = buildParamsURL();
-    console.log(paramsURL.toString());
     search(paramsURL);
 });
 searchForm.addEventListener('submit', (e) => {

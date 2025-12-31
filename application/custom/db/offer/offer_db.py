@@ -304,7 +304,7 @@ class OfferDB:
 
         curr = conn.cursor()
 
-    def search_offer(self, query:np.ndarray=None, resume:np.ndarray=None, filters:list[dict]=None) -> tuple[list[Offer], list[int]]:
+    def search_offer(self, query:np.ndarray=None, resume:np.ndarray=None, filters:list[dict]=None) -> tuple[list[Offer], list[int], list[int]]:
         """Search an offer by query, resume and filters.
 
         Args:
@@ -316,8 +316,6 @@ class OfferDB:
             list[Offer]: Offers
             list[int]: Offer IDs
         """
-
-        # TODO: implement query search (cos distance)
 
         with self.connect() as conn:
             conn.row_factory = sqlite3.Row

@@ -55,7 +55,8 @@ section#viewer .view[data-active-view="list"] {
 
     .container {
         display: flex;
-        height: 100%;
+        flex: 1 1 auto;
+        min-height: 0;
         position: relative;
     }
 
@@ -93,6 +94,12 @@ section#viewer .view[data-active-view="list"] {
             .content {
                 width: calc(100% - 100px);
                 padding-right: 40px;
+
+                .score {
+                    padding: .2rem .6rem;
+                    border-radius: 20px;
+                    background-color: var(--accent-second-color);
+                }
             }
 
             .logo {
@@ -112,7 +119,7 @@ section#viewer .view[data-active-view="list"] {
             .info {
                 display: flex;
                 align-items: center;
-                gap: 1rem;
+                gap: .5rem;
                 margin-bottom: .6rem;
             }
 
@@ -200,6 +207,9 @@ section#viewer .view[data-active-view="list"] {
             padding: .4rem;
             border-radius: 20px;
         }
+    }
+    .refine.hidden {
+        display: none;
     }
 
     .popup {

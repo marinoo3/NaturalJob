@@ -95,7 +95,7 @@ class Offer:
                     company_logo=self.company.logo_url,
                     date=self.convert_date('%d %B %Y'),
                     tags=[],
-                    score=score)
+                    score=round(score, 2) if score else None)
             case 'fullview':
                 return None
             case _:
