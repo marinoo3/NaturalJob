@@ -1,11 +1,11 @@
 <div>
     <div class="search-container">
-        <div class="search">
+        <form class="search" autocomplete="off">
             <label for="search-input">
                 <img src="{{ url_for('static', filename='images/search.svg') }}" alt="" height="16px">
             </label>
-            <input type="text" id="search-input" placeholder="Rechercher une offre">
-        </div>
+            <input type="text" id="search-input" placeholder="Rechercher une offre" autocomplete="off">
+        </form>
         <ul class="filters"></ul>
         <div class="results">
             <ul class="offers">

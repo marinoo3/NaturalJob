@@ -406,7 +406,9 @@ class OfferDB:
 
         Returns:
             list[Offer]: The list of offers
+            list[int]: List of offers IDs
         """
+
         with self.connect() as conn:
             conn.row_factory = sqlite3.Row
             cur = conn.cursor()
@@ -506,13 +508,14 @@ class OfferDB:
 
             return [self._vecf32_converter(blob) for blob in row]
 
-    def get_table(self, table_name:str, columns:list[str]=None, convert_blob=False) -> list:
+    def get_table(self, table_name:str, columns:list[str]=None, convert_blob=False, as_dict=False) -> list:
         """Get the content of a table from OFFER db
 
         Args:
             table_name (str): The name of the table
             columns (list[str], optional): The list of columns to select, all if not provided. Default to None
             convert_blob (bool): To convert the result to vectors (if stored as blob from sqlite-vec). Default to None
+            as_dict (bool): Returns a list of dict instead of a list of list
 
         Returns:
             list: Result
@@ -520,6 +523,7 @@ class OfferDB:
 
         with self.connect() as conn:
             cur = conn.cursor()
+
             if columns:
                 cols = ', '.join(columns)
                 cur.execute(f"SELECT {cols} FROM {table_name}")
@@ -541,6 +545,9 @@ class OfferDB:
             if convert_blob:
                 # Convert to np.ndarray with float32 dtype
                 result = np.asarray(result, dtype=np.float32)
+
+            if as_dict:
+                result = [dict(zip(columns, row)) for row in result]
 
             return result
 

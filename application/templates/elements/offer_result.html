@@ -3,7 +3,7 @@
     <div class="content">
         <div class="info">
             {% if score is not none %}
-                <p class="score">{{ score }}</p>
+                <p class="score" style="--value: {{ score }}">{{ score }}</p>
             {% endif %}
             <p class="company">{{ company_name }}</p>
             <p class="second date">{{ date }}</p>

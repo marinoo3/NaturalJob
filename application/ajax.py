@@ -272,8 +272,8 @@ def get_models_metadata():
 
 @ajax.route('/get_offers')
 def get_offers():
-    offers, _ = app.offer_db.get_offers()
-    return jsonify({'count': len(offers), 'offers': [offer.dict() for offer in offers]})
+    offers = app.offer_db.get_table('OFFER', columns=['offer_id', 'title', 'salary_min', 'latitude', 'longitude'], as_dict=True)
+    return jsonify({'count': len(offers), 'offers': offers})
 
 @ajax.route('/search_offer')
 def search_offer():
@@ -299,6 +299,7 @@ def search_offer():
         resume = emb
     # create refines (like and dislikes)
     if request.args.get('refine'):
+        print('args: ', f"|{request.args.get('refine')}|", flush=True)
         with app.offer_db.connect() as conn:
             for refine in json.loads(request.args.get('refine')):
                 offer_id = refine['offer_id']

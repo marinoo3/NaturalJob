@@ -31,8 +31,8 @@
                 <button class="icon-button settings" type="button">
                     <img src="{{ url_for('static', filename='images/settings.svg') }}" alt="" height="16px">
                 </button>
-                <input type="number" name="min_df" value="3" hidden>
-                <input type="number" name="max_df" value="0.5" hidden>
+                <input type="number" name="min_df" value="3" hidden title="Occurrence minimale">
+                <input type="number" name="max_df" value="0.5" hidden title="Fréquence maximale">
                 <button class="main-button" type="submit">
                     Entrainer
                 </button>
@@ -77,7 +77,7 @@
                 <button class="icon-button settings" type="button">
                     <img src="{{ url_for('static', filename='images/settings.svg') }}" alt="" height="16px">
                 </button>
-                <input type="number" name="K" value="5" hidden>
+                <input type="number" name="K" value="5" title="Nombre de cluster" hidden>
                 <button class="main-button" type="submit">
                     Entrainer
                 </button>

@@ -1,11 +1,13 @@
 const section = document.querySelector('section#viewer');
 const view = section.querySelector('.view');
+const resultWrapper = section.querySelector('.result-wrapper');
 const resultsContainer = section.querySelector('ul.results');
 const searchForm = section.querySelector('form#search-form');
 const salarySlider = searchForm.querySelector('.salary-slider[name="salary"]');
 const attachResumeButton = searchForm.querySelector('#attach-resume');
 const resumeValueInput = searchForm.querySelector('input[name="resume"]');
 const refineWindow = section.querySelector('.refine');
+const lottieContainer = section.querySelector('#lottie-container');
 
 let likes = [];
 let dislikes = [];
@@ -23,16 +25,27 @@ noUiSlider.create(salarySlider, {
     }
 });
 
+// Create animation
+const loadingAnimation = lottie.loadAnimation({
+    container: lottieContainer,
+    renderer: 'svg', // or 'canvas', 'html'
+    loop: true,
+    autoplay: false,
+    path: lottieContainer.dataset.url
+});
+
 
 
 // Update refine window
 function updateRefine() {
     const count = likes.length + dislikes.length;
     refineWindow.querySelector('.count').textContent = likes.length + dislikes.length;
+    refineWindow.querySelector('.likes .count').textContent = likes.length;
+    refineWindow.querySelector('.dislikes .count').textContent = dislikes.length;
     if (count == 0) {
-        refineWindow.classList.add('hidden');
+        refineWindow.classList.remove('active');
     } else {
-        refineWindow.classList.remove('hidden');
+        refineWindow.classList.add('active');
     }
 }
 
@@ -112,25 +125,30 @@ function createPopup(html) {
     return popup
 }
 
-function buildParamsURL() {
+function buildParamsURL(includeRefines=false) {
     const data = new FormData(searchForm);
-    const refine = [
-        ...likes.map(offer_id => ({ type: 'like', offer_id })),
-        ...dislikes.map(offer_id => ({ type: 'dislike', offer_id })),
-    ];
-    data.append('refine', JSON.stringify(refine));
     data.append('salary', JSON.stringify(salarySlider.noUiSlider.get()));
-    const query = new URLSearchParams(data); 
+    if (includeRefines) {
+        const refine = [
+            ...likes.map(offer_id => ({ type: 'like', offer_id })),
+            ...dislikes.map(offer_id => ({ type: 'dislike', offer_id })),
+        ];
+        data.append('refine', JSON.stringify(refine));
+    }
+    const query = new URLSearchParams(data);
     return query
 }
 
 async function search(paramsURL) {
-    resultsContainer.innerHTML = '';
-    resultsContainer.classList.add('waiting');
-    const response = await fetch(`/ajax/search_offer?${paramsURL}"`);
+    loadingAnimation.goToAndPlay(0, true);
+    resultWrapper.classList.add('waiting');
+    resultWrapper.classList.remove('empty');
+    const response = await fetch(`/ajax/search_offer?${paramsURL}`);
     const content = await response.json();
+    resultsContainer.innerHTML = '';
+    resultWrapper.classList.remove('waiting');
+    loadingAnimation.stop();
     renderResults(content);
-    resultsContainer.classList.remove('waiting');
 }
 
 
@@ -142,6 +160,26 @@ attachResumeButton.addEventListener('click', async () => {
     // Create popup
     const popup = createPopup(html);
     view.appendChild(popup);
+});
+
+// Open refines
+refineWindow.querySelector('.head').addEventListener('click', () => {
+    refineWindow.classList.toggle('active');
+});
+// Clear likes / dislikes
+refineWindow.querySelector('.likes button').addEventListener('click', () => {
+    likes = [];
+    resultsContainer.querySelectorAll('.offer.liked').forEach(offer => {
+        offer.classList.remove('liked');
+    });
+    updateRefine();
+});
+refineWindow.querySelector('.dislikes button').addEventListener('click', () => {
+    dislikes = [];
+    resultsContainer.querySelectorAll('.offer.disliked').forEach(offer => {
+        offer.classList.remove('disliked');
+    });
+    updateRefine();
 });
 
 
@@ -165,3 +203,17 @@ searchForm.addEventListener('change', () => {
 searchForm.addEventListener('submit', (e) => {
     e.preventDefault();
 });
+
+// Refine submit
+refineWindow.querySelector('button.refine-button').addEventListener('click', () => {
+    const paramsURL = buildParamsURL(true);
+    search(paramsURL);
+    refineWindow.classList.remove('active');
+});
+
+
+
+
+export function update() {
+    searchForm.querySelector('input[name="query"]').focus();
+}

@@ -8,7 +8,7 @@
                 <img src="{{ url_for('static', filename='images/resume.svg') }}" alt="" height="16px">
                 <input type="text" name="resume" hidden>
             </button>
-            <input type="text" name="query" placeholder="Rechercher un terme" autocomplete="off">
+            <input type="text" name="query" placeholder="Rechercher un terme" autocomplete="off" required>
         </div>
         <select name="order" id="search-order">
             <option value="score">Pertinance</option>
@@ -47,11 +47,39 @@
                 </select>
             </div>
         </nav>
-        <ul class="results"></ul>
-        <div class="refine hidden">
-            <p class="count">0</p>
-            <h3>Affiner la recherche</h3>
-            <img src="{{ url_for('static', filename='images/down-arrow.svg') }}" alt="" height="16px">
+        <div class="result-wrapper empty">
+            <div class="no-data">
+                <img src="{{ url_for('static', filename='images/search.svg') }}" alt="" height="16px">
+                <p class="second">Recherchez un terme, liez votre CV et filtrez les résultats</p>
+            </div>
+            <div class="loading">
+                <div id="lottie-container" style="width: 300px; height: 300px;" data-url="{{ url_for('static', filename='images/loading.json') }}"></div>
+            </div>
+            <ul class="results"></ul>
+        </div>
+        <div class="refine">
+            <div class="head">
+                <p class="count">0</p>
+                <h3>Affiner la recherche</h3>
+                <img src="{{ url_for('static', filename='images/down-arrow.svg') }}" alt="" height="16px">
+            </div>
+            <div class="content">
+                <div class="likes type">
+                    <p class="count">0</p>
+                    <p>« J'aime »</p>
+                    <button class="icon-button" type="button">
+                        <img src="{{ url_for('static', filename='images/cross.svg') }}" alt="" height="12px">
+                    </button>
+                </div>
+                <div class="dislikes type">
+                    <p class="count">0</p>
+                    <p>« Je n'aime pas »</p>
+                    <button class="icon-button" type="button">
+                        <img src="{{ url_for('static', filename='images/cross.svg') }}" alt="" height="12px">
+                    </button>
+                </div>
+                <button class="main-button refine-button" type="button">Affiner</button>
+            </div>
         </div>
     </div>
 </form>

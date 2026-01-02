@@ -4,9 +4,12 @@ var tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/
                 maxZoom: 20
             }).addTo(map);
 // Elements
-const footer = document.querySelector('footer');
+const section = document.querySelector('#viewer');
+const mapContainer = section.querySelector('#map');
+const footer = section.querySelector('footer');
 const cooElement = footer.querySelector('.coo');
 const zoomElement = footer.querySelector('.zomm');
+const searchInput = section.querySelector('#search-input');
 // Hexbin
 const palette = ['#A167F280', '#7e03a8', '#cc4778', '#f89540', '#f0f921']
 
@@ -36,7 +39,7 @@ const tooltipHandler = L.HexbinHoverHandler.tooltip({
 
         // Average salary (ignore offers without salary)
         const salaries = bin
-            .map(point => point.o.salary_max)
+            .map(point => point.o.salary_min)
             .filter(s => typeof s === 'number' && !Number.isNaN(s));
 
         if (salaries.length) {
@@ -119,6 +122,21 @@ document.addEventListener('dataUpdate', () => {
     requestMapData();
 });
 
+const observer = new ResizeObserver(() => {
+    map.invalidateSize();
+});
+observer.observe(mapContainer);
+
+
+
+
+
+
+export function update() {
+    map.invalidateSize();
+    searchInput.focus();
+}
+
 
 
 
@@ -127,3 +145,4 @@ document.addEventListener('dataUpdate', () => {
 setZoom();
 setCoo();
 requestMapData();
+searchInput.focus();

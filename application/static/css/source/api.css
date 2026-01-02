@@ -1,5 +1,5 @@
 section#source .view:is([data-active-view="ntne"], [data-active-view="apec"]) {
-    overflow: scroll;
+    overflow: auto;
     > div {
         height: auto !important;
     }

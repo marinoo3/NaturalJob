@@ -95,11 +95,12 @@ async function switchTab(tab) {
    if (cache) {
       // Loads tab from cache if exists
       view.replaceChildren(cache.node);
+      cache.module?.update?.();
    } else {
       // Otherwise load tab content and save in cache
       try {
          const module = await loadTab(key, view);
-         module?.update?.(); // Call update method if exists
+         module?.init?.(); // Call update method if exists
          domCache.set(key, { node: view.firstElementChild, module });
       } catch (err) {
          view.innerHTML = "<p class='error'>Error loading content.</p>";

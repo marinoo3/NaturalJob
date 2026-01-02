@@ -136,7 +136,7 @@ function startUpdate(source, database) {
 
 
 
-export function update() {
+export function init() {
     const database = view.querySelector('.database');
     const source = database.dataset.source;
     const updateButton = database.querySelector('button#update');

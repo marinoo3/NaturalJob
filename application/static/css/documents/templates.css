@@ -1,5 +1,5 @@
 section#documents .view[data-active-view="templates"] {
-    overflow: scroll;
+    overflow: auto;
     > div {
         height: auto !important;
     }

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field, asdict
 from typing import Optional, List
-from flask import render_template
+from flask import render_template, url_for
 from datetime import date
 
 
@@ -70,6 +70,11 @@ class Offer:
         if self.company.logo_url:
             return self.company.logo_url
         return 'hello'
+    
+    def format_score(self, score:float) -> int:
+        if score is None:
+            return None
+        return round((1-score) * 100)
 
     def render(self, id:int, score:float=None, style='result') -> str:
         """Create html template object
@@ -92,10 +97,11 @@ class Offer:
                     title=self.title,
                     description=self.truncate_description(225),
                     company_name=self.company.name,
-                    company_logo=self.company.logo_url,
+                    company_logo=self.company.logo_url or url_for('static', filename='images/company.svg'),
                     date=self.convert_date('%d %B %Y'),
                     tags=[],
-                    score=round(score, 2) if score else None)
+                    score=self.format_score(score)
+                    )
             case 'fullview':
                 return None
             case _:
