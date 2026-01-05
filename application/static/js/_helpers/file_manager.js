@@ -5,6 +5,59 @@ export let templates = {
 };
 
 
+
+
+
+
+async function loadTemplates(dispatchEvent=true) {
+    const response = await fetch('ajax/get_templates');
+    const content = await response.json();
+
+    // Empty all templates and set updated ones
+    Object.values(templates).forEach(arr => arr.length = 0);
+    for (const [key, value] of Object.entries(content)) {
+        templates[key] = value;
+    }
+
+    if (dispatchEvent) {
+        // Dispatch event
+        const event = new CustomEvent('templateLoaded', {
+            bubbles: true,
+            cancelable: false
+        });
+
+        document.dispatchEvent(event);
+    }
+}
+
+async function createTemplate(formData) {
+    // Send file creation request
+    const response = await fetch('ajax/create_template', {
+        method: 'POST',
+        body: formData
+    })
+    // Show message on error
+    if (!response.ok) {
+        // TODO: Custom error message
+        alert('Erreur lors de la création de la template');
+        return;
+    }
+    const content = await response.json()
+    // Add to file manager and preview the template content
+    templates[content.category].push(content.html);
+    // Dispatch event
+    const event = new CustomEvent('templateCreated', {
+        detail: {
+            category: content.category,
+            uuid: content.uuid
+        },
+        bubbles: true,
+        cancelable: false
+    });
+
+    document.dispatchEvent(event);
+}
+
 function createPopup(html) {
     // Create popup
     const popup = document.createElement('div');
@@ -36,27 +89,23 @@ function createPopup(html) {
     return { popup, form };
 }
 
-async function createTemplate(formData) {
-    // Send file creation request
-    const response = await fetch('ajax/create_template', {
-        method: 'POST',
-        body: formData
-    })
-    // Show message on error
-    if (!response.ok) {
-        // TODO: Custom error message
-        alert('Erreur lors de la création de la template');
-        return;
-    }
-    const content = await response.json()
-    // Add to file manager and preview the template content
-    templates[content.category].push(content.html);
+
+
+
+
+
+export async function deleteTemplate(uuid) {
+    await fetch(`ajax/delete_template/${uuid}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+    });
+
+    // Reload templates without templateUpdated event
+    await loadTemplates(false);
+
     // Dispatch event
-    const event = new CustomEvent('templateCreated', {
-        detail: {
-            category: content.category,
-            uuid: content.uuid
-        },
+    const event = new CustomEvent('templateDeleted', {
+        detail: { uuid },
         bubbles: true,
         cancelable: false
     });
@@ -177,3 +226,9 @@ export async function createResumePopup() {
 
     return popup
 }
+
+
+
+
+
+loadTemplates()

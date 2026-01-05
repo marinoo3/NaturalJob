@@ -82,6 +82,9 @@ function renderTemplate(html) {
 
 
 async function displayTemplates() {
+    // Clean content
+    loadContainer.querySelector('ul').innerHTML = '';
+    // Render templates
     let count = 0
     Object.values(templates).forEach(category => {
         category.forEach(html => {
@@ -89,7 +92,7 @@ async function displayTemplates() {
             count += 1;
         });
     });
-
+    // Show only if there is templates
     if(count == 0) {
         loadContainer.classList.add('hidden');
     } else {
@@ -97,6 +100,9 @@ async function displayTemplates() {
     }
 
 }
+
+
+
 
 
 createContainer.querySelector('.action.create-resume').addEventListener('click', async () => {
@@ -112,6 +118,23 @@ createContainer.querySelector('.action.create-email').addEventListener('click', 
     document.body.appendChild(popup);
 });
 
+
+
+
+
+
+document.addEventListener('templateLoaded', () => {
+    displayTemplates();
+});
+
+document.addEventListener('templateCreated', () => {
+    displayTemplates();
+});
+
+document.addEventListener('templateDeleted', () => {
+    console.log('received event');
+    displayTemplates();
+});
 
 loadEditor();
 displayTemplates();

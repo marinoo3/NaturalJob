@@ -46,11 +46,6 @@ async function createSettingsPopup(form) {
         }
     });
 
-    // TODO: 
-    // [html]: create a settings_popup element, it loops with Jinja on the inputs parametter to create inputs
-    // [pyhton]: render the popup html with a list of each param names
-    // [js]: loop through inputs in the popup and bind there values to the .actions hidden inputs values on submit
-
     return popup;
 }
 
@@ -127,6 +122,16 @@ async function initModels() {
             const data = await response.json();
             model.classList.remove('waiting');
             progress.remove();
+
+            if (modelName == 'kmeans') {
+                console.log('send kmeans event');
+                // Dispatch event
+                const event = new CustomEvent('kmeansUpdated', {
+                    bubbles: true,
+                    cancelable: false
+                });
+                document.dispatchEvent(event);
+            }
 
             updateMetadata(container, data);
         });

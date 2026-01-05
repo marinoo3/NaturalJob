@@ -1,4 +1,4 @@
-import { createResumePopup, createCoverletterPopup, createEmailPopup, templates } from '../_helpers/file_manager.js';
+import { createResumePopup, createCoverletterPopup, createEmailPopup, deleteTemplate, templates } from '../_helpers/file_manager.js';
 
 
 const section = document.querySelector('#documents');
@@ -40,14 +40,12 @@ function renderTemplate(documents) {
             
             const deleteButton = wrapper.querySelector('.actions #delete');
             deleteButton.addEventListener('click', () => {
+                deleteTemplate(uuid);
                 li.remove();
-                fetch(`ajax/delete_template/${uuid}`, {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' }
-                }).then(loadTemplates);
             });
             documents.appendChild(li);
         });
+        documents.parentElement.classList.remove('folded');
     } else {
         documents.innerHTML = '<p class="third">Aucun documents</p>';
         documents.parentElement.classList.add('folded');
@@ -55,16 +53,8 @@ function renderTemplate(documents) {
 
 }
 
-async function loadTemplates() {
-    const response = await fetch('ajax/get_templates');
-    const content = await response.json();
-
-    // Empty all templates and set updated ones
-    Object.values(templates).forEach(arr => arr.length = 0);
-    for (const [key, value] of Object.entries(content)) {
-        templates[key] = value;
-    }
-
+function initTemplates() {
+    // Render all templates templates
     categoryContainers.forEach(category => {
         const documents = category.querySelector('.docs');
         renderTemplate(documents);
@@ -74,22 +64,22 @@ async function loadTemplates() {
 
 
 
-// Foldable categories
-categoryContainers.forEach(category => {
-    const title = category.querySelector('.foldable');
-    title.addEventListener('click', () => {
-        category.classList.toggle('folded');
-    });
+
+
+
+document.addEventListener('templateLoaded', () => {
+    initTemplates();
 });
 
-// Render and load document when created
-document.addEventListener('templateCreated', async (e) => {
-    // Render template and preview content
+document.addEventListener('templateCreated', (e) => {
+    // Render template
     const documents = categoryContainers[0].parentElement.querySelector(`.category .docs[data-category='${e.detail.category}']`);
     documents.parentElement.classList.remove('folded');
     renderTemplate(documents);
-    const module = await switchTab(editorTab);
-    module.loadTemplate(e.detail.uuid);
+    // Load template in editor
+    switchTab(editorTab).then(module => {
+        module.loadTemplate(e.detail.uuid);
+    });
 });
 
 // Upload resume button
@@ -111,5 +101,15 @@ createEmailButton.addEventListener('click', async () => {
 });
 
 
-// Load and render templates
-loadTemplates();
+
+
+
+// Foldable categories
+categoryContainers.forEach(category => {
+    const title = category.querySelector('.foldable');
+    title.addEventListener('click', () => {
+        category.classList.toggle('folded');
+    });
+});
+
+initTemplates()

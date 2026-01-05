@@ -3,6 +3,9 @@ const topJobContainer = section.querySelector('#top-offers-plot');
 const contractContainer = section.querySelector('#contract-plot');
 
 
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 async function loadStatPlots() {
     // Request plot jsons
@@ -15,8 +18,7 @@ async function loadStatPlots() {
     await Plotly.react(contractContainer, contractsFig.data, contractsFig.layout, { responsive: true });
 }
 
-// Relayout on resize
-const observer = new ResizeObserver(() => {
+function relayoutPlots() {
     Plotly.relayout(topJobContainer, {
         width: topJobContainer.clientWidth,
         height: topJobContainer.clientHeight
@@ -25,9 +27,25 @@ const observer = new ResizeObserver(() => {
         width: contractContainer.clientWidth,
         height: contractContainer.clientHeight
     });
+}
+
+
+
+
+// Relayout on resize
+const observer = new ResizeObserver(() => {
+    relayoutPlots();
 });
 
 
+
+
+
+export function update() {
+    wait(5).then(() => {
+        relayoutPlots();
+    });
+}
 
 loadStatPlots().then(() => {
     observer.observe(section);
