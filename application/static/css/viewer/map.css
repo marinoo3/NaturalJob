@@ -5,6 +5,28 @@ section#viewer .view[data-active-view="map"] {
     #map {
         height: 100%;
         background-color: black;
+        outline: none;
+    }
+
+    #map .loading {
+        display: none;
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--bg-overlay-color);
+        z-index: 999;
+
+        #lottie-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    }
+    #map.waiting .loading {
+        display: block;
     }
 
     #map .leaflet-bar a {
@@ -35,6 +57,7 @@ section#viewer .view[data-active-view="map"] {
         border-radius: var(--border-radius);
         top: 1.2rem;
         left: 1.2rem;
+        width: 420px;;
         overflow: hidden;
 
         .search {
@@ -58,45 +81,16 @@ section#viewer .view[data-active-view="map"] {
             transform: translateY(-50%);
         }
 
-        .offers > li {
+        .results {
+            max-height: 300px;
+            overflow-y: auto;
+        }    
+
+        .footer {
             display: flex;
-            align-items: center;
-            gap: 1rem;
-            position: relative;
-            padding: .6rem;
-
-            .content {
-                margin-right: 50px;
-            }
-
-            .logo {
-                height: 35px;
-                width: 35px;
-                background-size: contain;
-                background-position: center;
-                background-repeat: no-repeat;
-                background-color: white;
-                border-radius: var(--border-radius);
-            }
-
-            .title {
-                width: 250px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
-
-            .score {
-                position: absolute;
-                right: 1rem;
-                padding: .2rem .6rem;
-                background-color: var(--accent-second-color);
-                color: white;
-                border-radius: 20px;
-            }
-        }
-        .offers > li:hover {
-            background-color: var(--bg-frame-color);
+            justify-content: space-between;
+            padding: .2rem .6rem;
+            border-top: solid 1px var(--border-color);
         }
     }
 }

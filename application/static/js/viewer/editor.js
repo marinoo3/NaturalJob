@@ -29,7 +29,7 @@ function createActions(uuid) {
     cancelButton.textContent = "Annuler";
     cancelButton.classList.add('second-button');
     cancelButton.addEventListener('click', () => {
-        loadTemplate(uuid);
+        wrapper.dataset.fileType = null;
     });
     // Save button
     const saveButton = document.createElement('button');

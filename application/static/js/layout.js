@@ -5,6 +5,7 @@ const domCache = new Map();
 const tabs = document.querySelectorAll('section .tabs li');
 const tabLoaders = {
    "documents/templates": () => import("./documents/templates.js"),
+   "documents/offers": () => import("./documents/offers.js"),
    "viewer/map": () => import("./viewer/map.js"),
    "viewer/list": () => import("./viewer/list.js"),
    "viewer/editor": () => import("./viewer/editor.js"),
@@ -12,6 +13,7 @@ const tabLoaders = {
    "source/apec": () => import("./source/api.js"),
    "console/clusters": () => import("./console/clusters.js"),
    "console/models": () => import("./console/models.js"),
+   "console/statistics": () => import("./console/statistics.js"),
 };
 
 

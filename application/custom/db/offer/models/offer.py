@@ -89,7 +89,13 @@ class Offer:
 
         match style:
             case 'preview':
-                return None
+                return render_template(
+                    'elements/offer_preview.html', 
+                    offer_id=id, 
+                    title=self.title,
+                    company_name=self.company.name,
+                    company_logo=self.company.logo_url or url_for('static', filename='images/company.svg')
+                    )
             case 'result':
                 return render_template(
                     'elements/offer_result.html', 

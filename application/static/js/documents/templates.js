@@ -2,6 +2,7 @@ import { createResumePopup, createCoverletterPopup, createEmailPopup, templates 
 
 
 const section = document.querySelector('#documents');
+const view = section.querySelector('.view');
 const editorTab = document.querySelector('#viewer li[data-tab-id="editor"]');
 const categoryContainers = section.querySelectorAll('.category');
 const uploadResumeButton = document.querySelector('#create-resume-button');
@@ -84,7 +85,8 @@ categoryContainers.forEach(category => {
 // Render and load document when created
 document.addEventListener('templateCreated', async (e) => {
     // Render template and preview content
-    const documents = document.querySelector(`.category .docs[data-category='${e.detail.category}']`);
+    const documents = categoryContainers[0].parentElement.querySelector(`.category .docs[data-category='${e.detail.category}']`);
+    documents.parentElement.classList.remove('folded');
     renderTemplate(documents);
     const module = await switchTab(editorTab);
     module.loadTemplate(e.detail.uuid);

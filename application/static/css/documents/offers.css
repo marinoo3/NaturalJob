@@ -1,0 +1,11 @@
+section#documents[data-section-id="documents"] {
+    .offer {
+        margin-top: .6rem;
+        border-radius: var(--border-radius);
+        background-color: var(--bg-frame-color);
+
+        button.save img {
+            filter: invert(85%) sepia(16%) saturate(1406%) hue-rotate(69deg) brightness(101%) contrast(87%);
+        }
+    }
+}

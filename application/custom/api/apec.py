@@ -48,6 +48,19 @@ class APEC(BaseAPI):
         industry = XPathSearch(hierarchy, 'NAF_700_SERVICE_DOMAIN', industry_id)
         return industry
     
+    def __parse_job_name(self, result) -> str|None:
+        job_name = XPathSearch(result, 'intitule')
+        if not job_name:
+            return None
+        # Uniformize
+        job_name = job_name.upper()
+        if job_name.startswith('&'):
+            job_name = job_name[1:]
+        remove = ['H/F', 'F/H', '(', ')']
+        for r in remove:
+            job_name = job_name.replace(r, '')
+        return job_name.strip().title()
+    
     def __parse_job_type(self, result:dict) -> str:
         if result.get('idNomDureeTempsPartiel'):
             return 'PART_TIME'
@@ -58,6 +71,16 @@ class APEC(BaseAPI):
         if not contract_id:
             return None
         contract_type = XPathSearch(hierarchy, 'RECHERCHE_OFFRE_TYPE_CONTRAT', contract_id)
+        if not contract_type:
+            return None
+        # Uniformize contracts
+        contract_type = contract_type.upper()
+        if 'INTÉRIM' in contract_type or 'INTERIM' in contract_type:
+            return 'INTÉRIM'
+        elif 'CDD' in contract_type:
+            return 'CDD'
+        elif 'CDI' in contract_type:
+            return 'CDI'
         return contract_type
     
     def __parse_salary(self, result:dict, source='label') -> float|None:
@@ -128,7 +151,7 @@ class APEC(BaseAPI):
 
         return Offer(
             title = XPathSearch(result, 'intitule'),
-            job_name = XPathSearch(result, 'intitule'),
+            job_name = self.__parse_job_name(result),
             job_type = self.__parse_job_type(result),
             contract_type = self.__parse_contract_type(result, hierarchy),
             salary_label = self.__parse_salary(result, source='label'),

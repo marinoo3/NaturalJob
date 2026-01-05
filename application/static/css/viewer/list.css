@@ -85,7 +85,7 @@ section#viewer .view[data-active-view="list"] {
         position: relative;
         overflow: hidden;
 
-        .no-data {
+        .no-data, .error {
             display: none;
             position: absolute;
             top: 50%;
@@ -96,6 +96,16 @@ section#viewer .view[data-active-view="list"] {
 
             img {
                 filter: invert(1) brightness(0.5);
+            }
+        }
+
+        .error {
+            img {
+                filter: invert(54%) sepia(37%) saturate(6497%) hue-rotate(329deg) brightness(103%) contrast(124%);
+            }
+
+            p {
+                color: var(--bad-color);
             }
         }
 
@@ -122,6 +132,9 @@ section#viewer .view[data-active-view="list"] {
         display: block;
     }
     .result-wrapper.waiting .loading {
+        display: block;
+    }
+    .result-wrapper.error .error {
         display: block;
     }
 

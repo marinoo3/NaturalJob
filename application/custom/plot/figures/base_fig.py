@@ -12,14 +12,10 @@ class BaseFig(ABC):
         pass
 
     @abstractmethod
-    def render(self) -> dict:
+    def render(self) -> str:
         ...
-
-    @staticmethod
-    def _get_json(fig:Figure) -> str:
-        return fig.to_plotly_json()
     
     @staticmethod
-    def _get_json_2(fig) -> str:
+    def _get_json(fig) -> str:
         fig_json = json.dumps(fig, cls=PlotlyJSONEncoder)
         return fig_json

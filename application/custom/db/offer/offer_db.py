@@ -398,7 +398,7 @@ class OfferDB:
 
             return [self._row_to_offer(row) for row in rows], [row['offer_id'] for row in rows], [row['score'] for row in rows]
 
-    def get_offers(self, id:str=None) -> tuple[list[Offer], list[int]]:
+    def get_offers(self, ids:str=None) -> tuple[list[Offer], list[int]]:
         """Get offer by ID, returns all offers if no ID
 
         Args:
@@ -409,11 +409,7 @@ class OfferDB:
             list[int]: List of offers IDs
         """
 
-        with self.connect() as conn:
-            conn.row_factory = sqlite3.Row
-            cur = conn.cursor()
-
-            cur.execute("""
+        query = """
             SELECT
                 o.offer_id,
                 o.title,
@@ -450,11 +446,24 @@ class OfferDB:
             JOIN DESCRIPTION d ON d.description_id = o.description_id
             JOIN CITY ci        ON ci.city_id       = o.city_id
             JOIN REGION r       ON r.region_id      = ci.region_id
-            ORDER BY o.date DESC;
-            """)
+        """
 
+        params: list[int] = []
+
+        if ids:
+            placeholders = ','.join('?' for _ in ids)
+            query += f" WHERE o.offer_id IN ({placeholders})"
+            params.extend(ids)
+
+        query += " ORDER BY o.date DESC;"
+
+        with self.connect() as conn:
+            conn.row_factory = sqlite3.Row
+            cur = conn.cursor()
+            cur.execute(query, params)
             rows = cur.fetchall()
-            return [self._row_to_offer(row) for row in rows], [row['offer_id'] for row in rows]
+        
+        return [self._row_to_offer(row) for row in rows], [row['offer_id'] for row in rows]
 
     def get_clusters(self, id:str=None) -> list[Cluster]:
         """Search an offer cluster by id, returns all offer clusters if no ID.
@@ -509,47 +518,47 @@ class OfferDB:
             return [self._vecf32_converter(blob) for blob in row]
 
     def get_table(self, table_name:str, columns:list[str]=None, convert_blob=False, as_dict=False) -> list:
-        """Get the content of a table from OFFER db
+            """Get the content of a table from OFFER db
 
-        Args:
-            table_name (str): The name of the table
-            columns (list[str], optional): The list of columns to select, all if not provided. Default to None
-            convert_blob (bool): To convert the result to vectors (if stored as blob from sqlite-vec). Default to None
-            as_dict (bool): Returns a list of dict instead of a list of list
+            Args:
+                table_name (str): The name of the table
+                columns (list[str], optional): The list of columns to select, all if not provided. Default to None
+                convert_blob (bool): To convert the result to vectors (if stored as blob from sqlite-vec). Default to None
+                as_dict (bool): Returns a list of dict instead of a list of list
 
-        Returns:
-            list: Result
-        """
+            Returns:
+                list: Result
+            """
 
-        with self.connect() as conn:
-            cur = conn.cursor()
+            with self.connect() as conn:
+                cur = conn.cursor()
 
-            if columns:
-                cols = ', '.join(columns)
-                cur.execute(f"SELECT {cols} FROM {table_name}")
-            else:
-                cur.execute(f"SELECT * FROM {table_name}")
+                if columns:
+                    cols = ', '.join(columns)
+                    cur.execute(f"SELECT {cols} FROM {table_name}")
+                else:
+                    cur.execute(f"SELECT * FROM {table_name}")
 
-            content = cur.fetchall()
+                content = cur.fetchall()
 
-            result = []
-            for row in content:
+                result = []
+                for row in content:
+                    if convert_blob:
+                        # Decode blob to np array
+                        row = [self._vecf32_converter(blob) for blob in row]
+                    if columns and len(columns) == 1:
+                        # Convert 3d array to 2d if only 1 item
+                        row = row[0]
+                    result.append(row)
+
                 if convert_blob:
-                    # Decode blob to np array
-                    row = [self._vecf32_converter(blob) for blob in row]
-                if columns and len(columns) == 1:
-                    # Convert 3d array to 2d if only 1 item
-                    row = row[0]
-                result.append(row)
+                    # Convert to np.ndarray with float32 dtype
+                    result = np.asarray(result, dtype=np.float32)
 
-            if convert_blob:
-                # Convert to np.ndarray with float32 dtype
-                result = np.asarray(result, dtype=np.float32)
+                if as_dict:
+                    result = [dict(zip(columns, row)) for row in result]
 
-            if as_dict:
-                result = [dict(zip(columns, row)) for row in result]
-
-            return result
+                return result
 
     def clear_table(self, conn:sqlite3.Connection, table_name:str) -> None:
         """Delete the content of a database table. Warning this action is permanent.

@@ -218,6 +218,66 @@ select:focus {
 }
 
 
+/* Offers */
+
+.offer-preview {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+    padding: .6rem;
+    cursor: pointer;
+
+    .logo {
+        height: 35px;
+        width: 35px;
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-color: white;
+        border-radius: var(--border-radius);
+    }
+
+    .title {
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .content {
+        margin-right: 30px;
+        max-width: calc(100% - 65px - 1rem);
+    }
+
+    .actions {
+        display: none;
+        position: absolute;
+        right: .6rem;
+    }
+}
+.offers .offer:hover {
+    background-color: var(--bg-frame-color);
+
+    .title {
+        text-decoration: underline;
+    }
+
+    .actions {
+        display: block;
+    }
+}    
+.offer-preview.saved {
+    button.save img {
+        filter: invert(85%) sepia(16%) saturate(1406%) hue-rotate(69deg) brightness(101%) contrast(87%);
+    }
+}
+
+
+
+
+
+
 @keyframes slideUp {
     from {
         transform: translateY(20px);

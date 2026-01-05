@@ -1,0 +1,12 @@
+<div class="offer offer-preview" data-offer-id="{{ offer_id }}">
+    <div class="logo" style="background-image: url('{{ company_logo }}');"></div>
+    <div class="content">
+        <h3 class="title">{{ title }}</h3>
+        <p class="second">{{ company_name }}</p>
+    </div>
+    <div class="actions">
+        <button class="icon-button save">
+            <img src="{{ url_for('static', filename='images/bookmark.svg') }}" alt="" height="16px">
+        </button>
+    </div>
+</div>

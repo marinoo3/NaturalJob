@@ -31,7 +31,35 @@ class NTNE(BaseAPI):
             return None
         # Convert to iso date
         return date.fromisoformat(date_str[:10])
-
+    
+    def __parse_job_name(self, result) -> str|None:
+        job_name = XPathSearch(result, 'mainJob', 'label', warning=False) or XPathSearch(result, 'unknownJob')
+        if not job_name:
+            return None
+        # Uniformize
+        job_name = job_name.upper()
+        remove = ['H/F', 'F/H', '(', ')']
+        for r in remove:
+            job_name = job_name.replace(r, '')
+        return job_name.strip().title()
+    
+    def __parse_contract_type(self, result) -> str|None:
+        # Parse contract
+        contract = XPathSearch(result, 'contractTypes', [0])
+        if not contract:
+            return None
+        # Uniformize
+        contract = contract.upper()
+        matches = {
+            'APPRENTICE': 'ALTERNANCE',
+            'TRAINING': 'STAGE',
+            'INTERIM': 'INTÉRIM',
+            'INDEPEDENT': 'INDÉPENDANT'
+        }
+        for key, value in matches.items():
+            if contract == key:
+                return value
+        return contract
     
     def __parse_salary(self, result:dict, source='label') -> float|None:
         # Parse and return salary label
@@ -45,7 +73,7 @@ class NTNE(BaseAPI):
             'min': 'from',
             'max': 'to'
         }
-        # Raise exeption if unexpected `source` value
+        # Check `source` value
         key = _match.get(source)
         if not key:
             raise ValueError("Unexpected `source` value, should be in ('label', 'min', 'max)")
@@ -114,9 +142,9 @@ class NTNE(BaseAPI):
 
         return Offer(
             title = XPathSearch(result, 'title'),
-            job_name = XPathSearch(result, 'mainJob', 'label', warning=False) or XPathSearch(result, 'unknownJob'),
+            job_name = self.__parse_job_name(result),
             job_type = XPathSearch(result, 'jobType', [0]),
-            contract_type = XPathSearch(result, 'contractTypes', [0]),
+            contract_type = self.__parse_contract_type(result),
             salary_label = self.__parse_salary(result, source='label'),
             salary_min = self.__parse_salary(result, source='min'),
             salary_max = self.__parse_salary(result, source='max'),

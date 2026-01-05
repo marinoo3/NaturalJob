@@ -51,10 +51,6 @@ async function createTemplate(formData) {
     const content = await response.json()
     // Add to file manager and preview the template content
     templates[content.category].push(content.html);
-    const documents = document.querySelector(`section#documents .category .docs[data-category='${content.category}']`);
-    // Unfold category container
-    const categoryContainer = documents.closest('.category');
-    categoryContainer.classList.remove('folded');
     // Dispatch event
     const event = new CustomEvent('templateCreated', {
         detail: {

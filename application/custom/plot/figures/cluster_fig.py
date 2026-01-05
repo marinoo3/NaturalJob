@@ -9,7 +9,7 @@ from ...db.offer.models import Cluster
 
 class ClusterFig(BaseFig):
 
-    def render(self, emb_3d:list[np.ndarray], clusters:list[Cluster], titles:list[str]) -> dict:
+    def render(self, emb_3d:list[np.ndarray], clusters:list[Cluster], titles:list[str]) -> str:
         emb_3d = np.stack(emb_3d)
         names = [str(c.name) for c in clusters]
         fig = px.scatter_3d(
@@ -38,7 +38,7 @@ class ClusterFig(BaseFig):
                 yanchor='middle',   # anchor legend to its middle
             ),
             paper_bgcolor='#1e1e1e',
-            font={'color': '#E5E5E5'} ,
+            font={'color': '#E5E5E5'},
             scene=dict(
                 bgcolor='#1e1e1e',  # color of the 3‑D box “interior”
                 xaxis=dict(
@@ -70,4 +70,4 @@ class ClusterFig(BaseFig):
         )
         
 
-        return self._get_json_2(fig)
+        return self._get_json(fig)

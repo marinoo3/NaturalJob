@@ -8,6 +8,7 @@ from . import AppContext
 from .custom.db.user.models import Template
 
 
+
 # Cast app_context typing
 app = cast(AppContext, current_app)
 # Create blueprint
@@ -268,12 +269,51 @@ def get_models_metadata():
 
 
 # --------------------
-# SEARCH
+# OFFERS
 
-@ajax.route('/get_offers')
+@ajax.route('render_offers')
+def render_offers():
+    ids = request.args.getlist('id', type=int)
+    offers, ids = app.offer_db.get_offers(ids=ids)
+    offer_htmls = [offer.render(id, style='preview') for offer, id in zip(offers, ids)]
+    return jsonify(offer_htmls)
+
+@ajax.route('get_offers')
 def get_offers():
     offers = app.offer_db.get_table('OFFER', columns=['offer_id', 'title', 'salary_min', 'latitude', 'longitude'], as_dict=True)
     return jsonify({'count': len(offers), 'offers': offers})
+
+@ajax.route('get_saved_offers')
+def get_saved_offers():
+    ids = app.user_db.get_saved_offers()
+    return jsonify(ids)
+
+@ajax.route('get_applied_offers')
+def get_applied_offers():
+    ids = app.user_db.get_applied_offers()
+    return jsonify(ids)
+
+@ajax.route('save_offer/<id>', methods=['POST'])
+def save_offer(id:str):
+    app.user_db.save_offer(id)
+    return jsonify({'success': True})
+
+@ajax.route('unsave_offer/<id>', methods=['DELETE'])
+def unsave_offer(id:str):
+    app.user_db.unsave_offer(id)
+    return jsonify({'success': True})
+
+@ajax.route('apply_offer/<id>', methods=['POST'])
+def apply_offer(id:str):
+    app.user_db.apply_offer(id)
+    return jsonify({'success': True})
+
+@ajax.route('/select_offers', methods=['POST'])
+def select_offers():
+    ids = request.get_json()
+    offers, ids = app.offer_db.get_offers(ids=ids)
+    offer_htmls = [offer.render(id, style='preview') for offer, id in zip(offers, ids)]
+    return jsonify(offer_htmls)
 
 @ajax.route('/search_offer')
 def search_offer():
@@ -283,14 +323,15 @@ def search_offer():
     far = []
     near = []
 
+    # create query embeddings
+    if not request.args.get('query'):
+        return jsonify([])
+    emb, _ = app.nlp.tfidf.transform([request.args.get('query')])
+    query = emb
     # create filters
     for key in ['salary', 'category', 'company', 'city']:
         if request.args.get(key):
             filters.append({key: request.args.get(key)})
-    # create query embeddings
-    if request.args.get('query'):
-        emb, _ = app.nlp.tfidf.transform([request.args.get('query')])
-        query = emb
     # create resume embeddings
     if request.args.get('resume'):
         template = app.user_db.get_template(request.args.get('resume'))
@@ -299,7 +340,6 @@ def search_offer():
         resume = emb
     # create refines (like and dislikes)
     if request.args.get('refine'):
-        print('args: ', f"|{request.args.get('refine')}|", flush=True)
         with app.offer_db.connect() as conn:
             for refine in json.loads(request.args.get('refine')):
                 offer_id = refine['offer_id']
@@ -309,6 +349,8 @@ def search_offer():
                         near.append(emb)
                     case 'dislike':
                         far.append(emb)
+    # get render style
+    style = request.args.get('style')
 
     # adjust query based on refines
     if near:
@@ -322,8 +364,11 @@ def search_offer():
         query = query / np.linalg.norm(query)
 
     offers, ids, scores = app.offer_db.search_offer(query=query, resume=resume, filters=filters)
-    offer_htmls = [offer.render(id, score=score, style='result') for offer, id, score in zip(offers, ids, scores)]
-    return jsonify(offer_htmls)
+
+    offers_html = [offer.render(id_, score=score, style=style) for offer, id_, score in zip(offers, ids, scores)]
+    offers_data = [offer.dict() for offer in offers]
+
+    return jsonify({'html': offers_html, 'data': offers_data})
 
 
 
@@ -338,3 +383,20 @@ def cluster_plot():
     clusters, titles = app.offer_db.get_clusters()
     fig_dict = app.plot.clusters.render(emb_3d, clusters, titles)
     return jsonify(fig_dict)
+
+@ajax.route('stat_plots')
+def stat_plots():
+    data = app.offer_db.get_table('OFFER', columns=['job_name', 'contract_type'], as_dict=True)
+    # Split data
+    job_names = []
+    contracts = []
+    for d in data:
+        job_names.append(d.get('job_name'))
+        contracts.append(d.get('contract_type'))
+    # Render plots
+    job_fig = app.plot.job_fig.render(job_names)
+    contract_fig = app.plot.contract_fig.render(contracts)
+    return jsonify({
+        'topJobs': job_fig, 
+        'contracts': contract_fig
+    })

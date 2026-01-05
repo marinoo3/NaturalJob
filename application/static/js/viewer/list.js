@@ -127,6 +127,7 @@ function createPopup(html) {
 
 function buildParamsURL(includeRefines=false) {
     const data = new FormData(searchForm);
+    data.append('style', 'result');
     data.append('salary', JSON.stringify(salarySlider.noUiSlider.get()));
     if (includeRefines) {
         const refine = [
@@ -143,12 +144,21 @@ async function search(paramsURL) {
     loadingAnimation.goToAndPlay(0, true);
     resultWrapper.classList.add('waiting');
     resultWrapper.classList.remove('empty');
+    resultWrapper.classList.remove('error');
+    // Request offers
     const response = await fetch(`/ajax/search_offer?${paramsURL}`);
+    if (!response.ok) {
+        resultsContainer.innerHTML = '';
+        resultWrapper.classList.remove('waiting');
+        resultWrapper.classList.add('error');
+        loadingAnimation.stop();
+        return
+    }
     const content = await response.json();
     resultsContainer.innerHTML = '';
+    renderResults(content.html);
     resultWrapper.classList.remove('waiting');
     loadingAnimation.stop();
-    renderResults(content);
 }
 
 

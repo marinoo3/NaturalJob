@@ -1,8 +1,8 @@
+import { saveOffer, unsaveOffer, savedOffers } from '../_helpers/offer_manager.js';
+
 // Init the map
 let map = L.map('map', {maxZoom: 14}).setView([46.603354, 1.888334], 6);
-var tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                maxZoom: 20
-            }).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {maxZoom: 20}).addTo(map);
 // Elements
 const section = document.querySelector('#viewer');
 const mapContainer = section.querySelector('#map');
@@ -10,8 +10,14 @@ const footer = section.querySelector('footer');
 const cooElement = footer.querySelector('.coo');
 const zoomElement = footer.querySelector('.zomm');
 const searchInput = section.querySelector('#search-input');
-// Hexbin
+const resultsContainer = section.querySelector('.search-container ul.offers');
+const countText = section.querySelector('.search-container .footer .count');
+const lottieContainer = section.querySelector('#lottie-container');
+// Hexbin palette
 const palette = ['#A167F280', '#7e03a8', '#cc4778', '#f89540', '#f0f921']
+
+
+
 
 
 // Move controls to bottom right
@@ -51,23 +57,48 @@ const tooltipHandler = L.HexbinHoverHandler.tooltip({
     }
 });
 
-hexLayer.hoverHandler(tooltipHandler);
 
-hexLayer.dispatch().on('click', bin => {
-  const offers = bin.map(point => point.o); // original offer objects
-  console.log('Clicked bin contains:', offers);
+
+
+
+// Create animation
+const loadingAnimation = lottie.loadAnimation({
+    container: lottieContainer,
+    renderer: 'svg', // or 'canvas', 'html'
+    loop: true,
+    autoplay: false,
+    path: lottieContainer.dataset.url
 });
 
 
 
 
 
-// Request data
-async function requestMapData() {
-    const response = await fetch('ajax/get_offers');
-    const content = await response.json();
+function renderResults(results) {
+    results.forEach(html => {
+        const li = document.createElement('li');
+        li.innerHTML = html;
+        const offer = li.querySelector('.offer');
+        const offerId = offer.dataset.offerId;
+        if (savedOffers.includes(offerId)) {
+            offer.classList.add('saved');
+        }
+        li.querySelector('button.save').addEventListener('click', () => {
+            if (!savedOffers.includes(offerId)) {
+                offer.classList.add('saved');
+                saveOffer(offerId);
+            } else {
+                offer.classList.remove('saved');
+                unsaveOffer(offerId);
+            }
+        });
+        resultsContainer.appendChild(li);
+    });
+    countText.textContent = results.length + ' résultats';
+}
 
-    const points = content['offers'].filter(
+function displayData(offers) {
+    const points = offers.filter(
         d => d.longitude != null && d.latitude != null
     );
 
@@ -96,12 +127,61 @@ async function requestMapData() {
         .lat(d => d.latitude)
         .colorValue(colorBinding)
         .colorScale(colorScale)
-        .data(points)
+        .data(points);
 }
 
 
-// Set footer values
+// Request data
+async function requestMapData() {
+    loadingAnimation.goToAndPlay(0, true);
+    mapContainer.classList.add('waiting');
 
+    const response = await fetch('ajax/get_offers');
+    const content = await response.json();
+
+    displayData(content.offers);
+
+    mapContainer.classList.remove('waiting');
+    loadingAnimation.stop();
+}
+
+//Select map data
+async function selectMapData(ids) {
+    const response = await fetch('ajax/select_offers', {
+        method: 'POST',
+        headers: {
+            "Content-Type": 'application/json'
+        },
+        body: JSON.stringify(ids)
+    });
+    const content = await response.json();
+    resultsContainer.innerHTML = '';
+    renderResults(content);
+}
+
+// Search offers
+async function search(query) {
+    loadingAnimation.goToAndPlay(0, true);
+    mapContainer.classList.add('waiting');
+    // Request offers
+    const params = new URLSearchParams({
+        query: query,
+        style: 'preview'
+    });
+    const response = await fetch(`/ajax/search_offer?${params}`);
+    const content = await response.json();
+    resultsContainer.innerHTML = '';
+    renderResults(content.html);
+    displayData(content.data);
+    mapContainer.classList.remove('waiting');
+    loadingAnimation.stop();
+}
+
+
+
+
+
+// Set footer values
 function setZoom() {
     zoomElement.textContent = 'Zoom : ' + map.getZoom();
 }
@@ -110,7 +190,6 @@ function setCoo() {
 }
 
 // Map listeners
-
 map.on('move', function () {
     setCoo();
 });
@@ -126,6 +205,19 @@ const observer = new ResizeObserver(() => {
     map.invalidateSize();
 });
 observer.observe(mapContainer);
+
+
+// Hexbin events
+hexLayer.hoverHandler(tooltipHandler);
+hexLayer.dispatch().on('click', bin => {
+    const ids = bin.map(point => point.o.offer_id);
+    selectMapData(ids);
+});
+
+// On search
+searchInput.addEventListener('change', (e) => {
+    search(e.target.value);
+});
 
 
 

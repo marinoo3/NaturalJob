@@ -52,6 +52,10 @@
                 <img src="{{ url_for('static', filename='images/search.svg') }}" alt="" height="16px">
                 <p class="second">Recherchez un terme, liez votre CV et filtrez les résultats</p>
             </div>
+            <div class="error">
+                <img src="{{ url_for('static', filename='images/error.svg') }}" alt="" height="16px">
+                <p>Une erreur s'est produite... Si ce message persiste, essayez de réentraîner les modèles TF-IDF puis Kmeans.</p>
+            </div>
             <div class="loading">
                 <div id="lottie-container" style="width: 300px; height: 300px;" data-url="{{ url_for('static', filename='images/loading.json') }}"></div>
             </div>

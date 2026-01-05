@@ -1,2 +1,33 @@
-section#statistics {
+section#console .view[data-active-view="statistics"] {
+   padding: 0;
+   background-color: var(--bg-frame-color);
+
+   .plot-grid {
+      display: flex;
+   }
+
+   .plot-container {
+      width: 100%;
+
+      .placeholder {
+         width: 100%;
+         height: 100%;
+         opacity: 0%;
+         animation: fade 1s ease-in-out infinite alternate;
+      }
+
+      #scene {
+         height: 100% !important;
+      }
+   }
+}
+
+
+@keyframes fade {
+   from {
+      opacity: 0.1;
+   }
+   to {
+      opacity: .8;
+   }
 }

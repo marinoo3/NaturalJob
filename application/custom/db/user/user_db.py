@@ -30,7 +30,7 @@ class UserDB():
 
         with self.connect() as conn:                
             conn.execute("""
-                INSERT INTO USER_FILE (ID, Title, Description, Category, Path, Date)
+                INSERT INTO FILE (uuid, title, description, category, path, date)
                 VALUES (?, ?, ?, ?, ?, ?)
             """, (template.values()))
 
@@ -46,7 +46,7 @@ class UserDB():
         """
         with self.connect() as conn:
             cursor = conn.execute("""
-                SELECT ID, Title, Description, Category, Path, Date FROM USER_FILE
+                SELECT uuid, title, description, category, path, date FROM FILE
             """)
             rows = cursor.fetchall()
 
@@ -65,9 +65,9 @@ class UserDB():
 
         with self.connect() as conn:
             row = conn.execute("""
-                SELECT ID, Title, Description, Category, Path, Date
-                    FROM USER_FILE
-                    WHERE ID = ?
+                SELECT uuid, title, description, category, path, date
+                    FROM FILE
+                    WHERE uuid = ?
             """, (uuid,)).fetchone()
         return Template(*row) if row else None
     
@@ -83,14 +83,78 @@ class UserDB():
         """
 
         row = conn.execute("""
-            SELECT ID, Title, Description, Category, Path, Date 
-            FROM USER_FILE
-            WHERE ID = ?
+            SELECT uuid, title, description, category, path, date 
+            FROM FILE
+            WHERE uuid = ?
         """, (uuid,)).fetchone()
 
         if row is None:
             return None  # nothing to remove
 
-        conn.execute("DELETE FROM USER_FILE WHERE ID = ?", (uuid,))
+        conn.execute("DELETE FROM FILE WHERE uuid = ?", (uuid,))
 
         return Template(*row)
+    
+    def get_saved_offers(self) -> list[int]:
+        """Get the list of saved offer IDs
+
+        Returns:
+            list[int]: List of IDs
+        """
+
+        with self.connect() as conn:
+            rows = conn.execute("SELECT offer_id FROM SAVED_OFFER").fetchall()
+
+        return [row[0] for row in rows]
+    
+    def get_applied_offers(self) -> list[int]:
+        """Get the list of applied offer IDs
+
+        Returns:
+            list[int]: List of IDs
+        """
+
+        with self.connect() as conn:
+            rows = conn.execute("SELECT offer_id FROM APPLIED_OFFER").fetchall()
+
+        return [row[0] for row in rows]
+    
+    def save_offer(self, id:str) -> list[int]:
+        """Add an offer to SAVED_OFFER table
+
+        Argumenta:
+            int: Offer ID to add
+        """
+
+        with self.connect() as conn:
+            conn.execute(
+                "INSERT INTO SAVED_OFFER (offer_id) VALUES (?)",
+                (id,)
+            )
+
+    def unsave_offer(self, id:str) -> list[int]:
+        """Remove an offer form SAVED_OFFER table
+
+        Argumenta:
+            int: Offer ID to remove
+        """
+
+        with self.connect() as conn:
+            conn.execute(
+                "DELETE FROM SAVED_OFFER WHERE offer_id = ?",
+                (id,)
+            )
+            conn.commit()  # Make sure to commit the changes
+
+    def apply_offer(self, id:str) -> list[int]:
+        """Add an offer to APPLIED_OFFER table
+
+        Argumenta:
+            int: Offer ID to add
+        """
+
+        with self.connect() as conn:
+            conn.execute(
+                "INSERT INTO APPLIED_OFFER (offer_id) VALUES (?)",
+                (id,)
+            )
