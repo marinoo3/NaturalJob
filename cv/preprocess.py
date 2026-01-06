@@ -15,7 +15,7 @@ lemmatizer = WordNetLemmatizer()
 
 def clean_text(text: str) -> str:
     """
-    Nettoie et normalise un texte (CV ou annonce).
+    Nettoie et normalise un texte (CV et annonce).
     Retourne une chaîne prête pour la vectorisation.
     """
 

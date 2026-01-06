@@ -33,9 +33,10 @@ def load_all_cvs(cv_dir: Path) -> dict:
 
 
 if __name__ == "__main__":
+    
     cv_directory = Path("data/cv")
     cvs = load_all_cvs(cv_directory)
 
     for name, text in cvs.items():
-        print(f"\n===== CV : {name} =====")
+        print(f"\n************** CV : {name} **************")
         print(text[:1000])  # aperçu
