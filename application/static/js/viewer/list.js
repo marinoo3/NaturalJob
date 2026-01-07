@@ -1,3 +1,5 @@
+import { saveOffer, unsaveOffer, savedOffers, displayOffer } from '../_helpers/offer_manager.js';
+
 const section = document.querySelector('section#viewer');
 const view = section.querySelector('.view');
 const resultWrapper = section.querySelector('.result-wrapper');
@@ -97,6 +99,22 @@ function renderResults(results) {
             }
             updateRefine();
         });
+        // Save button
+        offer.querySelector('.actions .icon-button.save').addEventListener('click', () => {
+            if (!savedOffers.includes(offerId)) {
+                offer.classList.add('saved');
+                saveOffer(offerId);
+            } else {
+                offer.classList.remove('saved');
+                unsaveOffer(offerId);
+            }
+        });
+        // Display offer
+        offer.addEventListener('click', (event) => {
+            if (!event.target.closest('ul.actions')) {
+                displayOffer(offerId);
+            }
+        });
         resultsContainer.appendChild(li);
     });
 }
@@ -109,7 +127,7 @@ function createPopup(html) {
     // Bind save button
     const saveButton = popup.querySelector('button.submit');
     saveButton.addEventListener('click', async () => {
-        const selected = popup.querySelector('input[name="resume"]:checked');
+        const selected = popup.querySelector('input[name="template"]:checked');
         resumeValueInput.value = selected.value;
         const event = new Event('change', { bubbles: true });
         resumeValueInput.dispatchEvent(event);
@@ -141,6 +159,11 @@ function buildParamsURL(includeRefines=false) {
 }
 
 async function search(paramsURL) {
+    if (!paramsURL.get('query') && !paramsURL.get('resume')) {
+        resultsContainer.innerHTML = '';
+        resultWrapper.classList.add('empty');
+        return
+    }
     loadingAnimation.goToAndPlay(0, true);
     resultWrapper.classList.add('waiting');
     resultWrapper.classList.remove('empty');
@@ -165,7 +188,7 @@ async function search(paramsURL) {
 
 // Attach resume
 attachResumeButton.addEventListener('click', async () => {
-    const response = await fetch('/ajax/attach_resume_popup');
+    const response = await fetch('/ajax/attach_template_popup/resume');
     const html = await response.text();
     // Create popup
     const popup = createPopup(html);

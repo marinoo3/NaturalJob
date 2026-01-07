@@ -50,6 +50,3 @@ export function update() {
 loadStatPlots().then(() => {
     observer.observe(section);
 });
-
-
-

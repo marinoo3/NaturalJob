@@ -1,4 +1,4 @@
-import { savedOffers, unsaveOffer } from '../_helpers/offer_manager.js';
+import { savedOffers, unsaveOffer, displayOffer } from '../_helpers/offer_manager.js';
 
 const section = document.querySelector('section#documents');
 const offersContainer = section.querySelector('ul.offers');
@@ -19,6 +19,11 @@ async function renderOffers(offerIds) {
         li.querySelector('button.save').addEventListener('click', () => {
             const offerId = li.querySelector('.offer').dataset.offerId;
             unsaveOffer(offerId);
+        });
+        li.addEventListener('click', (event) => {
+            if (!event.target.closest('button')) {
+                displayOffer(offerIds);
+            }
         });
         offersContainer.appendChild(li);
     });   

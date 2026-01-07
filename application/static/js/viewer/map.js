@@ -1,4 +1,4 @@
-import { saveOffer, unsaveOffer, savedOffers } from '../_helpers/offer_manager.js';
+import { saveOffer, unsaveOffer, savedOffers, displayOffer } from '../_helpers/offer_manager.js';
 
 // Init the map
 let map = L.map('map', {maxZoom: 14}).setView([46.603354, 1.888334], 6);
@@ -92,6 +92,11 @@ function renderResults(results) {
                 unsaveOffer(offerId);
             }
         });
+        li.addEventListener('click', (event) => {
+            if (!event.target.closest('button')) {
+                displayOffer(offerId);
+            }
+        });
         resultsContainer.appendChild(li);
     });
     countText.textContent = results.length + ' résultats';
@@ -161,6 +166,12 @@ async function selectMapData(ids) {
 
 // Search offers
 async function search(query) {
+    if (!query) {
+        resultsContainer.innerHTML = '';
+        countText.textContent = '--';
+        requestMapData();
+        return
+    }
     loadingAnimation.goToAndPlay(0, true);
     mapContainer.classList.add('waiting');
     // Request offers

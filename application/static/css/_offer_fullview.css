@@ -1,0 +1,139 @@
+.popup .offer-fullview {
+    width: 50%;
+
+    .header {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 2rem;
+        position: relative;
+
+        .logo {
+            height: 120px;
+            width: 120px;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: white;
+            border-radius: var(--border-radius);
+        }
+
+        .title {
+            margin: .4rem 0;
+        }
+
+        .company {
+            display: inline-block;
+            background-color: var(--bg-second-color);
+            padding: .2rem .6rem;
+            border-radius: 20px;
+            margin-right: .2rem;
+        }
+        .category {
+            display: inline-block;
+            background-color: var(--blue-color);
+            padding: .2rem .6rem;
+            border-radius: 20px;
+        }
+        .tokens > li {
+            display: inline-block;
+            padding: .2rem .6rem;
+            background-color: var(--bg-color);
+            border: solid 1px var(--border-color);
+            border-radius: var(--border-radius);
+            margin-right: .4rem;
+        }
+
+        .actions {
+            position: absolute;
+            right: 0;
+            top: 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+
+            form {
+                display: block;
+                margin-top: 0;
+            }
+        }
+    }
+
+    .descriptions {
+        max-height: 50vh;
+        overflow-y: auto;
+
+        > div {
+            margin: 1rem 0;
+        }
+
+        h2 {
+            margin: .2rem 0;
+        }
+    }
+
+    .generate-container {
+        display: flex;
+        gap: 1rem;
+        padding-top: 1rem;
+        background-color: var(--bg-color);
+        border-top: solid 1px var(--border-color);
+
+        .generate {
+            width: 100%;
+            background-color: var(--bg-second-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: .8rem 1rem;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            position: relative;
+
+            .info {
+                display: flex;
+                align-items: center;
+                gap: .6rem;
+            }
+
+            .actions {
+                display: flex;
+                flex-direction: row;
+                margin-top: 0;
+
+                .custom-select {
+                    text-wrap: nowrap;
+                    border: solid 1px var(--border-color);
+                    border-radius: var(--border-radius);
+                    padding: .4rem .6rem;
+                    color: var(--text-second-color);
+                    display: flex;
+                    align-items: center;
+                }
+
+                .succeed-label {
+                    display: none;
+                    border-radius: var(--border-radius);
+                    border: solid 1px var(--accent-color);
+                    padding: 0.4rem 0.8rem;
+                    color: var(--accent-color);
+                }
+            }
+        }
+        .generate.succeed {
+            .succeed-label {
+                display: block;
+            }
+
+            button {
+                display: none;
+            }
+        }
+    }
+}
+
+.popup .offer-fullview.saved {
+    button.save img {
+        filter: invert(85%) sepia(16%) saturate(1406%) hue-rotate(69deg) brightness(101%) contrast(87%);
+    }
+}

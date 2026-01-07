@@ -16,6 +16,11 @@ section#console .view[data-active-view="clusters"] {
          opacity: 0%;
          animation: fade 1s ease-in-out infinite alternate;
       }
+
+      .legendtext > tspan:not(:first-child) {
+         fill: var(--text-second-color);
+         height: 30px;
+      }
    }
 }
 

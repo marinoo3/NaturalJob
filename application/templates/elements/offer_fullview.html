@@ -1,0 +1,69 @@
+<div class="content offer-fullview" data-offer-id="{{ offer_id }}">
+    <div class="header">
+        <div class="logo" style="background-image: url('{{ company_logo }}');"></div>
+        <div class="header-content">
+            <ul class="tokens"><li>Hello</li><li>Tag</li></ul>
+            <h1 class="title">{{ title }}</h1>
+            <div class="labels">
+                <p class="company">{{ company_name }}</p>
+                <p class="category">{{ category }}</p> 
+            </div>
+        </div>
+        <div class="actions">
+            <button class="icon-button save">
+                <img src="{{ url_for('static', filename='images/bookmark.svg') }}" alt="" height="16px">
+            </button>
+            <form id="apply">
+                <button class="main-button apply">Candidater</button>
+                <input type="text" name="email" hidden>
+                <input type="text" name="coverletter" hidden>
+            </form>
+        </div>
+    </div>
+    <div class="descriptions">
+        <a href="{{ offer_url }}" class="offer-url" target="_blank">https://www.flaticon.com/fr/chercher?word=CV&type=uicon</a>
+        {% if profile_description %}
+            <div class="profile">
+                <h2>Profil recherché</h2>
+                <p>{{ profile_description }}</p>
+                <ul class="skills"></ul>
+            </div>
+        {% endif %}
+        <div class="offer">
+            <h2>Description de l'offre</h2>
+            <p>{{ offer_description }}</p>
+        </div>
+    </div>
+    <div class="generate-container">
+        <div class="generate" data-category="email">
+            <div class="info">
+                <img src="{{ url_for('static', filename='images/email.svg') }}" alt="" height="20px">
+                <h3 class="label">Email</h3>
+            </div>
+            <form class="actions">
+                <div class="custom-select">
+                    <input type="text" name="email" hidden>
+                    <p>Séléctioner</p>
+                    <img src="{{ url_for('static', filename='images/down-arrow.svg') }}" alt="" height="12px">
+                </div>
+                <button class="main-button" type="submit" disabled>Générer</button>
+                <p class="succeed-label">✓</p>
+            </form>
+        </div>
+        <div class="generate" data-category="coverletter">
+            <div class="info">
+                <img src="{{ url_for('static', filename='images/coverletter.svg') }}" alt="" height="20px">
+                <h3 class="label">Lettre de motivation</h3>
+            </div>
+            <form class="actions">
+                <div class="custom-select">
+                    <input type="text" name="coverletter" value="12345" hidden>
+                    <p>Séléctioner</p>
+                    <img src="{{ url_for('static', filename='images/down-arrow.svg') }}" alt="" height="12px">
+                </div>
+                <button class="main-button" type="submit" disabled>Générer</button>
+                <p class="succeed-label">✓</p>
+            </form>
+        </div>
+    </div>
+</div>

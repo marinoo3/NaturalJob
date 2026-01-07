@@ -5,7 +5,7 @@ from datetime import date
 import os
 import numpy as np
 
-from .models import Offer, Description, City, Region, Company, Cluster
+from .models import Offer, Description, City, Region, Company, Cluster, TableResult, Embeddings
 
 
 
@@ -234,7 +234,7 @@ class OfferDB:
 
             return summary
 
-    def add(self, offers:list[Offer]) -> int:
+    def add_offers(self, offers:list[Offer]) -> int:
         """Insert offers into database.
         
         Args:
@@ -263,46 +263,72 @@ class OfferDB:
 
             conn.commit()
 
-    def add_nlp(self, conn:sqlite3.Connection, offer_id:int, emb_50d:np.ndarray=None, emb_3d:np.ndarray=None, cluster:Cluster=None) -> None:
-        """Add offer's nlp data to db. Skip non provided data.
+    def get_offers(self, ids:str=None) -> tuple[list[Offer], list[int]]:
+        """Get offer by ID, returns all offers if no ID
 
         Args:
-            conn (sqlite3.Connection): Database connection
-            offer_id (int): The ID of the offer
-            emb_50d (np.ndarray, optional): 50 dimenssions embeddings. Default to None
-            emb_3d (np.ndarray, optional): 3 dimenssions embeddings. Default to None
-            cluster (Cluster, optional): The offer cluster object. Default to None
+            id (str, optional): Offer ID. Defaults to None.
+
+        Returns:
+            list[Offer]: The list of offers
+            list[int]: List of offers IDs
         """
 
-        cur = conn.cursor()
+        query = """
+            SELECT
+                o.offer_id,
+                o.title,
+                o.job_name,
+                o.job_type,
+                o.contract_type,
+                o.salary_label,
+                o.salary_min,
+                o.salary_max,
+                o.min_experience,
+                o.latitude,
+                o.longitude,
+                o.date,
+                o.source,
+                c.name AS company_name,
+                c.description AS company_description,
+                c.industry AS company_industry,
+                c.logo_url AS logo_url,
+                ci.name AS city_name,
+                r.code AS region_code,
+                r.name AS region_name,
+                d.offer_description,
+                d.profile_description,
+                (SELECT GROUP_CONCAT(de.degree, '||')
+                FROM OFFER_DEGREE od
+                JOIN degree de ON de.degree_id = od.degree_id
+                WHERE od.offer_id = o.offer_id) AS degrees,
+                (SELECT GROUP_CONCAT(s.skill, '||')
+                FROM OFFER_SKILL os
+                JOIN skill s ON s.skill_id = os.skill_id
+                WHERE os.offer_id = o.offer_id) AS skills
+            FROM OFFER o
+            JOIN COMPANY c     ON c.company_id     = o.company_id
+            JOIN DESCRIPTION d ON d.description_id = o.description_id
+            JOIN CITY ci        ON ci.city_id       = o.city_id
+            JOIN REGION r       ON r.region_id      = ci.region_id
+        """
+
+        params: list[int] = []
+
+        if ids:
+            placeholders = ','.join('?' for _ in ids)
+            query += f" WHERE o.offer_id IN ({placeholders})"
+            params.extend(ids)
+
+        query += " ORDER BY o.date DESC;"
+
+        with self.connect() as conn:
+            conn.row_factory = sqlite3.Row
+            cur = conn.cursor()
+            cur.execute(query, params)
+            rows = cur.fetchall()
         
-        if cluster:
-            cluster_id = self._get_or_create_cluster(cur, cluster)
-            cur.execute(
-                "UPDATE OFFER SET cluster_id = ? WHERE offer_id = ?", 
-                [cluster_id, offer_id]
-            )
-
-        if emb_50d is not None and emb_3d is not None:
-            cur.execute(
-                "INSERT INTO TFIDF(emb_50d, emb_3d) VALUES (vec_f32(?), vec_f32(?))", 
-                [emb_50d.tobytes(), emb_3d.tobytes()]
-            )
-            tfidf_id = cur.lastrowid
-            cur.execute(
-                "UPDATE OFFER SET tfidf_id = ? WHERE offer_id = ?", 
-                [tfidf_id, offer_id]
-            )
-
-    def update_clusters(self, conn:sqlite3.Connection, cluster:Cluster):
-        """Update offer's nlp data on db. Update only provided data, skip Nones.
-
-        Args:
-            conn (sqlite3.Connection): _description_
-            cluster (Cluster): The offer cluster object. Default to None
-        """
-
-        curr = conn.cursor()
+        return [self._row_to_offer(row) for row in rows], [row['offer_id'] for row in rows]
 
     def search_offer(self, query:np.ndarray=None, resume:np.ndarray=None, filters:list[dict]=None) -> tuple[list[Offer], list[int], list[int]]:
         """Search an offer by query, resume and filters.
@@ -398,90 +424,103 @@ class OfferDB:
 
             return [self._row_to_offer(row) for row in rows], [row['offer_id'] for row in rows], [row['score'] for row in rows]
 
-    def get_offers(self, ids:str=None) -> tuple[list[Offer], list[int]]:
-        """Get offer by ID, returns all offers if no ID
+    def add_nlp(self, conn:sqlite3.Connection, offer_id:int, emb_50d:np.ndarray=None, emb_3d:np.ndarray=None, cluster:Cluster=None) -> None:
+        """Add offer's nlp data to db. Skip non provided data.
 
         Args:
-            id (str, optional): Offer ID. Defaults to None.
+            conn (sqlite3.Connection): Database connection
+            offer_id (int): The ID of the offer
+            emb_50d (np.ndarray, optional): 50 dimenssions embeddings. Default to None
+            emb_3d (np.ndarray, optional): 3 dimenssions embeddings. Default to None
+            cluster (Cluster, optional): The offer cluster object. Default to None
+        """
+
+        cur = conn.cursor()
+        
+        if cluster:
+            cluster_id = self._get_or_create_cluster(cur, cluster)
+            cur.execute(
+                "UPDATE OFFER SET cluster_id = ? WHERE offer_id = ?", 
+                [cluster_id, offer_id]
+            )
+
+        if emb_50d is not None and emb_3d is not None:
+            cur.execute(
+                "INSERT INTO TFIDF(emb_50d, emb_3d) VALUES (vec_f32(?), vec_f32(?))", 
+                [emb_50d.tobytes(), emb_3d.tobytes()]
+            )
+            tfidf_id = cur.lastrowid
+            cur.execute(
+                "UPDATE OFFER SET tfidf_id = ? WHERE offer_id = ?", 
+                [tfidf_id, offer_id]
+            )
+
+    def get_embeddings(self, conn:sqlite3.Connection, id:str=None) -> tuple[list[Embeddings]|Embeddings, list[int]|int]:
+        """Get the nlp embeddings from an offer ID. Returns a list of all embeddings and corresponding offer_id is not provided
+
+        Args:
+            conn (sqlite3.Connection): Database connection
+            id (str, optional): Offer id. Default to None
 
         Returns:
-            list[Offer]: The list of offers
-            list[int]: List of offers IDs
+            list[Embeddings]|Embeddings: The list of offers embeddings
+            list[int]: List of corresponding offer IDs
         """
 
-        query = """
-            SELECT
-                o.offer_id,
-                o.title,
-                o.job_name,
-                o.job_type,
-                o.contract_type,
-                o.salary_label,
-                o.salary_min,
-                o.salary_max,
-                o.min_experience,
-                o.latitude,
-                o.longitude,
-                o.date,
-                o.source,
-                c.name AS company_name,
-                c.description AS company_description,
-                c.industry AS company_industry,
-                c.logo_url AS logo_url,
-                ci.name AS city_name,
-                r.code AS region_code,
-                r.name AS region_name,
-                d.offer_description,
-                d.profile_description,
-                (SELECT GROUP_CONCAT(de.degree, '||')
-                FROM OFFER_DEGREE od
-                JOIN degree de ON de.degree_id = od.degree_id
-                WHERE od.offer_id = o.offer_id) AS degrees,
-                (SELECT GROUP_CONCAT(s.skill, '||')
-                FROM OFFER_SKILL os
-                JOIN skill s ON s.skill_id = os.skill_id
-                WHERE os.offer_id = o.offer_id) AS skills
-            FROM OFFER o
-            JOIN COMPANY c     ON c.company_id     = o.company_id
-            JOIN DESCRIPTION d ON d.description_id = o.description_id
-            JOIN CITY ci        ON ci.city_id       = o.city_id
-            JOIN REGION r       ON r.region_id      = ci.region_id
-        """
-
-        params: list[int] = []
-
-        if ids:
-            placeholders = ','.join('?' for _ in ids)
-            query += f" WHERE o.offer_id IN ({placeholders})"
-            params.extend(ids)
-
-        query += " ORDER BY o.date DESC;"
-
-        with self.connect() as conn:
+        with conn:
             conn.row_factory = sqlite3.Row
             cur = conn.cursor()
+            
+            query = """
+                SELECT t.emb_50d, t.emb_3d, offer_id
+                FROM OFFER o
+                JOIN TFIDF t ON t.ROWID = o.tfidf_id
+            """
+            params: tuple = ()
+            if id is not None:
+                query += " WHERE o.offer_id = ?"
+                params = (id,)
+
             cur.execute(query, params)
             rows = cur.fetchall()
-        
-        return [self._row_to_offer(row) for row in rows], [row['offer_id'] for row in rows]
 
-    def get_clusters(self, id:str=None) -> list[Cluster]:
+            embs = []
+            offer_ids = []
+            for row in rows:
+                offer_ids.append(int(row['offer_id']))
+                embs.append(Embeddings(
+                    d50 = self._vecf32_converter(row['emb_50d']),
+                    d3 = self._vecf32_converter(row['emb_3d'])
+                ))
+
+            if id:
+                if len(row) == 0:
+                    return None
+                return embs[0], offer_ids[0]
+                
+            return embs, offer_ids
+
+    def get_clusters(self, conn:sqlite3.Connection=None, id:str=None) -> tuple[list[Cluster], list[int]]:
         """Search an offer cluster by id, returns all offer clusters if no ID.
 
         Args:
+            conn (qlite3.Connection, optional): DB connection
             id (str, optional): Offer ID. Defaults to None.
 
         Returns:
             list[Cluster]: Offer clusters
+            list[int]: List of corresponding offer IDs
         """
+        if not conn:
+            conn = self.connect()
 
-        with self.connect() as conn:
+        with conn:
             conn.row_factory = sqlite3.Row
             cur = conn.cursor()
 
             sql = """
             SELECT 
-                c.ROWID as cluster_id, c.cluster_name, c.main_tokens, o.title
+                c.cluster_id, c.cluster_name, c.main_tokens, o.offer_id
             FROM OFFER o
             JOIN CLUSTER c ON c.ROWID = o.cluster_id
             WHERE (?1 IS NULL OR o.offer_id = ?1)
@@ -490,75 +529,51 @@ class OfferDB:
             cur.execute(sql, (id,))
             rows = cur.fetchall()
 
-            return [self._row_to_cluster(row) for row in rows], [row['title'] for row in rows]
+            return [self._row_to_cluster(row) for row in rows], [int(row['offer_id']) for row in rows]
 
-    def get_nlp(self, conn:sqlite3.Connection, id:str) -> tuple[np.ndarray, np.ndarray]:
-        """Get the nlp embeddings from an offer ID
-
-        Args:
-            conn (sqlite3.Connection): Database connection
-            id (str): Offer id
-
-        Returns:
-            np.ndarray: 50 dimensions embeddings
-            np.ndarray: 3 dimensions embeddings
-        """
-
-        with conn:
-            cur = conn.cursor()
-            
-            cur.execute("""
-                SELECT t.emb_50d, t.emb_3d
-                FROM OFFER o
-                JOIN TFIDF t  ON t.ROWID = o.tfidf_id
-                WHERE o.offer_id = ?
-            """, (id,))
-            row = cur.fetchone()
-
-            return [self._vecf32_converter(blob) for blob in row]
-
-    def get_table(self, table_name:str, columns:list[str]=None, convert_blob=False, as_dict=False) -> list:
+    def get_table(self, table_name:str, columns:list[str]=None, convert_blob=False, conn:sqlite3.Connection=None) -> TableResult:
             """Get the content of a table from OFFER db
 
             Args:
                 table_name (str): The name of the table
                 columns (list[str], optional): The list of columns to select, all if not provided. Default to None
                 convert_blob (bool): To convert the result to vectors (if stored as blob from sqlite-vec). Default to None
-                as_dict (bool): Returns a list of dict instead of a list of list
 
             Returns:
-                list: Result
+                list: TableResult
             """
 
-            with self.connect() as conn:
+            if not conn:
+                conn = self.connect()
+                
+            with conn:
                 cur = conn.cursor()
 
-                if columns:
-                    cols = ', '.join(columns)
-                    cur.execute(f"SELECT {cols} FROM {table_name}")
-                else:
-                    cur.execute(f"SELECT * FROM {table_name}")
-
+                column_clause = ', '.join(columns) if columns else '*'
+                cur.execute(f"SELECT rowid, {column_clause} FROM {table_name}")
                 content = cur.fetchall()
 
-                result = []
-                for row in content:
+                # The first entry in each row is now rowid
+                selected_columns = columns or [desc[0] for desc in cur.description[1:]]
+
+                rowids = []
+                rows = []
+                for record in content:
+                    rowids.append(int(record[0]))
+                    values = list(record[1:])
+
                     if convert_blob:
-                        # Decode blob to np array
-                        row = [self._vecf32_converter(blob) for blob in row]
+                        values = [self._vecf32_converter(item) for item in values]
+
                     if columns and len(columns) == 1:
-                        # Convert 3d array to 2d if only 1 item
-                        row = row[0]
-                    result.append(row)
+                        values = values[0]
+
+                    rows.append(values)
 
                 if convert_blob:
-                    # Convert to np.ndarray with float32 dtype
-                    result = np.asarray(result, dtype=np.float32)
+                    rows = np.asarray(rows, dtype=np.float32)
 
-                if as_dict:
-                    result = [dict(zip(columns, row)) for row in result]
-
-                return result
+                return TableResult(rows=rows, columns=selected_columns, rowids=rowids)
 
     def clear_table(self, conn:sqlite3.Connection, table_name:str) -> None:
         """Delete the content of a database table. Warning this action is permanent.
@@ -650,4 +665,3 @@ class OfferDB:
             ids = [row[0] for row in result]
             descriptions = [row[1] for row in result]
             return ids, descriptions
-

@@ -31,6 +31,7 @@
     --neutral-color: #ffa64d;
     --purple-color: #cc4778;
     --blue-color: #7393ef;
+    color-scheme: dark;
 }
 
 :where(:not(.EasyMDEContainer *, a)) {
@@ -149,7 +150,6 @@ section {
 section .view {
     height: calc(100% - 2rem);
     padding: 1rem;
-    color-scheme: dark;
 }
 
 section .view > div {

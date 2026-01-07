@@ -22,6 +22,18 @@ class Data():
             path = os.path.join(self.path, relative_path)
             os.makedirs(path, exist_ok=True)
 
+    def get_global_path(self, relative_path:str) -> str:
+        """Get the global path of a template
+
+        Args:
+            category (str): The category of the template
+
+        Returns:
+            str: Global path
+        """
+
+        return os.path.join(self.path, relative_path)
+
     def create_resume_template(self, file: FileStorage):
         """Save resume template file to disk.
 
@@ -42,8 +54,11 @@ class Data():
         file.save(file_path)
         return template_id, relative_path
     
-    def create_coverletter_template(self):
+    def create_coverletter_template(self, content:str=None) -> tuple[str, str]:
         """Create a cover letter template on disk.
+        
+        Arguments:
+            content (str, optional): The content of the template file
 
         Returns:
             template_id (str): the uuid of the created template
@@ -51,6 +66,8 @@ class Data():
         """
 
         default = "# Template de lettre de motivation\n\nRédigez votre lettre au format `markdown`, elle sera adapaté automatiquement lors de la candidature a une offre"
+        if content:
+            default = content
 
         # Generate unique identifier
         template_id = str(uuid.uuid4())
@@ -61,8 +78,11 @@ class Data():
             f.write(default)
         return template_id, relative_path
     
-    def create_email_template(self):
+    def create_email_template(self, content:str=None) -> tuple[str, str]:
         """Create an email template on disk.
+
+        Arguments:
+            content (str, optional): The content of the template file
 
         Returns:
             template_id (str): the uuid of the created template
@@ -70,6 +90,8 @@ class Data():
         """
 
         default = "# Template de mail\n\nRédigez une base de mail au format `markdown`, il sera personnalisé automatiquement lors de la candidature a une offre"
+        if content:
+            default = content
 
         # Generate unique identifier
         template_id = str(uuid.uuid4())

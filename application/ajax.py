@@ -1,11 +1,13 @@
-from flask import Blueprint, Response, url_for, render_template, send_from_directory, stream_with_context, abort, jsonify, request, current_app
+from flask import Blueprint, Response, url_for, render_template, send_from_directory, send_file, stream_with_context, abort, jsonify, make_response, request, current_app
 from jinja2.exceptions import TemplateNotFound
 import json
 import numpy as np
+import pandas as pd
 from typing import cast
 
 from . import AppContext
 from .custom.db.user.models import Template
+from .custom.utils.mdpdf import MdPDF
 
 
 
@@ -39,11 +41,11 @@ def create_file_popup(title:str):
     popup = render_template('elements/create_file_popup.html', title=title)
     return popup
 
-@ajax.route('/attach_resume_popup', methods=['GET'])
-def attach_resume_popup():
+@ajax.route('/attach_template_popup/<category>', methods=['GET'])
+def attach_resume_popup(category:str):
     templates = app.user_db.get_templates()
-    resumes = [template.dict() for template in templates if template.category == 'resume']
-    popup = render_template('elements/attach_resume_popup.html', resumes=resumes)
+    c_template = [template.dict() for template in templates if template.category == category]
+    popup = render_template('elements/attach_template_popup.html', templates=c_template, category=category)
     return popup
 
 @ajax.route('/model_settings_popup', methods=['GET'])
@@ -51,6 +53,13 @@ def model_settings_popup():
     inputs = [{'name': key, 'value': value} for key, value in request.args.items()]
     popup = render_template('elements/model_settings_popup.html', settings=inputs)
     return popup
+
+@ajax.route('offer_fullview_popup/<offer_id>', methods=['GET'])
+def offer_fullview_popup(offer_id:str):
+    (offer,), (id,) = app.offer_db.get_offers(ids=[offer_id])
+    (cluster,), _ = app.offer_db.get_clusters(id=id)
+    #  TODO: pass offer.url as offer_url
+    return offer.render(id, style='fullview', category=cluster.name)
 
 
 # --------------------
@@ -115,7 +124,22 @@ def delete_template(template_uuid:str):
         app.data.delete(template.path)
     return jsonify({'success': True})
 
+@ajax.route('/generate_template')
+def generate_template():
+    email = request.args.get('email')
+    coverletter = request.args.get('coverletter')
+    offer_id = request.args.get('offer_id')
+    if not any([email, coverletter]):
+        print('no template')
+        return abort(422, "Missing template uuid. Use `email` or `coverletter` param to send a template uuid")
+    if not offer_id:
+        print('no offer_id')
+        return abort(422, "Missing `offer_id` param")
+    
+    # TODO: generate email or template base on offer description
 
+    template_content = "Ceci sera ma template"
+    return jsonify({'template': template_content})
 
 # --------------------
 # DATA
@@ -164,7 +188,7 @@ def update_bdd_stream(source: str):
 
             # Add remaining batch
             if offers:
-                app.offer_db.add(offers)
+                app.offer_db.add_offers(offers)
 
             db_total = app.offer_db.get_total(source=source)
             yield "event: end\ndata: complete\n\n"
@@ -211,10 +235,11 @@ def fit_kmeans():
     if not K:
         abort(400, 'Missing required parameter "K"')
 
-    ids = app.offer_db.get_table('OFFER', columns=['offer_id'])
-    emb_50ds = app.offer_db.get_table('TFIDF', columns=['emb_50d'], convert_blob=True)
+    with app.offer_db.connect() as conn:
+        emb, offer_ids = app.offer_db.get_embeddings(conn)
+        emb_50d = [e.d50 for e in emb]
     X, tokens = app.nlp.tfidf.load_matrix()
-    labels, clusters = app.nlp.kmeans.fit_predict(X, emb_50ds, tokens, K=K)
+    labels, clusters = app.nlp.kmeans.fit_predict(X, emb_50d, tokens, K=K)
 
     # Create cluster names
     template = [{
@@ -233,9 +258,9 @@ def fit_kmeans():
     # Save data
     with app.offer_db.connect() as conn:
         app.offer_db.clear_table(conn, 'CLUSTER')
-        for id, cluster_id in zip(ids, labels):
+        for offer_id, cluster_id in zip(offer_ids, labels):
             c = clusters[cluster_id]
-            app.offer_db.add_nlp(conn, id, cluster=c)
+            app.offer_db.add_nlp(conn, offer_id, cluster=c)
 
     return jsonify(app.nlp.kmeans.metadata)
 
@@ -280,8 +305,8 @@ def render_offers():
 
 @ajax.route('get_offers')
 def get_offers():
-    offers = app.offer_db.get_table('OFFER', columns=['offer_id', 'title', 'salary_min', 'latitude', 'longitude'], as_dict=True)
-    return jsonify({'count': len(offers), 'offers': offers})
+    offers = app.offer_db.get_table('OFFER', columns=['offer_id', 'title', 'salary_min', 'latitude', 'longitude'])
+    return jsonify({'count': len(offers), 'offers': offers.dict})
 
 @ajax.route('get_saved_offers')
 def get_saved_offers():
@@ -303,9 +328,9 @@ def unsave_offer(id:str):
     app.user_db.unsave_offer(id)
     return jsonify({'success': True})
 
-@ajax.route('apply_offer/<id>', methods=['POST'])
-def apply_offer(id:str):
-    app.user_db.apply_offer(id)
+@ajax.route('mark_offer_as_apply/<offer_id>', methods=['POST'])
+def mark_offer_as_apply(offer_id:str):
+    app.user_db.apply_offer(offer_id)
     return jsonify({'success': True})
 
 @ajax.route('/select_offers', methods=['POST'])
@@ -324,10 +349,9 @@ def search_offer():
     near = []
 
     # create query embeddings
-    if not request.args.get('query'):
-        return jsonify([])
-    emb, _ = app.nlp.tfidf.transform([request.args.get('query')])
-    query = emb
+    if request.args.get('query'):
+        emb_50d, _ = app.nlp.tfidf.transform([request.args.get('query')])
+        query = emb_50d
     # create filters
     for key in ['salary', 'category', 'company', 'city']:
         if request.args.get(key):
@@ -336,19 +360,22 @@ def search_offer():
     if request.args.get('resume'):
         template = app.user_db.get_template(request.args.get('resume'))
         template_text = app.data.read(template.path, pdf=True)
-        emb, _ = app.nlp.tfidf.transform([template_text])
-        resume = emb
+        emb_50d, _ = app.nlp.tfidf.transform([template_text])
+        resume = emb_50d
+        if not query:
+            query = emb_50d # If no query provided, resume content become query
+            
     # create refines (like and dislikes)
     if request.args.get('refine'):
         with app.offer_db.connect() as conn:
             for refine in json.loads(request.args.get('refine')):
                 offer_id = refine['offer_id']
-                emb, _ = app.offer_db.get_nlp(conn, offer_id)
+                emb, _ = app.offer_db.get_embeddings(conn, offer_id)
                 match refine['type']:
                     case 'like':
-                        near.append(emb)
+                        near.append(emb.d50)
                     case 'dislike':
-                        far.append(emb)
+                        far.append(emb.d50)
     # get render style
     style = request.args.get('style')
 
@@ -379,18 +406,40 @@ def search_offer():
 
 @ajax.route('/cluster_plot')
 def cluster_plot():
-    emb_3d = app.offer_db.get_table('TFIDF', columns=['emb_3d'], convert_blob=True)
-    clusters, titles = app.offer_db.get_clusters()
-    fig_dict = app.plot.clusters.render(emb_3d, clusters, titles)
+    with app.offer_db.connect() as conn:
+        # Get embeddings
+        emb, offer_ids = app.offer_db.get_embeddings(conn)
+        offers = pd.DataFrame({
+            'offer_id': offer_ids,
+            'emb_50d': [e.d50 for e in emb],
+            'emb_3d': [e.d3 for e in emb]
+        })
+        # Get clusters
+        clusters, offer_ids = app.offer_db.get_clusters(conn=conn)
+        cluster_map = dict(zip(offer_ids, clusters))  # clusters_offer_ids from get_clusters
+        offers['cluster'] = offers['offer_id'].map(cluster_map)
+        # Get offer titles
+        titles = app.offer_db.get_table('OFFER', columns=['title'], conn=conn)
+        title_map = dict(zip(titles.rowids, titles.rows))
+        offers['title'] = offers['offer_id'].map(title_map)
+
+
+    # Render cluster htmls
+    fig_dict = app.plot.clusters.render(
+        offers['emb_3d'].tolist(), 
+        offers['cluster'].tolist(), 
+        offers['title'].tolist(), 
+        ids=offers['offer_id'].tolist()
+    )
     return jsonify(fig_dict)
 
 @ajax.route('stat_plots')
 def stat_plots():
-    data = app.offer_db.get_table('OFFER', columns=['job_name', 'contract_type'], as_dict=True)
+    data = app.offer_db.get_table('OFFER', columns=['job_name', 'contract_type'])
     # Split data
     job_names = []
     contracts = []
-    for d in data:
+    for d in data.dict:
         job_names.append(d.get('job_name'))
         contracts.append(d.get('contract_type'))
     # Render plots
@@ -400,3 +449,35 @@ def stat_plots():
         'topJobs': job_fig, 
         'contracts': contract_fig
     })
+
+
+
+# --------------------
+# APPLY
+
+@ajax.route('apply_offer/<offer_id>')
+def apply_offer(offer_id:str):
+    email = request.args.get('email')
+    coverletter = request.args.get('coverletter')
+
+    # Create response
+    response = make_response(jsonify({'success': True}), 200)
+    response.headers['X-Is-File'] = 'no'
+
+    # Create templates
+    if email:
+        email_id, _ = app.data.create_email_template(content=email)
+    if coverletter:
+        coverletter_id, _ = app.data.create_coverletter_template(content=coverletter)
+        pdf_buffer = MdPDF.pdf_from_md(coverletter)
+        response = make_response(
+            send_file(
+                pdf_buffer,
+                mimetype='application/pdf',
+                as_attachment=True,
+                download_name='Lettre de motivation.pdf'
+            )
+        )
+        response.headers['X-Is-File'] = 'yes'
+        
+    return response

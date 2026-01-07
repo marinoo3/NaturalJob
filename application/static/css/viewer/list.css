@@ -320,42 +320,6 @@ section#viewer .view[data-active-view="list"] {
             padding: .6rem;
         }
     }
-
-    .popup {
-        h2, .fieldset {
-            margin-bottom: 1rem
-        }
-
-        .fieldset {
-            max-height: 25vh;
-            overflow-y: auto;
-        }
-
-        .resume {
-            display: flex;
-            gap: .6rem;
-            align-items: center;
-            padding: .6rem 1rem;
-            background-color: var(--bg-frame-color);
-            border-radius: var(--border-radius);
-            border: solid 1px var(--bg-frame-color);
-            transition: border-color .125s ease;
-        }
-        .resume:not(:last-child) {
-            margin-bottom: .6rem;
-        }
-        .resume:has(> input:checked) {
-            border-color: var(--accent-color);
-
-            h3 {
-                color: var(--accent-color);
-            }
-
-            img {
-                filter: invert(85%) sepia(16%) saturate(1406%) hue-rotate(69deg) brightness(101%) contrast(87%);
-            }
-        }
-    }
 }
 
 

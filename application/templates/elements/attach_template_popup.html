@@ -1,0 +1,17 @@
+<div class="content attach-template">
+    <h2>Joindre un CV</h2>
+    <div class="fieldset">
+        {% for t in templates %}
+            <label class="template" for="{{ t.uuid }}">
+                <img src="{{ url_for('static', filename='images/' ~ category ~ '.svg') }}" alt="" height="20px">
+                <input type="radio" name="template" value="{{ t.uuid }}" id="{{ t.uuid }}" hidden data-template-name="{{ t.title }}"
+                    {% if loop.first %}checked{% endif %}/>
+                <h3>{{ t.title }}</h3>
+            </label>
+        {% endfor %}
+    </div>
+    <div class="actions">
+        <button class="second-button cancel">Annuler</button>
+        <button class="main-button submit">Ajouter</button>
+    </div>
+</div>

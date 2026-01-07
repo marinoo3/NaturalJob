@@ -50,6 +50,7 @@ class Offer:
     description: Description
     company: Company
     city: City
+    url: Optional[str] = None
     cluster: Optional[Cluster] = None
     degrees: List[str] = field(default_factory=list)  # degree names
     skills: List[str] = field(default_factory=list)   # skill names
@@ -76,7 +77,7 @@ class Offer:
             return None
         return round((1-score) * 100)
 
-    def render(self, id:int, score:float=None, style='result') -> str:
+    def render(self, id:int, score:float=None, style='result', category:str=None) -> str:
         """Create html template object
 
         Args:
@@ -109,6 +110,14 @@ class Offer:
                     score=self.format_score(score)
                     )
             case 'fullview':
-                return None
+                return render_template('elements/offer_fullview.html',
+                    offer_id=id,
+                    title=self.title,
+                    profile_description=self.description.profile_description,
+                    offer_description=self.description.offer_description,
+                    company_name=self.company.name,
+                    company_logo=self.company.logo_url or url_for('static', filename='images/company.svg'),
+                    category=category
+                )
             case _:
                 raise ValueError("Wrong `style` value, expected 'preview', 'result' or 'fullview'")

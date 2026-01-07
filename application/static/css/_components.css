@@ -65,7 +65,7 @@ button:hover.main-button:not(:hover) {
     background-color: var(--accent-color);
 }
 
-button.disabled {
+button.disabled, button:disabled {
     opacity: 50%;
 }
 
@@ -197,6 +197,42 @@ select:focus {
 
 .popup .content .actions button {
     width: 100%;
+}
+
+.popup .attach-template {
+    h2, .fieldset {
+        margin-bottom: 1rem
+    }
+
+    .fieldset {
+        max-height: 25vh;
+        overflow-y: auto;
+    }
+
+    .template {
+        display: flex;
+        gap: .6rem;
+        align-items: center;
+        padding: .6rem 1rem;
+        background-color: var(--bg-frame-color);
+        border-radius: var(--border-radius);
+        border: solid 1px var(--bg-frame-color);
+        transition: border-color .125s ease;
+    }
+    .template:not(:last-child) {
+        margin-bottom: .6rem;
+    }
+    .template:has(> input:checked) {
+        border-color: var(--accent-color);
+
+        h3 {
+            color: var(--accent-color);
+        }
+
+        img {
+            filter: invert(85%) sepia(16%) saturate(1406%) hue-rotate(69deg) brightness(101%) contrast(87%);
+        }
+    }
 }
 
 
