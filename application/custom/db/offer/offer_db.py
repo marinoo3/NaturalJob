@@ -85,9 +85,9 @@ class OfferDB:
             INSERT INTO OFFER
                 (title, job_name, job_type, contract_type,
                  salary_label, salary_min, salary_max, min_experience, latitude, longitude,
-                 date, source,
+                 date, source, url,
                  description_id, city_id, company_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 offer.title,
@@ -102,6 +102,7 @@ class OfferDB:
                 offer.longitude,
                 offer.date,
                 offer.source,
+                offer.url,
                 description_id,
                 city_id,
                 company_id
@@ -172,6 +173,7 @@ class OfferDB:
             longitude=row["longitude"],
             date=row["date"],
             source=row["source"],
+            url=row['url'],
             description=Description(
                 offer_description=row["offer_description"],
                 profile_description=row["profile_description"],
@@ -289,6 +291,7 @@ class OfferDB:
                 o.longitude,
                 o.date,
                 o.source,
+                o.url,
                 c.name AS company_name,
                 c.description AS company_description,
                 c.industry AS company_industry,
@@ -381,6 +384,7 @@ class OfferDB:
                 o.longitude,
                 o.date,
                 o.source,
+                o.url,
                 c.name AS company_name,
                 c.description AS company_description,
                 c.industry AS company_industry,

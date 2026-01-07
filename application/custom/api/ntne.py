@@ -103,6 +103,10 @@ class NTNE(BaseAPI):
         if not url:
             return None
         return self.domain + url
+    
+    def __parse_url(self, result) -> str:
+        short_url = XPathSearch(result, 'url', 'jobOfferShort')
+        return f'https://nostalentsnosemplois.auvergnerhonealpes.fr{short_url}'
 
     def __create_offer(self, result:dict) -> Offer:
         description = Description(
@@ -156,6 +160,7 @@ class NTNE(BaseAPI):
             description = description,
             company = company,
             city = city,
+            url = self.__parse_url(result),
             skills=skills,
             degrees=degrees
         )

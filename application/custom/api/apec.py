@@ -120,6 +120,9 @@ class APEC(BaseAPI):
             return None
         return self.domain + '/files/live/mounts/images' + url
 
+    def __prase_url(self, result) -> str:
+        offer_id = XPathSearch(result, 'numeroOffre')
+        return f'https://www.apec.fr/candidat/recherche-emploi.html/emploi/detail-offre/{offer_id}'
 
     def __create_offer(self, result:dict, hierarchy:dict) -> Offer:
         description = Description(
@@ -164,7 +167,9 @@ class APEC(BaseAPI):
             source = 'APEC',
             description = description,
             company = company,
-            city = city
+            city = city,
+            url = self.__prase_url(result),
+            skills=skills
         )
 
     def _loop_recent(self, url:str, payload:dict, stop_date:date|None) -> list[str]:
@@ -242,7 +247,7 @@ class APEC(BaseAPI):
             "pagination": {"range": self.size, "startIndex": 0},
             "activeFiltre": True,
             "pointGeolocDeReference": {"distance": 0},
-            "motsCles": "data",
+            "motsCles": self.keyword,
         }
         job_ids = self._loop_recent(search_url, payload, stop_date)
 

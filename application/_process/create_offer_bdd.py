@@ -68,6 +68,7 @@ schema_statements = [
         longitude      REAL,
         date           TEXT,
         source         TEXT NOT NULL,
+        url            TEXT,
         description_id INTEGER NOT NULL,
         city_id        INTEGER NOT NULL,
         company_id     INTEGER NOT NULL,

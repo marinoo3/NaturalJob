@@ -104,7 +104,7 @@ function bindOfferPopup(popup, offerId) {
         // Open email exists
         if (data.get('email')) {
             const offerTitle = popup.querySelector('.header .title');
-            const emailUrl = `mailto:?subject=${offerTitle.textContent}&body=${data.get('email')}`;
+            const emailUrl = `mailto:?subject=Candidature spontanée - ${offerTitle.textContent}&body=${data.get('email')}`;
             window.open(emailUrl, '_blank');
         }
     });

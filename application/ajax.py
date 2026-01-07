@@ -58,8 +58,9 @@ def model_settings_popup():
 def offer_fullview_popup(offer_id:str):
     (offer,), (id,) = app.offer_db.get_offers(ids=[offer_id])
     (cluster,), _ = app.offer_db.get_clusters(id=id)
+    keywords = app.nlp.tfidf.get_keywords(id)
     #  TODO: pass offer.url as offer_url
-    return offer.render(id, style='fullview', category=cluster.name)
+    return offer.render(id, style='fullview', category=cluster.name, keywords=keywords)
 
 
 # --------------------
@@ -362,7 +363,7 @@ def search_offer():
         template_text = app.data.read(template.path, pdf=True)
         emb_50d, _ = app.nlp.tfidf.transform([template_text])
         resume = emb_50d
-        if not query:
+        if query is None:
             query = emb_50d # If no query provided, resume content become query
             
     # create refines (like and dislikes)

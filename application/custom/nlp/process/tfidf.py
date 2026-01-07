@@ -151,6 +151,15 @@ class TFIDF(Model[TfidfVectorizer]):
 
         metadata['features']['2_predict']['value'] += predict_size
         return metadata
+    
+    def __top_tokens(self, document_id:int, X:csc_matrix, tokens:np.ndarray, n_terms=8):
+        X_csr= X.tocsr()
+        row:np.ndarray  = X_csr[document_id]
+        nonzero_indices = row.nonzero()[1]
+        keywords = [(tokens[i], row[0, i]) for i in nonzero_indices]
+        # Sort by TF-IDF score
+        keywords.sort(key=lambda x: x[1], reverse=True)
+        return [word.title() for word, _ in keywords[:n_terms]]
 
 
     def _save_matrix(self, X:csc_matrix) -> None:
@@ -175,6 +184,21 @@ class TFIDF(Model[TfidfVectorizer]):
         X = load_npz(path)
 
         return X, tokens
+    
+    def get_keywords(self, document_id:int) -> list[str]:
+        """Get the main tokens of a document element
+
+        Args:
+            document_id (int): The id of the document to get tokens
+
+        Returns:
+            list[str]: List of main tokens
+        """
+
+        X, tokens = self.load_matrix()
+        keywords = self.__top_tokens(document_id, X, tokens)
+        return keywords
+
     
     def fit_transform(self, corpus:list[str], min_df=3, max_df=0.5) -> tuple[np.ndarray, np.ndarray]:
         """Create a TF-IDF matrix from documents

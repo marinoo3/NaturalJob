@@ -77,12 +77,14 @@ class Offer:
             return None
         return round((1-score) * 100)
 
-    def render(self, id:int, score:float=None, style='result', category:str=None) -> str:
+    def render(self, id:int, score:float=None, style='result', category:str=None, keywords:list[str]=None) -> str:
         """Create html template object
 
         Args:
             id (int): The offer id
             style (str): The type of template to render: 'preview', 'result', 'fullview'. Defaults to 'result'.
+            category (str, optional): The cluster name or category of the offer
+            keywords (str, optional): Keyword list
 
         Returns:
             str: The html object
@@ -112,12 +114,16 @@ class Offer:
             case 'fullview':
                 return render_template('elements/offer_fullview.html',
                     offer_id=id,
+                    offer_url=self.url,
                     title=self.title,
                     profile_description=self.description.profile_description,
                     offer_description=self.description.offer_description,
                     company_name=self.company.name,
                     company_logo=self.company.logo_url or url_for('static', filename='images/company.svg'),
-                    category=category
+                    category=category,
+                    keywords=keywords,
+                    skills=self.skills,
+                    degrees=self.degrees
                 )
             case _:
                 raise ValueError("Wrong `style` value, expected 'preview', 'result' or 'fullview'")

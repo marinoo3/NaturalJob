@@ -2,7 +2,11 @@
     <div class="header">
         <div class="logo" style="background-image: url('{{ company_logo }}');"></div>
         <div class="header-content">
-            <ul class="tokens"><li>Hello</li><li>Tag</li></ul>
+            <ul class="tokens">
+                {% for token in keywords %}
+                    <li>{{ token }}</li>
+                {% endfor %}
+            </ul>
             <h1 class="title">{{ title }}</h1>
             <div class="labels">
                 <p class="company">{{ company_name }}</p>
@@ -21,7 +25,14 @@
         </div>
     </div>
     <div class="descriptions">
-        <a href="{{ offer_url }}" class="offer-url" target="_blank">https://www.flaticon.com/fr/chercher?word=CV&type=uicon</a>
+        <div class="source">
+            <h2>Lien :</h2>
+            <a href="{{ offer_url }}" class="offer-url" target="_blank">{{ offer_url }}</a>
+        </div>
+        <div class="offer">
+            <h2>Description du poste</h2>
+            <p>{{ offer_description }}</p>
+        </div>
         {% if profile_description %}
             <div class="profile">
                 <h2>Profil recherché</h2>
@@ -29,10 +40,26 @@
                 <ul class="skills"></ul>
             </div>
         {% endif %}
-        <div class="offer">
-            <h2>Description de l'offre</h2>
-            <p>{{ offer_description }}</p>
-        </div>
+        {% if skills|length > 0 %}
+            <div class="skills">
+                <h2>Compétences demandées</h2>
+                <ul>
+                    {% for s in skills %}
+                        <li>{{ s }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        {% if degrees|length > 0 %}
+            <div class="degrees">
+                <h2>Expériences requises</h2>
+                <ul>
+                    {% for d in degrees %}
+                        <li>{{ d }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
     </div>
     <div class="generate-container">
         <div class="generate" data-category="email">

@@ -29,12 +29,18 @@
             border-radius: 20px;
             margin-right: .2rem;
         }
+
         .category {
             display: inline-block;
             background-color: var(--blue-color);
             padding: .2rem .6rem;
             border-radius: 20px;
         }
+
+        .tokens {
+            margin-right: 130px;
+        }
+
         .tokens > li {
             display: inline-block;
             padding: .2rem .6rem;
@@ -42,6 +48,7 @@
             border: solid 1px var(--border-color);
             border-radius: var(--border-radius);
             margin-right: .4rem;
+            margin-bottom: .4rem;
         }
 
         .actions {
@@ -69,6 +76,23 @@
 
         h2 {
             margin: .2rem 0;
+        }
+
+        .source > * {
+            display: inline-block;
+        }
+
+        .skills ul, .degrees ul {
+            display: flex;
+            gap: .4rem;
+            flex-wrap: wrap;
+        }
+
+        li {
+            background-color: var(--bg-second-color);
+            text-wrap: nowrap;
+            padding: .2rem .4rem;
+            border-radius: var(--border-radius);
         }
     }
 

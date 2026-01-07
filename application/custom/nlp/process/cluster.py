@@ -100,6 +100,7 @@ class Kmeans(Model[KMeans]):
         """
 
         model = KMeans(n_clusters=K)
+        emb_50d = np.asarray(emb_50d, dtype=np.float32)
         labels = model.fit_predict(emb_50d)
         self._save_model(model)
 

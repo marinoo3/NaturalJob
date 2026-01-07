@@ -16,13 +16,13 @@ async function renderOffers(offerIds) {
     content.forEach(html => {
         const li = document.createElement('li');
         li.innerHTML = html;
+        const offerId = li.querySelector('.offer').dataset.offerId;
         li.querySelector('button.save').addEventListener('click', () => {
-            const offerId = li.querySelector('.offer').dataset.offerId;
             unsaveOffer(offerId);
         });
         li.addEventListener('click', (event) => {
             if (!event.target.closest('button')) {
-                displayOffer(offerIds);
+                displayOffer(offerId);
             }
         });
         offersContainer.appendChild(li);
