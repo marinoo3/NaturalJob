@@ -73,7 +73,6 @@ soupsieve==2.8
 spacy==3.8.11
 spacy-legacy==3.0.12
 spacy-loggers==1.0.5
-sqlean.py==3.50.4.5
 sqlite-vec==0.1.6
 srsly==2.5.2
 thinc==8.3.10
