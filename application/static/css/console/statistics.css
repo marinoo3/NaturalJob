@@ -1,5 +1,5 @@
 section#console .view[data-active-view="statistics"] {
-   padding: 0;
+   padding: .2rem 1rem;
    background-color: var(--bg-frame-color);
 
    .plot-grid {
@@ -19,6 +19,10 @@ section#console .view[data-active-view="statistics"] {
       #scene {
          height: 100% !important;
       }
+   }
+
+   #contract-plot {
+      width: 50%;
    }
 }
 

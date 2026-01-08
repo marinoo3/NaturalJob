@@ -396,7 +396,7 @@ def search_offer():
     offers_html = [offer.render(id_, score=score, style=style) for offer, id_, score in zip(offers, ids, scores)]
     offers_data = [offer.dict() for offer in offers]
 
-    return jsonify({'html': offers_html, 'data': offers_data})
+    return jsonify({'html': offers_html, 'data': offers_data, 'ids': ids})
 
 
 
@@ -436,19 +436,23 @@ def cluster_plot():
 
 @ajax.route('stat_plots')
 def stat_plots():
-    data = app.offer_db.get_table('OFFER', columns=['job_name', 'contract_type'])
+    ids = request.args.getlist('id') or None
+    data = app.offer_db.get_table('OFFER', columns=['job_name', 'contract_type', 'salary_min', 'min_experience'], rowids=ids)
     # Split data
-    job_names = []
-    contracts = []
+    job_names, contracts, salary, experience = [], [], [], []
     for d in data.dict:
         job_names.append(d.get('job_name'))
         contracts.append(d.get('contract_type'))
+        salary.append(d.get('salary_min'))
+        experience.append(d.get('min_experience'))
     # Render plots
     job_fig = app.plot.job_fig.render(job_names)
     contract_fig = app.plot.contract_fig.render(contracts)
+    experience_fig = app.plot.experience_fig.render(experience, salary)
     return jsonify({
         'topJobs': job_fig, 
-        'contracts': contract_fig
+        'contracts': contract_fig,
+        'experiences': experience_fig
     })
 
 

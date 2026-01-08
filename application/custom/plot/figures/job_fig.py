@@ -47,7 +47,8 @@ class JobFig(BaseFig):
             ),
             xaxis=dict(
                 gridcolor="#7e7e7e",
-                tickfont=dict(color="#7e7e7e")
+                tickfont=dict(color="#7e7e7e"),
+                zeroline=False
             )
         )
 

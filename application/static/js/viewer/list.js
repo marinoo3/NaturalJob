@@ -178,6 +178,16 @@ async function search(paramsURL) {
         return
     }
     const content = await response.json();
+    // Dispatch event
+    const event = new CustomEvent('searchOffers', {
+        detail: {
+            ids: content['ids']
+        },
+        bubbles: true,
+        cancelable: false
+    });
+    document.dispatchEvent(event);
+    // Render offers
     resultsContainer.innerHTML = '';
     renderResults(content.html);
     resultWrapper.classList.remove('waiting');

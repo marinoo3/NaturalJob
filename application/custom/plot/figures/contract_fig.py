@@ -15,7 +15,8 @@ class ContractFig(BaseFig):
             values=contract_counts.values,
             names=contract_counts.index,
             title='Distribution par type de contrat',
-            hole=0.3
+            hole=0.3,
+            color_discrete_sequence=px.colors.qualitative.Set2
         )
 
         fig.update_traces(

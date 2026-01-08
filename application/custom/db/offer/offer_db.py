@@ -535,12 +535,13 @@ class OfferDB:
 
             return [self._row_to_cluster(row) for row in rows], [int(row['offer_id']) for row in rows]
 
-    def get_table(self, table_name:str, columns:list[str]=None, convert_blob=False, conn:sqlite3.Connection=None) -> TableResult:
+    def get_table(self, table_name:str, columns:list[str]=None, rowids:list[int]=None, convert_blob=False, conn:sqlite3.Connection=None) -> TableResult:
             """Get the content of a table from OFFER db
 
             Args:
                 table_name (str): The name of the table
                 columns (list[str], optional): The list of columns to select, all if not provided. Default to None
+                rowids (list[int], optional): A list of ROWIDs to filter the table. Default to None
                 convert_blob (bool): To convert the result to vectors (if stored as blob from sqlite-vec). Default to None
 
             Returns:
@@ -554,7 +555,15 @@ class OfferDB:
                 cur = conn.cursor()
 
                 column_clause = ', '.join(columns) if columns else '*'
-                cur.execute(f"SELECT rowid, {column_clause} FROM {table_name}")
+                query = f"SELECT rowid, {column_clause} FROM {table_name}"
+
+                params = []
+                if rowids:
+                    placeholders = ", ".join("?" for _ in rowids)
+                    query += f" WHERE rowid IN ({placeholders})"
+                    params = rowids
+
+                cur.execute(query, params)
                 content = cur.fetchall()
 
                 # The first entry in each row is now rowid

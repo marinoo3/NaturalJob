@@ -2,16 +2,16 @@
     <div class="header">
         <div class="logo" style="background-image: url('{{ company_logo }}');"></div>
         <div class="header-content">
-            <ul class="tokens">
-                {% for token in keywords %}
-                    <li>{{ token }}</li>
-                {% endfor %}
-            </ul>
             <h1 class="title">{{ title }}</h1>
             <div class="labels">
                 <p class="company">{{ company_name }}</p>
                 <p class="category">{{ category }}</p> 
             </div>
+            <ul class="tokens">
+                {% for token in keywords %}
+                    <li>{{ token }}</li>
+                {% endfor %}
+            </ul>
         </div>
         <div class="actions">
             <button class="icon-button save">
