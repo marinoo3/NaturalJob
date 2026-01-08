@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 from cv.parser import load_all_cvs
 from nlp.vectorizer import load_and_prepare_offers
@@ -10,9 +10,14 @@ from motivation.cv_structurer import build_cv_struct
 from motivation.matcher import build_skill_vocab_from_offers, match_cv_to_job
 from motivation.schemas import to_json_dict
 
-from motivation.llm_client import MistralLLMClient
+from motivation.llm_client import MistralLLMClient, parse_json_text
 from motivation.questions_llm import build_questions_prompt, validate_questions_json
-from motivation.letter_llm import build_letter_prompt, validate_letter_json, build_allowed_keywords, _normalize_text
+from motivation.letter_llm import (
+    build_letter_prompt,
+    validate_letter_json,
+    build_allowed_keywords,
+    _normalize_text,
+)
 from motivation.post_edit import make_variants, make_ats_friendly
 
 
@@ -29,7 +34,7 @@ def run_for_offer(
     model: str = "mistral-large-latest",
     variant: str = "classique",
     target_words: int = 230,
-    user_answers: Dict[str, str] | None = None,
+    user_answers: Optional[Dict[str, str]] = None,
 ):
     """
     Pipeline final (avec LLM) pour une offre.
@@ -63,6 +68,8 @@ def run_for_offer(
     # 4) outputs dirs
     facts_dir = out_dir / "facts"
     letters_dir = out_dir / "letters"
+    facts_dir.mkdir(parents=True, exist_ok=True)
+    letters_dir.mkdir(parents=True, exist_ok=True)
 
     results = []
 
@@ -82,7 +89,10 @@ def run_for_offer(
 
         # --- B) QUESTIONS (LLM)
         q_prompt = build_questions_prompt(facts_payload)
-        q_obj = client.generate_json(q_prompt, temperature=0.2, max_tokens=600)
+        q_raw = client.generate(q_prompt, temperature=0.2, max_tokens=600)
+        (letters_dir / f"{cv_name}__offer_{offer_id}__questions_raw.txt").write_text(q_raw, encoding="utf-8")
+
+        q_obj = parse_json_text(q_raw)
         validate_questions_json(q_obj)
 
         q_path = letters_dir / f"{cv_name}__offer_{offer_id}__questions.json"
@@ -95,24 +105,28 @@ def run_for_offer(
             variant=variant,
             target_words=target_words,
         )
-        letter_obj = client.generate_json(l_prompt, temperature=0.2, max_tokens=1000)
+
+        raw_letter = client.generate(l_prompt, temperature=0.2, max_tokens=1000)
+        (letters_dir / f"{cv_name}__offer_{offer_id}__letter_raw.txt").write_text(raw_letter, encoding="utf-8")
+
+        letter_obj = parse_json_text(raw_letter)
         validate_letter_json(letter_obj)
 
-        # --- Anti-hallucination keywords_used
+        # --- Anti-hallucination: keywords_used dans une whitelist
         allowed = set(build_allowed_keywords(facts_payload, user_answers))
         used = [_normalize_text(x) for x in (letter_obj.get("keywords_used") or [])]
         used = [u for u in used if u]
+
         bad = [u for u in used if u not in allowed]
         if bad:
-            raise ValueError(f"[{cv_name}] Keywords non autorisés: {bad[:10]}")
+            raise ValueError(f"[{cv_name}] Keywords non autorisés (hallucination possible): {bad[:10]}")
 
         # --- D) POST-EDIT
         enriched = make_variants(letter_obj)
 
-        # ATS-friendly sur la version classique
         enriched["ats_friendly"] = make_ats_friendly(
             enriched["variants"]["classique"],
-            letter_obj.get("keywords_used", [])
+            letter_obj.get("keywords_used", []),
         )
 
         out_letter_path = letters_dir / f"{cv_name}__offer_{offer_id}__letter.json"
@@ -134,6 +148,5 @@ def run_for_offer(
 
 
 if __name__ == "__main__":
-    # Par défaut, génère tout (mais user_answers contient des placeholders)
     summary = run_for_offer(offer_id=0)
     print("Saved summary:", summary)
