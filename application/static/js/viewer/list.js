@@ -17,13 +17,13 @@ let dislikes = [];
 
 // Create sliders
 noUiSlider.create(salarySlider, {
-    start: [0, 70000],
+    start: [0, 0],
     connect: true,
     step: 500,
     tooltips: [wNumb({decimals: 0}), wNumb({decimals: 0})],
     range: {
         'min': 0,
-        'max': 70000
+        'max': 0
     }
 });
 
@@ -36,6 +36,47 @@ const loadingAnimation = lottie.loadAnimation({
     path: lottieContainer.dataset.url
 });
 
+
+
+// Populate filters
+async function populateFilters() {
+    const response = await fetch('ajax/get_offers_bounds');
+    const content = await response.json();
+    console.log(content);
+    // Populate silder
+    salarySlider.noUiSlider.updateOptions({
+        range: { 
+            'min': content['salary'][0],
+            '80%': (content['salary'][1] - content['salary'][0]) / 5,
+            'max': content['salary'][1] 
+        }
+    })
+    salarySlider.noUiSlider.set(content['salary'])
+    // Populate city input
+    const city = searchForm.elements['city'];
+    content['cities'].forEach(e => {
+        const option = new Option(e[1], e[0]);
+        city.add(option); // append the option to the select
+    });
+    // Populate city input
+    const contract = searchForm.elements['contract'];
+    content['contract_types'].forEach(e => {
+        const option = new Option(e);
+        contract.add(option); // append the option to the select
+    });
+    // Populate category input
+    const category = searchForm.elements['category'];
+    content['clusters'].forEach(e => {
+        const option = new Option(e[1], e[0]);
+        category.add(option); // append the option to the select
+    });
+    // Populate source input
+    const source = searchForm.elements['source'];
+    content['sources'].forEach(e => {
+        const option = new Option(e);
+        source.add(option); // append the option to the select
+    });
+}
 
 
 // Update refine window
@@ -260,3 +301,10 @@ refineWindow.querySelector('button.refine-button').addEventListener('click', () 
 export function update() {
     searchForm.querySelector('input[name="query"]').focus();
 }
+
+
+
+
+
+// Create filter slider and inputs
+populateFilters()

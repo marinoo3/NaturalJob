@@ -4,6 +4,7 @@ import sqlite_vec
 from datetime import date
 import os
 import numpy as np
+import json
 
 from .models import Offer, Description, City, Region, Company, Cluster, TableResult, Embeddings
 
@@ -236,6 +237,70 @@ class OfferDB:
 
             return summary
 
+    def get_bounds(self) -> dict:
+        """Get offers bounds (unique values or min and max)
+
+        Returns:
+            dict: Offers bounds
+        """
+
+        with self.connect() as conn:
+            cur = conn.cursor()
+
+            cur.execute("""
+                WITH stats AS (
+                    SELECT
+                        MIN(o.salary_min)      AS min_salary,
+                        MAX(o.salary_max)      AS max_salary,
+                        MIN(o.min_experience)  AS min_exp,
+                        MAX(o.min_experience)  AS max_exp
+                    FROM offer o
+                ),
+                contracts AS (
+                    SELECT JSON_GROUP_ARRAY(contract_type) AS contract_types
+                    FROM (SELECT DISTINCT contract_type FROM offer WHERE contract_type IS NOT NULL)
+                ),
+                sources AS (
+                    SELECT JSON_GROUP_ARRAY(source) AS sources
+                    FROM (SELECT DISTINCT source FROM offer WHERE source IS NOT NULL)
+                ),
+                cities AS (
+                    SELECT JSON_GROUP_ARRAY(JSON_ARRAY(city_id, name)) AS cities
+                    FROM (
+                        SELECT DISTINCT ci.city_id, ci.name
+                        FROM offer o
+                        JOIN city ci ON ci.city_id = o.city_id
+                        WHERE ci.name IS NOT NULL
+                    )
+                ),
+                clusters AS (
+                    SELECT JSON_GROUP_ARRAY(JSON_ARRAY(cluster_id, cluster_name)) AS clusters
+                    FROM (
+                        SELECT DISTINCT cl.cluster_id, cl.cluster_name
+                        FROM offer o
+                        JOIN cluster cl ON cl.cluster_id = o.cluster_id
+                        WHERE cl.cluster_name IS NOT NULL
+                    )
+                )
+                SELECT JSON_OBJECT(
+                    'salary',      JSON_ARRAY(stats.min_salary, stats.max_salary),
+                    'experience',  JSON_ARRAY(stats.min_exp, stats.max_exp),
+                    'contract_types', contracts.contract_types,
+                    'sources',        sources.sources,
+                    'cities',         cities.cities,
+                    'clusters',       clusters.clusters
+                ) AS result
+                FROM stats, contracts, sources, cities, clusters;
+            """)
+
+            # Query and load json result
+            result = json.loads(cur.fetchone()[0])
+            # Load nested json (due to `JSON_GROUP_ARRAY`)
+            for key in ['contract_types', 'sources', 'cities', 'clusters']:
+                result[key] = json.loads(result[key])
+
+            return result
+
     def add_offers(self, offers:list[Offer]) -> int:
         """Insert offers into database.
         
@@ -350,12 +415,51 @@ class OfferDB:
             conn.row_factory = sqlite3.Row
             cur = conn.cursor()
 
-            sql = """
-            WITH nearest_query AS (
+            # Build filters
+            filter_clauses = []
+            filter_params = []
+            for filt in filters or []:
+                key, value = next(iter(filt.items()))
+                if key == "salary":
+                    low, high = map(float, json.loads(value))
+                    filter_clauses.append("( (o.salary_max IS NULL OR o.salary_max >= ?) AND (o.salary_min IS NULL OR o.salary_min <= ?) )")
+                    filter_params.extend([low, high])
+                elif key == "category":
+                    filter_clauses.append("o.cluster_id = ?")
+                    filter_params.append(value)
+                elif key == "contract":
+                    filter_clauses.append("o.contract_type = ?")
+                    filter_params.append(value)
+                elif key == "city":
+                    filter_clauses.append("o.city_id = ?")
+                    filter_params.append(value)
+                elif key == "source":
+                    filter_clauses.append("o.source = ?")
+                    filter_params.append(value)
+                elif key == "experience":
+                    low, high = map(float, json.loads(value))
+                    filter_clauses.append("(o.min_experience IS NULL OR o.min_experience >= ? AND o.min_experience IS NULL OR o.min_experience <= ?)")
+                    filter_params.extend([low, high])
+
+            filter_sql = " AND ".join(filter_clauses) if filter_clauses else "1=1"
+
+            # Create sql query
+            sql = f"""
+            WITH filtered_tfidf AS (
+                SELECT t.rowid AS tfidf_id
+                FROM TFIDF t
+                JOIN OFFER o   ON o.tfidf_id   = t.rowid
+                JOIN COMPANY c ON c.company_id = o.company_id
+                JOIN CITY ci   ON ci.city_id   = o.city_id
+                JOIN REGION r  ON r.region_id  = ci.region_id
+                WHERE {filter_sql}
+            ),
+            nearest_query AS (
                 SELECT
                     rowid AS tfidf_id,
                     vec_distance_cosine(emb_50d, vec_f32(?)) AS query_distance
-                FROM TFIDF
+                FROM filtered_tfidf f
+                JOIN TFIDF t ON t.rowid = f.tfidf_id
                 ORDER BY query_distance ASC
                 LIMIT 50
             ),
@@ -385,6 +489,7 @@ class OfferDB:
                 o.date,
                 o.source,
                 o.url,
+                o.cluster_id,
                 c.name AS company_name,
                 c.description AS company_description,
                 c.industry AS company_industry,
@@ -409,7 +514,7 @@ class OfferDB:
             JOIN COMPANY c     ON c.company_id     = o.company_id
             JOIN DESCRIPTION d ON d.description_id = o.description_id
             JOIN CITY ci        ON ci.city_id       = o.city_id
-            JOIN REGION r       ON r.region_id      = ci.region_id 
+            JOIN REGION r       ON r.region_id      = ci.region_id
             ORDER BY
                 CASE
                     WHEN scored.resume_distance IS NOT NULL THEN scored.resume_distance
@@ -417,12 +522,16 @@ class OfferDB:
                 END ASC;
             """
 
+            # Convert embeddings blobs to verctors
             query_blob = query.astype("float32").tobytes()
             resume_blob = None
             if resume is not None:
                 resume_blob = resume.astype("float32").tobytes()
 
-            params = (query_blob, resume_blob, resume_blob)
+            # Build params
+            params = filter_params + [query_blob, resume_blob, resume_blob]
+
+            # Query DB
             cur.execute(sql, params)
             rows = cur.fetchall()
 

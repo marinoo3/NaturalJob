@@ -1,5 +1,6 @@
 export let savedOffers = [];
 export let appliedOffers = [];
+let map = null;
 
 
 
@@ -191,10 +192,15 @@ export async function displayOffer(offerId) {
     const popup = document.createElement('div');
     popup.classList.add('popup');
     popup.innerHTML = html;
-    offerId = offerId.toString()
+    offerId = offerId.toString();
     bindOfferPopup(popup, offerId);
     // Add popup to DOM
     document.body.appendChild(popup);
+    // Init the map
+    const mapElement = popup.querySelector('#offer-map');
+    map = L.map(mapElement, {maxZoom: 14, scrollWheelZoom: false}).setView([mapElement.dataset.lat, mapElement.dataset.lon], 11);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {maxZoom: 20}).addTo(map);
+    L.circleMarker([mapElement.dataset.lat, mapElement.dataset.lon], {color: 'var(--accent-color)', radius: 20}).addTo(map);
 }
 
 // Init arrays arrays

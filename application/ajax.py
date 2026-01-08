@@ -309,6 +309,11 @@ def get_offers():
     offers = app.offer_db.get_table('OFFER', columns=['offer_id', 'title', 'salary_min', 'latitude', 'longitude'])
     return jsonify({'count': len(offers), 'offers': offers.dict})
 
+@ajax.route('get_offers_bounds')
+def get_offers_bounds():
+    bounds = app.offer_db.get_bounds()
+    return jsonify(bounds)
+
 @ajax.route('get_saved_offers')
 def get_saved_offers():
     ids = app.user_db.get_saved_offers()
@@ -354,7 +359,7 @@ def search_offer():
         emb_50d, _ = app.nlp.tfidf.transform([request.args.get('query')])
         query = emb_50d
     # create filters
-    for key in ['salary', 'category', 'company', 'city']:
+    for key in ['salary', 'experience', 'category', 'contract', 'city', 'source']:
         if request.args.get(key):
             filters.append({key: request.args.get(key)})
     # create resume embeddings

@@ -122,6 +122,8 @@ class Offer:
                     company_logo=self.company.logo_url or url_for('static', filename='images/company.svg'),
                     category=category,
                     keywords=keywords,
+                    latitude=self.latitude,
+                    longitude=self.longitude,
                     skills=self.skills,
                     degrees=self.degrees
                 )

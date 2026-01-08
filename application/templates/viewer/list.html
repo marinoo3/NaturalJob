@@ -8,7 +8,7 @@
                 <img src="{{ url_for('static', filename='images/resume.svg') }}" alt="" height="16px">
                 <input type="text" name="resume" hidden>
             </button>
-            <input type="text" name="query" placeholder="Rechercher un terme" autocomplete="off" required>
+            <input type="text" name="query" placeholder="Rechercher un terme" autocomplete="off">
         </div>
         <select name="order" id="search-order">
             <option value="score">Pertinance</option>
@@ -21,29 +21,28 @@
                 <label>Salaire</label>
                 <div class="salary-slider" name="salary"></div>
             </div>
-            <div class="category">
-                <label>Categorie</label>
-                <select name="category">
-                    <option value="all">Tous</option>
-                    <option value="0">Développement et Architecture Technique</option>
-                    <option value="1">Développement Commercial et Stratégie d'Entreprise</option>
-                    <option value="2">Gestion de la Qualité et Production</option>
-                    <option value="3">Data et Intelligence Artificielle</option>
-                    <option value="4">Comptabilité et Soins Sociaux</option>
-                </select>
-            </div>
-            <div class="company">
-                <label>Entreprise</label>
-                <select name="company">
-                    <option value="all">Tous</option>
-                    <option value="iveco">IVECO</option>
-                </select>
-            </div>
             <div class="city">
                 <label>Ville</label>
                 <select name="city">
-                    <option value="all">Tous</option>
-                    <option value="iveco">Lyon</option>
+                    <option value="">Tous</option>
+                </select>
+            </div>
+            <div class="contract">
+                <label>Contrat</label>
+                <select name="contract">
+                    <option value="">Tous</option>
+                </select>
+            </div>
+            <div class="category">
+                <label>Categorie</label>
+                <select name="category">
+                    <option value="">Tous</option>
+                </select>
+            </div>
+            <div class="source">
+                <label>Source</label>
+                <select name="source">
+                    <option value="">Tous</option>
                 </select>
             </div>
         </nav>
