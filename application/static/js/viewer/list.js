@@ -54,24 +54,28 @@ async function populateFilters() {
     salarySlider.noUiSlider.set(content['salary'])
     // Populate city input
     const city = searchForm.elements['city'];
+    city.options.length = 1;
     content['cities'].forEach(e => {
         const option = new Option(e[1], e[0]);
         city.add(option); // append the option to the select
     });
     // Populate city input
     const contract = searchForm.elements['contract'];
+    contract.options.length = 1;
     content['contract_types'].forEach(e => {
         const option = new Option(e);
         contract.add(option); // append the option to the select
     });
     // Populate category input
     const category = searchForm.elements['category'];
+    category.options.length = 1;
     content['clusters'].forEach(e => {
         const option = new Option(e[1], e[0]);
         category.add(option); // append the option to the select
     });
     // Populate source input
     const source = searchForm.elements['source'];
+    source.options.length = 1;
     content['sources'].forEach(e => {
         const option = new Option(e);
         source.add(option); // append the option to the select
@@ -200,9 +204,25 @@ function buildParamsURL(includeRefines=false) {
 }
 
 async function search(paramsURL) {
+    // Dispatch event
+    const eventPrepare = new CustomEvent('prepareSearchOffers', {
+        bubbles: true,
+        cancelable: false
+    });
+    document.dispatchEvent(eventPrepare);
+    // Init search and UI
     if (!paramsURL.get('query') && !paramsURL.get('resume')) {
         resultsContainer.innerHTML = '';
         resultWrapper.classList.add('empty');
+        // Dispatch event
+        const event = new CustomEvent('searchOffers', {
+            detail: {
+                ids: []
+            },
+            bubbles: true,
+            cancelable: false
+        });
+        document.dispatchEvent(event);
         return
     }
     loadingAnimation.goToAndPlay(0, true);
@@ -308,3 +328,9 @@ export function update() {
 
 // Create filter slider and inputs
 populateFilters()
+
+
+// Update filters on Kmeans update
+document.addEventListener('kmeansUpdated', () => {
+    populateFilters();
+});

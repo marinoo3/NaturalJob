@@ -124,7 +124,6 @@ async function initModels() {
             progress.remove();
 
             if (modelName == 'kmeans') {
-                console.log('send kmeans event');
                 // Dispatch event
                 const event = new CustomEvent('kmeansUpdated', {
                     bubbles: true,
@@ -146,5 +145,16 @@ async function initModels() {
         }
     });
 }
+
+
+
+
+// On model fitted
+document.addEventListener('dataUpdate', () => {
+    initModels()
+})
+
+
+
 
 initModels()

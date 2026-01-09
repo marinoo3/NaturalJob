@@ -37,19 +37,19 @@ class Cluster:
 class Offer:
     title: str
     job_name: str
-    job_type: Optional[str]
-    contract_type: Optional[str]
-    salary_label: Optional[str]
-    salary_min: Optional[float]
-    salary_max: Optional[float]
-    min_experience: Optional[str]
-    latitude: Optional[float]
-    longitude: Optional[float]
     date: str                    # store ISO-8601 string, e.g., “2024-05-01”
     source: str                  # to trace origin of the offer
     description: Description
     company: Company
     city: City
+    job_type: Optional[str] = None
+    contract_type: Optional[str] = None
+    salary_label: Optional[str] = None
+    salary_min: Optional[float] = None
+    salary_max: Optional[float] = None
+    min_experience: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     url: Optional[str] = None
     cluster: Optional[Cluster] = None
     degrees: List[str] = field(default_factory=list)  # degree names
@@ -129,3 +129,17 @@ class Offer:
                 )
             case _:
                 raise ValueError("Wrong `style` value, expected 'preview', 'result' or 'fullview'")
+            
+
+
+
+
+test_o = Offer(
+    title='test',
+    job_name='test',
+    date='123',
+    source='custom',
+    description=Description('hello'),
+    company=Company('aveco'),
+    city=City(None, None)
+)

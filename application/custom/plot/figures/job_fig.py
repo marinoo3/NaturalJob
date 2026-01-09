@@ -43,7 +43,8 @@ class JobFig(BaseFig):
             plot_bgcolor='#1e1e1e',
             font={'color': '#E5E5E5'},
             yaxis=dict(
-                categoryorder="total ascending"
+                categoryorder="total ascending",
+                tickfont=dict(color="#7e7e7e"),
             ),
             xaxis=dict(
                 gridcolor="#7e7e7e",

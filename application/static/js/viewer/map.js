@@ -166,10 +166,26 @@ async function selectMapData(ids) {
 
 // Search offers
 async function search(query) {
+    // Dispatch event
+    const eventPrepare = new CustomEvent('prepareSearchOffers', {
+        bubbles: true,
+        cancelable: false
+    });
+    document.dispatchEvent(eventPrepare);
+    // Init search and UI
     if (!query) {
         resultsContainer.innerHTML = '';
         countText.textContent = '--';
         requestMapData();
+        // Dispatch event
+        const event = new CustomEvent('searchOffers', {
+            detail: {
+                ids: content['ids']
+            },
+            bubbles: true,
+            cancelable: false
+        });
+        document.dispatchEvent(event);
         return
     }
     loadingAnimation.goToAndPlay(0, true);

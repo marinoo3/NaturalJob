@@ -1,0 +1,42 @@
+<div class="content input">
+    <div class="drop-area">
+        <img src="{{ url_for('static', filename='images/plus.svg') }}" alt="" height="16px">
+        <input type="file" name="file" required hidden autocomplete="off">
+        <p>Déposer un fichier</p>
+        <div class="url">
+            <input type="text" name="url" placeholder="ou https://" autocomplete="off">
+        </div>
+    </div>
+    <form class="offer-editor" style="display: none;">
+        <fieldset disabled>
+            <div class="field">
+                <label>Intitulé du poste</label>
+                <input type="text" name="title">
+            </div>
+            <div class="group-input">
+                <div class="field">
+                    <label>Entreprise</label>
+                    <input type="text" name="company_name">
+                </div>
+                <div class="field">
+                    <label>Type de contrat</label>
+                    <select name="contract_type">
+                        <option value=""></option>
+                        <option value="CDI">CDI</option>
+                        <option value="CDD">CDD</option>
+                        <option value="ALTERNANCE">Alternance</option>
+                        <option value="STAGE">Stage</option>
+                        <option value="INTERIM">Intérim</option>
+                        <option value="INDEPENDENT">Indépendent</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field">
+                <label>Description</label>
+                <textarea name="description"></textarea>
+            </div>
+            <input type="text" name="url" hidden>
+            <button class="main-button">Publier</button>
+        </fieldset>
+    </form>
+</div>

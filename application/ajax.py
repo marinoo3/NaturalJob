@@ -8,6 +8,7 @@ from typing import cast
 from . import AppContext
 from .custom.db.user.models import Template
 from .custom.utils.mdpdf import MdPDF
+from .custom.utils.parser import ParsePDF
 
 
 
@@ -33,7 +34,8 @@ def load_tab(section_id, tab_id):
 
 @ajax.route('/upload_file_popup/<title>', methods=['GET'])
 def upload_file_popup(title:str):
-    popup = render_template('elements/upload_file_popup.html', title=title)
+    fileicon = request.args.get('fileicon') or 'plus'
+    popup = render_template('elements/upload_file_popup.html', title=title, fileicon=fileicon)
     return popup
 
 @ajax.route('/create_file_popup/<title>', methods=['GET'])
@@ -208,7 +210,7 @@ def update_bdd_stream(source: str):
 
 @ajax.route('process_nlp/<source>')
 def process_nlp(source:str):
-    if source not in {'NTNE', 'APEC'}:
+    if source not in {'NTNE', 'APEC', 'custom'}:
         abort(404, description='Invalid source')
 
     ids, descriptions = app.offer_db.get_unprocessed(source)
@@ -402,6 +404,36 @@ def search_offer():
     offers_data = [offer.dict() for offer in offers]
 
     return jsonify({'html': offers_html, 'data': offers_data, 'ids': ids})
+
+
+@ajax.route('process_offer', methods=['POST'])
+def process_offer():
+    url = None
+    if 'file' in request.files:
+        file = request.files['file']
+        content = ParsePDF(file)
+    elif 'url' in request.form:
+        url = request.form.get('url')
+        content = app.scrapper.collect(url)
+        if not content:
+            return abort(500, "Failed to scrap webpage")
+    
+    result = app.nlp.llm.offer_from_text(content)
+    result['url'] = url
+    return jsonify(result)
+
+
+@ajax.route('add_offer', methods=['POST'])
+def add_offer():
+    custom_offer = {
+        'title': request.args.get('title'),
+        'description': request.args.get('description'),
+        'company_name': request.args.get('company_name'),
+        'contract_type': request.args.get('contract_type'),
+        'url': request.args.get('url')
+    }
+    offer_id = app.offer_db.add_custom(custom_offer)
+    return jsonify({'offer_id': offer_id})
 
 
 

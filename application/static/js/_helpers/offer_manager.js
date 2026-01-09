@@ -198,9 +198,13 @@ export async function displayOffer(offerId) {
     document.body.appendChild(popup);
     // Init the map
     const mapElement = popup.querySelector('#offer-map');
-    map = L.map(mapElement, {maxZoom: 14, scrollWheelZoom: false}).setView([mapElement.dataset.lat, mapElement.dataset.lon], 11);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {maxZoom: 20}).addTo(map);
-    L.circleMarker([mapElement.dataset.lat, mapElement.dataset.lon], {color: 'var(--accent-color)', radius: 20}).addTo(map);
+    const coordinates = [mapElement.dataset.lat, mapElement.dataset.lon];
+    if (!coordinates.includes('None')) {
+        mapElement.classList.remove('hidden');
+        map = L.map(mapElement, {maxZoom: 14, scrollWheelZoom: false}).setView(coordinates, 11);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {maxZoom: 20}).addTo(map);
+        L.circleMarker(coordinates, {color: 'var(--accent-color)', radius: 20}).addTo(map);
+    }
 }
 
 // Init arrays arrays

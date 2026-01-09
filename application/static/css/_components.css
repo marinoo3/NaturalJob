@@ -108,13 +108,13 @@ footer p {
 
 /* Inputs */
 
-input[type="text"], input[type="number"] {
+input[type="text"], input[type="number"], textarea {
     border-radius: var(--border-radius);
     border: solid 1px var(--border-color);
     background-color: var(--bg-second-color);
     padding: .6rem;
 }
-input[type="text"]:focus, input[type="number"]:focus {
+input[type="text"]:focus, input[type="number"]:focus, textarea:focus {
     outline: none;
     border: solid 1px var(--accent-color) !important;
 }
@@ -140,13 +140,19 @@ select:focus {
     border: solid 1px var(--border-color);
     padding: .4rem;
     background-color: var(--bg-second-color);
-    display: grid;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: .2rem;
     transition: border-color .3s ease;
 
     p {
         color: var(--text-second-color);
+    }
+
+    img {
+        filter: invert(40%) sepia(0%) saturate(982%) hue-rotate(162deg) brightness(124%) contrast(93%);
     }
 }
 .drop-area.dragover, .drop-area:active {
@@ -154,6 +160,10 @@ select:focus {
 
     p {
         color: var(--accent-color);
+    }
+
+    img {
+        filter: invert(85%) sepia(16%) saturate(1406%) hue-rotate(69deg) brightness(101%) contrast(87%);
     }
 }
 

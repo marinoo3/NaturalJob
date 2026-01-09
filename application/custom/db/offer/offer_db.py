@@ -330,6 +330,45 @@ class OfferDB:
 
             conn.commit()
 
+    def add_custom(self, custom:dict) -> int:
+        """Insert custom offer into DB
+
+        Args:
+            custom (dict): Custom offer
+
+        Returns
+            int: Created offer ID
+        """
+
+        offer = Offer(
+            title=custom['title'],
+            job_name=custom['title'],
+            contract_type=custom['contract_type'],
+            date=date.today().isoformat(),
+            source='custom',
+            url=custom['url'],
+            description=Description(custom['description']),
+            company=Company(custom['company_name']),
+            city=City(None, Region(None, None))
+        )
+
+        with self.connect() as conn:
+            cur = conn.cursor()
+
+            company_id = self._get_or_create_company(cur, offer.company)
+            description_id = self._insert_description(cur, offer.description)
+            region_id = self._get_or_create_region(cur, offer.city.region)
+            city_id = self._get_or_create_city(cur, offer.city, region_id)
+            offer_id = self._insert_offer(
+                cur,
+                offer,
+                company_id=company_id,
+                city_id=city_id,
+                description_id=description_id,
+            )
+
+            return offer_id
+
     def get_offers(self, ids:str=None) -> tuple[list[Offer], list[int]]:
         """Get offer by ID, returns all offers if no ID
 

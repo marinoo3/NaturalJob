@@ -1,0 +1,113 @@
+section#source .view[data-active-view="external"] {
+    overflow-y: auto;
+
+    .drop-area {
+        position: relative;
+        height: 100%;
+
+        p {
+            margin-bottom: 2rem;
+        }
+
+        .url {
+            position: absolute;
+            bottom: .6rem;
+            width: calc(100% - 1.2rem);
+
+            input {
+                width: 100%;
+                border: none;
+                background-color: var(--bg-frame-color);
+            }
+        }
+    }
+
+    form.offer-editor {
+
+        fieldset {
+            border: none;
+        }
+        filedset:disabled button{
+            opacity: .5;
+        }
+
+        .group-input {
+            display: flex;
+            gap: 1rem;
+            margin: .6rem 0;
+
+            .field {
+                width: 100%;
+            }
+        }
+
+        label {
+            display: inline-block;
+            color: var(--text-second-color);
+            margin-bottom: .2rem;
+        }
+
+        input, select, slider {
+            width: 100%;
+        }
+        textarea {
+            min-width: 100%;
+            max-width: 100%;
+            height: 120px;
+        }
+    }
+
+    form.offer-editor.waiting {
+        input, select, slider, textarea {
+            background-color: #343434;
+            border: none;
+            opacity: 0;
+            animation: fade 2s ease-in-out infinite alternate;
+        }
+
+        label {
+            background-color: #343434;
+            color: #343434;
+            border-radius: var(--border-radius);
+            opacity: 0;
+            animation: fade 2s ease-in-out infinite alternate;
+        }
+    }
+
+    button {
+        margin-top: 1rem;
+        width: 100%;
+    }
+
+    .content.input {
+        height: 100% !important;
+
+        .drop-area{
+            display: flex;
+        }
+        form.offer-editor {
+            display: none;
+        }
+    }
+    .content.edit {
+        height: auto !important;
+
+        .drop-area{
+            display: none;
+        }
+        form.offer-editor {
+            display: block !important;
+        }
+    }
+}
+
+
+
+@keyframes fade {
+   from {
+      opacity: 0.1;
+   }
+   to {
+      opacity: .8;
+   }
+}

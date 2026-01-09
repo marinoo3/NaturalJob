@@ -1,4 +1,13 @@
 section#documents[data-section-id="documents"] {
+
+    .view {
+        overflow-y: auto;
+        
+         > div {
+            height: auto !important;
+         }
+        
+    }
     .offer {
         margin-top: .6rem;
         border-radius: var(--border-radius);

@@ -14,6 +14,7 @@ section#console .view[data-active-view="statistics"] {
          height: 100%;
          opacity: 0%;
          animation: fade 1s ease-in-out infinite alternate;
+         display: none;
       }
 
       #scene {
@@ -23,6 +24,17 @@ section#console .view[data-active-view="statistics"] {
 
    #contract-plot {
       width: 50%;
+   }
+
+   .plot-grid.waiting {
+
+      .plotly {
+         display: none;
+      }
+
+      .placeholder {
+         display: block;
+      }
    }
 }
 

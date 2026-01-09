@@ -11,6 +11,7 @@ const tabLoaders = {
    "viewer/editor": () => import("./viewer/editor.js"),
    "source/ntne": () => import("./source/api.js"),
    "source/apec": () => import("./source/api.js"),
+   "source/external": () => import("./source/external.js"),
    "console/clusters": () => import("./console/clusters.js"),
    "console/models": () => import("./console/models.js"),
    "console/statistics": () => import("./console/statistics.js"),

@@ -34,7 +34,7 @@ class Data():
 
         return os.path.join(self.path, relative_path)
 
-    def create_resume_template(self, file: FileStorage):
+    def create_resume_template(self, file: FileStorage) -> tuple[str, str]:
         """Save resume template file to disk.
 
         Args:

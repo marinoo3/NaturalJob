@@ -4,6 +4,7 @@ from .custom.data import Data
 from .custom.nlp import NLP
 from .custom.db import UserDB, OfferDB
 from .custom.api import NTNE, APEC
+from .custom.scrapper import Scrapper
 from .custom.plot import Plot
 
 
@@ -13,6 +14,7 @@ class AppContext(Flask):
     offer_db: OfferDB
     ntne_api: NTNE
     apec_api: APEC
+    scrapper: Scrapper
     nlp: NLP
     plot: Plot
 
@@ -29,6 +31,7 @@ def create_app():
         app.offer_db = OfferDB()
         app.ntne_api = NTNE()
         app.apec_api = APEC()
+        app.scrapper = Scrapper()
         app.nlp = NLP()
         app.plot = Plot()
 

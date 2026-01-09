@@ -1,10 +1,10 @@
 <div class="content">
     <h2>Paramètre du modèle</h2>
-    <form>
+    <form autocomplete="off">
         {% for input in settings %}
         <div>
             <label>{{ input.name }}</label>
-            <input type="number" placeholder="{{ input.value }}" name="{{ input.name }}" required>
+            <input type="number" placeholder="{{ input.value }}" name="{{ input.name }}" required autocomplete="off">
         </div>
         {% endfor %}
         <div class="actions">

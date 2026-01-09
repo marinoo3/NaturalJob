@@ -1,5 +1,4 @@
 const section = document.querySelector('#source');
-const viewerSection = document.querySelector("section#viewer");
 const view = section.querySelector('.view')
 
 

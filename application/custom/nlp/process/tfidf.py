@@ -154,7 +154,7 @@ class TFIDF(Model[TfidfVectorizer]):
     
     def __top_tokens(self, document_id:int, X:csc_matrix, tokens:np.ndarray, n_terms=8):
         X_csr= X.tocsr()
-        row:np.ndarray  = X_csr[document_id]
+        row:np.ndarray  = X_csr[document_id-1]
         nonzero_indices = row.nonzero()[1]
         keywords = [(tokens[i], row[0, i]) for i in nonzero_indices]
         # Sort by TF-IDF score
@@ -246,7 +246,6 @@ class TFIDF(Model[TfidfVectorizer]):
             np.ndarray: 50 dimenssions reduction
             np.ndarray: 3 dimenssions reduction
         """
-
         if not self.model:
             raise Exception(f"Impossible to predict on {self.model_name} since the model doesn't exist yet. Use `fit_transform` method first to create the model")
         
@@ -255,7 +254,7 @@ class TFIDF(Model[TfidfVectorizer]):
         if save:
             self._update_matrix(X)
             # Update and save metadata
-            metadata = self.__generate_metadata(X=X)
+            metadata = self.__generate_metadata(predict_size=len(corpus))
             self._save_metadata(metadata)
 
         emb_50d = self.svd.transform(X)

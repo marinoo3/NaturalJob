@@ -1,3 +1,4 @@
+from werkzeug.datastructures import FileStorage
 from typing import Any
 from bs4 import BeautifulSoup
 import pymupdf
@@ -87,7 +88,7 @@ class ParsePDF:
     """Parse text from PDF file"""
 
 
-    def __new__(cls, file_path:str) -> str:
+    def __new__(cls, file:str|FileStorage) -> str:
         """Parse text in HTML string and remove all tags
 
         Args:
@@ -96,10 +97,21 @@ class ParsePDF:
         Returns:
             str: the cleaned text
         """
-        
-        return cls.__parse_pdf(file_path)
+
+        if isinstance(file, str):
+            return cls.__parse_from_path(file)
+        elif isinstance(file, FileStorage):
+            return cls.__parse_from_file(file) 
     
     @staticmethod
-    def __parse_pdf(file_path):
+    def __parse_from_path(file_path:str):
         with pymupdf.open(file_path) as doc:
+            return '\n\n'.join(page.get_text() for page in doc)
+        
+    @staticmethod
+    def __parse_from_file(file_storage:FileStorage):
+        file_storage.stream.seek(0)
+        pdf_bytes = file_storage.stream.read()
+
+        with pymupdf.open(stream=pdf_bytes, filetype="pdf") as doc:
             return '\n\n'.join(page.get_text() for page in doc)
