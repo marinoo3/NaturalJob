@@ -30,3 +30,29 @@ Natural Job est une application web monopage pour explorer, analyser et postuler
 | Bases de données  | `sqlite`, `sqlite-vec` (2 DB : `USER`, `OFFER`) |
 | Data / NLP        | `scikit-learn`, `pandas`, `numpy` |
 | Visualisation     | `plotly`, `leaflet`, `d3js` |
+
+## Faire tourner l'app en local
+
+1. Aller dans le dossier racine
+```bash
+cd NaturalJob-main
+```
+
+2. Créer l'image docker
+> Windows / Linux
+```bash
+docker build -t naturaljob .
+```
+
+> macOS (émulation x86_64)
+```bash
+docker buildx create --use --name mybuilder
+docker buildx build --platform=linux/amd64 -t naturaljob --load .
+```
+
+3. Lancer l'image
+```bash
+docker run -p 7860:7860 -e MISTRAL_API_KEY={mistral_api_key} naturaljob
+```
+
+*L'application est hébergée localement et accessible sur le port 7860 (http://localhost:7860/)*
