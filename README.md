@@ -33,6 +33,14 @@ Natural Job est une application web monopage pour explorer, analyser et postuler
 
 ## Faire tourner l'app en local
 
+1. Cloner le repo
+
+*On utilise Git LFS pour stoquer nos modèles, il faut donc installer lfs*
+```bash
+git lfs install
+git clone https://github.com/marinoo3/NaturalJob
+```
+
 1. Aller dans le dossier racine
 ```bash
 cd NaturalJob-main
