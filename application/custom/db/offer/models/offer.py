@@ -116,6 +116,8 @@ class Offer:
                     offer_id=id,
                     offer_url=self.url,
                     title=self.title,
+                    salary=self.salary_label,
+                    contract=self.contract_type,
                     profile_description=self.description.profile_description,
                     offer_description=self.description.offer_description,
                     company_name=self.company.name,

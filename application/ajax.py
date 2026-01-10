@@ -44,10 +44,11 @@ def create_file_popup(title:str):
     return popup
 
 @ajax.route('/attach_template_popup/<category>', methods=['GET'])
-def attach_resume_popup(category:str):
+def attach_template_popup(category:str):
+    title = request.args.get('title') or 'Joindre une template'
     templates = app.user_db.get_templates()
     c_template = [template.dict() for template in templates if template.category == category]
-    popup = render_template('elements/attach_template_popup.html', templates=c_template, category=category)
+    popup = render_template('elements/attach_template_popup.html', templates=c_template, category=category, title=title)
     return popup
 
 @ajax.route('/model_settings_popup', methods=['GET'])
@@ -129,20 +130,36 @@ def delete_template(template_uuid:str):
 
 @ajax.route('/generate_template')
 def generate_template():
-    email = request.args.get('email')
-    coverletter = request.args.get('coverletter')
+    email_uuid = request.args.get('email')
+    coverletter_uuid = request.args.get('coverletter')
+    resume_uuid = request.args.get('resume')
     offer_id = request.args.get('offer_id')
-    if not any([email, coverletter]):
-        print('no template')
-        return abort(422, "Missing template uuid. Use `email` or `coverletter` param to send a template uuid")
+
     if not offer_id:
         print('no offer_id')
         return abort(422, "Missing `offer_id` param")
     
-    # TODO: generate email or template base on offer description
-
-    template_content = "Ceci sera ma template"
-    return jsonify({'template': template_content})
+    (offer,), _ = app.offer_db.get_offers([offer_id])
+    
+    if email_uuid:
+        # Read email template and generate adapted version
+        email = app.user_db.get_template(email_uuid)
+        email_content = app.data.read(email.path)
+        generated_email = app.nlp.llm.email_from_offer(email_content, offer)
+        return jsonify({'template': generated_email, 'type': 'generated_email'})
+    elif coverletter_uuid:
+        # Read coverletter template (plus resume) and generate adapted version
+        coverletter = app.user_db.get_template(coverletter_uuid)
+        coverletter_content = app.data.read(coverletter.path)
+        resume = app.user_db.get_template(resume_uuid)
+        resume_content = app.data.read(resume.path, pdf=True)
+        generated_coverletter = app.nlp.llm.coverletter_from_offer(coverletter_content, resume_content, offer)
+        return jsonify({'template': generated_coverletter, 'type': 'generated_coverletter'})
+    else:
+        print('no template')
+        return abort(422, "Missing template uuid. Use `email` or `coverletter` param to send a template uuid")
+    
+    
 
 # --------------------
 # DATA
@@ -497,20 +514,15 @@ def stat_plots():
 # --------------------
 # APPLY
 
-@ajax.route('apply_offer/<offer_id>')
+@ajax.route('apply_offer/<offer_id>', methods=['POST'])
 def apply_offer(offer_id:str):
-    email = request.args.get('email')
-    coverletter = request.args.get('coverletter')
+    coverletter = request.get_data(as_text=True)
 
     # Create response
     response = make_response(jsonify({'success': True}), 200)
     response.headers['X-Is-File'] = 'no'
 
-    # Create templates
-    if email:
-        email_id, _ = app.data.create_email_template(content=email)
     if coverletter:
-        coverletter_id, _ = app.data.create_coverletter_template(content=coverletter)
         pdf_buffer = MdPDF.pdf_from_md(coverletter)
         response = make_response(
             send_file(

@@ -7,6 +7,9 @@ const offersContainer = section.querySelector('ul.offers');
 
 // Render offer on list
 async function renderOffers(offerIds) {
+    if (offerIds.length == 0) {
+        return
+    }
     // Request HTMLs
     const params = new URLSearchParams();
     offerIds.forEach(id => params.append('id', id));

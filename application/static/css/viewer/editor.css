@@ -9,13 +9,12 @@ section#viewer .view[data-active-view="editor"] {
         grid-template-rows: auto minmax(0, 1fr) auto;
     }
 
-    .EasyMDEContainer .CodeMirror {
-        .CodeMirror-line {
-            .CodeMirror-selectedtext {
-                background: var(--accent-color);
-                color: black;
-            }
-        }
+    .CodeMirror-selectedtext, .CodeMirror-selected {
+        background-color: var(--accent-color);
+        color: black;
+    }
+    .CodeMirror-cursor {
+        border-left: 1px solid var(--accent-color);
     }
 
     .EasyMDEContainer .editor-toolbar {

@@ -5,7 +5,12 @@ let map = null;
 
 
 
-function createPopup(html, form) {
+async function createPopup(container, title, category) {
+    // Request HTML
+    const params = new URLSearchParams({ title: title });
+    const response = await fetch(`/ajax/attach_template_popup/${category}?${params}`);
+    const html = await response.text();
+    // Create popup
     const popup = document.createElement('div');
     popup.classList.add('popup');
     popup.innerHTML = html;
@@ -13,11 +18,18 @@ function createPopup(html, form) {
     const saveButton = popup.querySelector('button.submit');
     saveButton.addEventListener('click', async () => {
         const selected = popup.querySelector('input[name="template"]:checked');
-        form.querySelector('.custom-select input').value = selected.value;
-        form.querySelector('.custom-select p').textContent = selected.dataset.templateName;
-        form.querySelector('button').disabled = false;
-        form.parentElement.classList.remove('succeed');
+        const input = container.querySelector(`.custom-select input[name="${category}"]`);
+        const label = container.querySelector('.custom-select p');
+        input.value = selected.value;
+        label.textContent = selected.dataset.templateName;
         popup.remove();
+        if (category == 'coverletter') {
+            const secondPopup = await createPopup(container, "Joindre un CV", 'resume');
+            document.body.appendChild(secondPopup);
+            return
+        }
+        const event = new Event('change', { bubbles: true });
+        input.dispatchEvent(event);
     });
     // Close popup
     popup.addEventListener('click', (event) => {
@@ -33,7 +45,7 @@ function createPopup(html, form) {
 function bindOfferPopup(popup, offerId) {
     const offer = popup.querySelector('.offer-fullview');
     const applyForm = popup.querySelector('form#apply');
-    const generateForms = popup.querySelectorAll('.generate form');
+    const generateConatiners = applyForm.querySelectorAll('.generate')
     // Check offer status
     if (savedOffers.includes(offerId)) {
         offer.classList.add('saved');
@@ -49,42 +61,59 @@ function bindOfferPopup(popup, offerId) {
         }
     });
     // Bind generating
-    generateForms.forEach(form => {
-        const generateContainer = form.parentElement;
-        const templateCategory = generateContainer.dataset.category;
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            generateContainer.classList.remove('error');
-            generateContainer.classList.add('waiting');
-            // Request generation
-            const data = new FormData(form);
-            data.append('offer_id', offerId);
-            const params = new URLSearchParams(data);
-            const response = await fetch(`ajax/generate_template?${params}`);
-            generateContainer.classList.remove('waiting');
-            if (!response.ok) {
-                generateContainer.classList.add('error');
-            } else {
-                generateContainer.classList.add('succeed');
-            }
-            const content = await response.json();
-            applyForm.querySelector(`input[name="${templateCategory}"]`).value = content['template'];
-        });
-        form.querySelector('.custom-select').addEventListener('click', async () => {
-            const response = await fetch(`/ajax/attach_template_popup/${templateCategory}`);
-            const html = await response.text();
-            // Create popup
-            const popup = createPopup(html, form);
+    generateConatiners.forEach(container => {
+        const templateCategory = container.dataset.category;
+        const customSelect = container.querySelector('.custom-select');
+        customSelect.addEventListener('click', async () => {
+            const popup = await createPopup(container, customSelect.title, templateCategory);
             document.body.appendChild(popup);
+        });
+        customSelect.addEventListener('change', async () => {
+            container.classList.add('waiting');
+            container.classList.remove('succeed');
+            container.classList.remove('error');
+            // Create progress background
+            let progress = container.querySelector('.progress');
+            if (!progress) {
+                progress = document.createElement('div');
+                progress.classList.add('progress');
+                progress.style.width = "0px";
+                container.appendChild(progress);
+            }
+            // Generate adapted template
+            const params = new URLSearchParams()
+            customSelect.querySelectorAll('input').forEach(input => {
+                params.append(input.name, input.value);
+            });
+            params.append('offer_id', offerId);
+            const response = await fetch(`ajax/generate_template?${params}`);
+            container.classList.remove('waiting');
+            if (!response.ok) {
+                container.classList.add('error');
+            } else {
+                const content = await response.json();
+                console.log(content['type']);
+                console.log(content['template']);
+                applyForm.querySelector(`textarea[name="${content['type']}"]`).value = content['template'];
+                container.classList.add('succeed');
+            }
         });
     });
     // Bind apply
     applyForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const coverletterContent = applyForm.elements['generated_coverletter'].value;
+        const emailContent = applyForm.elements['generated_email'].value;
+        applyForm.classList.add('waiting');
         // Ask server to apply
-        const data = new FormData(applyForm);
-        const params = new URLSearchParams(data);
-        const response = await fetch(`ajax/apply_offer/${offerId}?${params}`);
+        const response = await fetch(`ajax/apply_offer/${offerId}`, {
+            method: 'POST',
+            body: coverletterContent
+        });
+        applyForm.classList.remove('waiting');
+        if (!response.ok) {
+            applyForm.classList.add('error');
+        }
         const isFile = response.headers.get('X-Is-File') === 'yes';
         // Download coverletter if exists
         if (isFile) {
@@ -103,9 +132,10 @@ function bindOfferPopup(popup, offerId) {
             window.URL.revokeObjectURL(url);
         }
         // Open email exists
-        if (data.get('email')) {
-            const offerTitle = popup.querySelector('.header .title');
-            const emailUrl = `mailto:?subject=Candidature spontanée - ${offerTitle.textContent}&body=${data.get('email')}`;
+        if (emailContent) {
+            const subject = encodeURIComponent(`Candidature spontanée - ${popup.querySelector('.header .title').textContent}`);
+            const body = encodeURIComponent(emailContent);
+            const emailUrl = `mailto:?subject=${subject}&body=${body}`;
             window.open(emailUrl, '_blank');
         }
     });

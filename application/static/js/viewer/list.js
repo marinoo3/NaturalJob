@@ -162,6 +162,8 @@ function renderResults(results) {
         });
         resultsContainer.appendChild(li);
     });
+    // Scroll to top
+    resultsContainer.scrollTop = 0;
 }
 
 
@@ -259,7 +261,8 @@ async function search(paramsURL) {
 
 // Attach resume
 attachResumeButton.addEventListener('click', async () => {
-    const response = await fetch('/ajax/attach_template_popup/resume');
+    const params = new URLSearchParams({ title: "Joindre un CV" });
+    const response = await fetch(`/ajax/attach_template_popup/resume?${params}`);
     const html = await response.text();
     // Create popup
     const popup = createPopup(html);

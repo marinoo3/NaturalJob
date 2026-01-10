@@ -1,6 +1,10 @@
 from mistralai import Mistral
 import json
 import os
+from datetime import date
+
+from ...db.offer.models import Offer
+
 
 
 class LLM:
@@ -67,3 +71,95 @@ class LLM:
             offer_dict[key] = result.get(key)
 
         return offer_dict
+    
+    def email_from_offer(self, email_template:str, offer:Offer) -> str:
+        system_prompt = """
+        Tu écris un email pour une candidature spontanée basée UNIQUEMENT sur des faits fournis et en t'appuiyant sur le model fournis.
+        INTERDICTION d'inventer des expériences, entreprises, technologies, chiffres ou diplômes.
+
+        Tu as accès uniquement à:
+        - model d'email
+        - infos de l'annonce structurée
+
+        Si une info est manquante:
+        - ne l'invente pas
+        - n'en parle pas
+
+        Sortie STRICT (Corps du email uniquement)
+
+        Contraintes:
+        - Style: professionnel, naturel, sans exagération.
+        """
+
+        payload = {
+            'template': email_template,
+            'offer_title': offer.title,
+            'offer_description': offer.description.offer_description,
+            'offer_skills': offer.skills,
+            'offer_contract': offer.contract_type,
+            'company_name': offer.company.name,
+            'today_date': date.today().isoformat()
+        }
+
+        chat_response = self.client.chat.complete(
+            model = self.model_small,
+            messages = [
+                {
+                    "role": "system",
+                    "content": system_prompt
+                },
+                {
+                    "role": "user",
+                    "content": json.dumps(payload)
+                }
+            ]
+        )
+
+        return chat_response.choices[0].message.content
+    
+    def coverletter_from_offer(self, coverletter_template:str, resume:str, offer:Offer) -> str:
+        system_prompt = """
+        Tu écris une lettre de motivation basée UNIQUEMENT sur des faits fournis et en t'appuiyant sur le model fournis.
+        INTERDICTION d'inventer des expériences, entreprises, technologies, chiffres ou diplômes.
+
+        Tu as accès uniquement à:
+        - model de lettre de motivation
+        - contenu du cv
+        - infos de l'annonce structurée
+
+        Si une info est manquante:
+        - ne l'invente pas
+        - n'en parle pas
+
+        Sortie STRICT (Markdown uniquement)
+
+        Contraintes:
+        - Style: professionnel, naturel, sans exagération.
+        """
+
+        payload = {
+            'template': coverletter_template,
+            'resume': resume,
+            'offer_title': offer.title,
+            'offer_description': offer.description.offer_description,
+            'offer_skills': offer.skills,
+            'offer_contract': offer.contract_type,
+            'company_name': offer.company.name,
+            'today_date': date.today().isoformat()
+        }
+
+        chat_response = self.client.chat.complete(
+            model = self.model_small,
+            messages = [
+                {
+                    "role": "system",
+                    "content": system_prompt
+                },
+                {
+                    "role": "user",
+                    "content": json.dumps(payload)
+                }
+            ]
+        )
+
+        return chat_response.choices[0].message.content

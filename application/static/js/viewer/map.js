@@ -180,7 +180,7 @@ async function search(query) {
         // Dispatch event
         const event = new CustomEvent('searchOffers', {
             detail: {
-                ids: content['ids']
+                ids: []
             },
             bubbles: true,
             cancelable: false

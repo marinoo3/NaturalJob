@@ -17,11 +17,6 @@
             <button class="icon-button save">
                 <img src="{{ url_for('static', filename='images/bookmark.svg') }}" alt="" height="16px">
             </button>
-            <form id="apply">
-                <button class="main-button apply">Candidater</button>
-                <input type="text" name="email" hidden>
-                <input type="text" name="coverletter" hidden>
-            </form>
         </div>
     </div>
     <div class="descriptions">
@@ -29,6 +24,18 @@
             <h2>Lien :</h2>
             <a href="{{ offer_url }}" class="offer-url" target="_blank">{{ offer_url }}</a>
         </div>
+        {% if salary %}
+            <div class="source">
+                <h2>Salaire :</h2>
+                <p>{{ salary }}</p>
+            </div>
+        {% endif %}
+        {% if contract %}
+            <div class="source">
+                <h2>Contrat :</h2>
+                <p>{{ contract }}</p>
+            </div>
+        {% endif %}
         <div class="offer">
             <h2>Description du poste</h2>
             <p>{{ offer_description }}</p>
@@ -62,36 +69,32 @@
         {% endif %}
         <div id="offer-map" class="hidden" style="height: 200px" data-lat="{{ latitude }}" data-lon="{{ longitude }}"></div>
     </div>
-    <div class="generate-container">
+    <form class="generate-container" id="apply">
         <div class="generate" data-category="email">
             <div class="info">
                 <img src="{{ url_for('static', filename='images/email.svg') }}" alt="" height="20px">
                 <h3 class="label">Email</h3>
             </div>
-            <form class="actions">
-                <div class="custom-select">
-                    <input type="text" name="email" hidden>
-                    <p>Séléctioner</p>
-                    <img src="{{ url_for('static', filename='images/down-arrow.svg') }}" alt="" height="12px">
-                </div>
-                <button class="main-button" type="submit" disabled>Générer</button>
-                <p class="succeed-label">✓</p>
-            </form>
+            <div class="custom-select" title="joindre un email">
+                <input type="text" name="email" hidden>
+                <p>Séléctioner</p>
+                <img src="{{ url_for('static', filename='images/down-arrow.svg') }}" alt="" height="12px">
+            </div>
         </div>
         <div class="generate" data-category="coverletter">
             <div class="info">
                 <img src="{{ url_for('static', filename='images/coverletter.svg') }}" alt="" height="20px">
                 <h3 class="label">Lettre de motivation</h3>
             </div>
-            <form class="actions">
-                <div class="custom-select">
-                    <input type="text" name="coverletter" value="12345" hidden>
-                    <p>Séléctioner</p>
-                    <img src="{{ url_for('static', filename='images/down-arrow.svg') }}" alt="" height="12px">
-                </div>
-                <button class="main-button" type="submit" disabled>Générer</button>
-                <p class="succeed-label">✓</p>
-            </form>
+            <div class="custom-select" title="Joindre une lettre de motivation">
+                <input type="text" name="coverletter" hidden>
+                <input type="text" name="resume" hidden>
+                <p>Séléctioner</p>
+                <img src="{{ url_for('static', filename='images/down-arrow.svg') }}" alt="" height="12px">
+            </div>
         </div>
-    </div>
+        <textarea type="text" name="generated_email" hidden></textarea>
+        <textarea type="text" name="generated_coverletter" hidden></textarea>
+        <button class="main-button" type="submit">Candidater</button>
+    </form>
 </div>
