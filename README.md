@@ -1,6 +1,10 @@
 # Natural Job
 
-### LIVE: https://marinooo-naturaljob-app.hf.space
+> [!NOTE]
+> Ce travail est un projet scolaire réalisé dans le cadre de notre 2<sup>ème</sup> année de Master en SISE.
+
+## Présentation
+### 🔗 LIVE: https://marinooo-naturaljob-app.hf.space
 
 <img width="3840" height="1984" alt="App scrennshot" src="https://github.com/user-attachments/assets/322a4626-789b-4d8b-9211-463b3a869c1a" />
 
