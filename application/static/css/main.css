@@ -46,6 +46,16 @@
     box-sizing: border-box;
 }
 
+::selection {
+    background: var(--accent-color);
+    color: black;
+}
+
+::-moz-selection {
+    background: var(--accent-color);
+    color: black;
+}
+
 
 /* PAGE */
 
