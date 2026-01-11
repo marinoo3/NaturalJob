@@ -12,11 +12,59 @@ Natural Job est une application web monopage pour explorer, analyser et postuler
 
 ## Fonctionnalités principales
 
-- **Recherche intelligente** : moteur NLP (TFIDF + cosinus) pour trouver les offres les plus pertinentes selon vos critères. Posibiliter d'aimer / ne pas aimer des offres et affiner sa recherche ainsi que de joindre un CV.
-- **Auto-adaptation des candidatures** : lettres de motivation et emails générés à partir de vos modèles et adaptés automatiquement à chaque offre grace au LLM Mistral.
-- **Gestion des documents** : CV, lettres, emails, templates et historique des candidatures au même endroit. Modifiable grace a l'éditeur Markdown intégré.
-- **Analyse d’offres** : statistiques détaillées (catégories, salaires, géographie, tendances) pour mieux cibler les opportunités.
-- **Sources officielles** : agrégation des offres depuis *Nos Talents Nos Emplois* et l’*APEC* + import d’offres externes.
+### Recherche intelligente d’offres
+
+- Recherche libre via une barre dédiée.
+- Vectorisation des requêtes avec **TF-IDF**.
+- Calcul de similarité cosinus entre requête et offres.
+- Classement des résultats par pertinence sémantique.
+- Possibilité de **liker / disliker** des offres afin d’affiner les résultats.
+
+### Matching CV – Offres
+
+L’utilisateur peut importer **un ou plusieurs CV** (format texte/PDF).
+
+Pipeline de matching :
+1. Nettoyage et normalisation du texte (NLP).
+2. Vectorisation du CV avec **TF-IDF**.
+3. Réduction dimensionnelle via **LSA (SVD)**.
+4. Comparaison CV ↔ annonces par similarité cosinus.
+5. Classement des offres selon leur adéquation avec le CV sélectionné.
+
+Chaque CV devient ainsi un **profil vectoriel**, permettant une recommandation contextualisée.
+
+### Génération automatique de candidatures
+
+- Génération de **lettres de motivation** adaptées à :
+  - une offre précise,
+  - un CV donné,
+  - un modèle fourni par l’utilisateur.
+- Génération d’**emails de candidature** cohérents avec l’offre et la lettre.
+- Utilisation du **LLM Mistral** pour produire des textes naturels, professionnels et contextualisés.
+
+### Gestion des documents
+
+- Centralisation des CV, lettres et emails.
+- Historique des candidatures.
+- Édition directe via un **éditeur Markdown intégré**.
+
+### Analyse et visualisation
+
+- Statistiques globales sur les offres :
+  - catégories de postes,
+  - salaires,
+  - répartition géographique,
+  - tendances.
+- Analyses croisées CV ↔ marché.
+- Cartographie interactive des opportunités.
+
+### Sources de données
+
+- Scraping automatique depuis :
+  - APEC
+  - Nos Talents Nos Emplois
+- Import manuel d’offres externes.
+- Gestion des doublons.
 
 ## Structure de l’interface
 
