@@ -12,7 +12,7 @@ Natural Job est une application web monopage pour explorer, analyser et postuler
 
 ## Fonctionnalités principales
 
-### Recherche intelligente d’offres
+### 1. Recherche intelligente d’offres
 
 - Recherche libre via une barre dédiée.
 - Vectorisation des requêtes avec **TF-IDF**.
@@ -20,7 +20,7 @@ Natural Job est une application web monopage pour explorer, analyser et postuler
 - Classement des résultats par pertinence sémantique.
 - Possibilité de **liker / disliker** des offres afin d’affiner les résultats.
 
-### Matching CV – Offres
+### 2. Matching CV – Offres
 
 L’utilisateur peut importer **un ou plusieurs CV** (format texte/PDF).
 
@@ -33,7 +33,7 @@ Pipeline de matching :
 
 Chaque CV devient ainsi un **profil vectoriel**, permettant une recommandation contextualisée.
 
-### Génération automatique de candidatures
+### 3. Génération automatique de candidatures
 
 - Génération de **lettres de motivation** adaptées à :
   - une offre précise,
@@ -42,13 +42,13 @@ Chaque CV devient ainsi un **profil vectoriel**, permettant une recommandation c
 - Génération d’**emails de candidature** cohérents avec l’offre et la lettre.
 - Utilisation du **LLM Mistral** pour produire des textes naturels, professionnels et contextualisés.
 
-### Gestion des documents
+### 4. Gestion des documents
 
 - Centralisation des CV, lettres et emails.
 - Historique des candidatures.
 - Édition directe via un **éditeur Markdown intégré**.
 
-### Analyse et visualisation
+### 5. Analyse et visualisation
 
 - Statistiques globales sur les offres :
   - catégories de postes,
@@ -57,14 +57,6 @@ Chaque CV devient ainsi un **profil vectoriel**, permettant une recommandation c
   - tendances.
 - Analyses croisées CV ↔ marché.
 - Cartographie interactive des opportunités.
-
-### Sources de données
-
-- Scraping automatique depuis :
-  - APEC
-  - Nos Talents Nos Emplois
-- Import manuel d’offres externes.
-- Gestion des doublons.
 
 ## Structure de l’interface
 
