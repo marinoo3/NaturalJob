@@ -55,6 +55,41 @@ Les modèles sont stockés au format joblib. Ils sont utilisés pour prédire ou
 </p>
 <p align="center"><b>Schema relationnel OFFER_DB</b></p>
 
+## Structure de l'application
+```
+├── application/
+│   ├── _process/
+│   ├── custom/
+│   │   ├── api/
+│   │   ├── data/
+│   │   ├── db/
+│   │   ├── nlp/
+│   │   ├── plot/
+│   │   ├── scrapper/
+│   │   └── utils/
+│   ├── static/
+│   │   ├── css/
+│   │   ├── fonts/
+│   │   ├── images/
+│   │   └── js/
+│   ├── templates/
+│   ├── __init__.py
+│   ├── ajax.py
+│   └── routes.py
+├── data/
+│   ├── db/
+│   ├── dist/
+│   ├── model/
+│   │   ├── metadata/
+│   └── usr/
+│       ├── coverletter/
+│       ├── email/
+│       └── resume/
+├── app.py
+├── Dockerfile
+└── requirements.txt
+```
+
 ## Faire tourner l'app en local
 
 1. Cloner le repo
