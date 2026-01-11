@@ -23,13 +23,11 @@ Natural Job est une application web monopage pour explorer, analyser et postuler
 
 ## Stack & Architecture
 
-| Couche            | Technologies |
-|-------------------|--------------|
-| Backend           | Python, Flask |
-| Frontend          | HTML / CSS, JS (communication via API Flask) |
-| Bases de données  | `sqlite`, `sqlite-vec` (2 DB : `USER`, `OFFER`) |
-| Data / NLP        | `scikit-learn`, `spacy`, `nltk`, `pandas`, `numpy` |
-| Visualisation     | `plotly`, `leaflet`, `d3js` |
+| Backend        | Frontend                              | Bases de données                               | Data / NLP                                    | Visualisation                |
+|----------------|---------------------------------------|------------------------------------------------|-----------------------------------------------|------------------------------|
+| Python, Flask  | HTML / CSS, JS (communication via API Flask) | `sqlite`, `sqlite-vec` (2 DB : `USER`, `OFFER`) | `scikit-learn`, `spacy`, `nltk`, `pandas`, `numpy` | `plotly`, `leaflet`, `d3js` |
+
+![Architecture](https://github.com/user-attachments/assets/2942857f-1acb-4ee5-b6c1-0ae7c53515d3)
 
 ## Modèles
 
